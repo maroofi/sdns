@@ -13,9 +13,6 @@
 //compile: gcc -g -o sdns.o dns_utils.c sdns.c neat_print.c dynamic_buffer.c -I. -DLOG_DEBUG -DLOG_INFO && ./sdns.o
 
 
-/****************static functions declaration*******************/
-static inline int _sdns_create_encoded_label(const char * qname, char ** enc_qname);
-
 /****************end of static functions declaration************/
 
 // this only able to decode simple labeles (no compression)
@@ -667,6 +664,10 @@ static int _encode_write_rr(sdns_context * ctx, dyn_buffer* db, sdns_rr* tmprr){
         return _encode_write_rr_A(ctx, db, tmprr);
     if (tmprr->type == sdns_rr_type_NS)
         return _encode_write_rr_NS(ctx, db, tmprr);
+    if (tmprr->type == sdns_rr_type_PTR)
+        return _encode_write_rr_PTR(ctx, db, tmprr);
+    if (tmprr->type == sdns_rr_type_CNAME)
+        return _encode_write_rr_CNAME(ctx, db, tmprr);
     if (tmprr->type == sdns_rr_type_MX)
         return _encode_write_rr_MX(ctx, db, tmprr);
     if (tmprr->type == sdns_rr_type_OPT)
@@ -1743,7 +1744,6 @@ static int _encode_write_section(sdns_context * ctx, dyn_buffer * db, sdns_rr * 
 int sdns_to_wire(sdns_context * ctx){
     if (!ctx)
         return SDNS_ERROR_BUFFER_TOO_SHORT;
-    char * buff = ctx->raw;
     dyn_buffer * db = dyn_buffer_init(ctx->raw, ctx->raw_len, ctx->cursor - ctx->raw);
     char tmp_byte[8] = {0x00};
     char tmpbuff[4] = {0};
@@ -2593,44 +2593,3 @@ sdns_opt_rdata * sdns_create_edns0_cookie(char * client_cookie, char * server_co
     return cookie;
 }
 
-/////////////////////////////////////////// main driver ///////////////////////
-///
-/*
-int main(int argc, char ** argv){
-    srand(time(NULL));
-    sdns_context * dns_ctx = sdns_init_context();
-    if (NULL == dns_ctx){
-        fprintf(stderr, "Can not initialize the DNS context...\n");
-        return 1;
-    }
-
-    char packet_bytes[] = {
-  0x96, 0xc5, 0x85, 0x00, 0x00, 0x01, 0x00, 0x01,
-  0x00, 0x00, 0x00, 0x01, 0x0a, 0x66, 0x61, 0x6b,
-  0x65, 0x64, 0x6f, 0x6d, 0x61, 0x69, 0x6e, 0x04,
-  0x66, 0x61, 0x6b, 0x65, 0x00, 0x00, 0x6b, 0x00,
-  0x01, 0xc0, 0x0c, 0x00, 0x6b, 0x00, 0x01, 0x00,
-  0x00, 0x0e, 0x10, 0x00, 0x13, 0x00, 0x0a, 0x0a,
-  0x64, 0x6f, 0x75, 0x62, 0x6c, 0x65, 0x66, 0x61,
-  0x6b, 0x65, 0x04, 0x66, 0x61, 0x6b, 0x65, 0x00,
-  0x00, 0x00, 0x29, 0x04, 0xd0, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x1c, 0x00, 0x0a, 0x00, 0x18, 0xc2,
-  0xc9, 0x02, 0x49, 0x44, 0x98, 0x52, 0x00, 0x01,
-  0x00, 0x00, 0x00, 0x66, 0x73, 0x1d, 0x01, 0x71,
-  0x7b, 0x7e, 0xa2, 0xab, 0x4f, 0xe7, 0xa3
-};
-
-
-    dns_ctx->raw = packet_bytes;
-    dns_ctx->raw_len = sizeof(packet_bytes);
-    int res = sdns_from_wire(dns_ctx);
-    if (res == 0)
-        sdns_neat_print_dns(dns_ctx);
-    char *dmp = sdns_json_dns_string(dns_ctx);
-    fprintf(stdout, "%s\n", dmp);
-    free(dmp);
-    dns_ctx->raw = NULL;
-    sdns_free_context(dns_ctx);
-    return 0;
-}
-*/

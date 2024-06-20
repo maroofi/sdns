@@ -262,7 +262,7 @@ void sdns_neat_print_rr_OPT(sdns_context * ctx, sdns_rr * rr){
     if (rr->decoded){
         sdns_opt_rdata * opt = rr->opt_rdata;
         while (opt){
-            int res = sdns_ends0_option_code_to_text(opt->option_code, option_code_name);
+            sdns_ends0_option_code_to_text(opt->option_code, option_code_name);
             fprintf(stdout, "\tOption Code: %d (%s)\n", opt->option_code, option_code_name);
             fprintf(stdout, "\tOption Length: %d\n", opt->option_length);
             fprintf(stdout, "\tOption Data: ");
@@ -281,13 +281,12 @@ void sdns_neat_print_rr_OPT(sdns_context * ctx, sdns_rr * rr){
         char * rdata = rr->rdata;
         uint16_t option_code;
         uint16_t option_length;
-        char * option_data = NULL;
         while(cnt < rr->rdlength){
            option_code = rdata[cnt] << 8 | rdata[cnt+1];
            cnt += 2;
            option_length = rdata[cnt] << 8 | rdata[cnt+1];
            cnt +=2;
-           int res = sdns_ends0_option_code_to_text(option_code, option_code_name);
+           sdns_ends0_option_code_to_text(option_code, option_code_name);
            fprintf(stdout, "\tOption Code: %d (%s)\n", option_code, option_code_name);
            fprintf(stdout, "\tOption Length: %d\n", option_length);
            fprintf(stdout, "\tOption Data: ");

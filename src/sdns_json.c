@@ -240,9 +240,8 @@ json_t * sdns_json_answer(sdns_context * ctx){
             return answers;
         }
         json_t * rdata = sdns_json_rr(ctx, tmp);
-        int res = 0;
         if (rdata != NULL)
-            res = json_array_append_new(array, rdata);
+            json_array_append_new(array, rdata);
         if (json_object_set_new(tmp_answer, "rdata", rdata) != 0){
             json_decref(rdata);
             return answers;
@@ -306,9 +305,8 @@ json_t * sdns_json_authority(sdns_context * ctx){
             return authorities;
         }
         json_t * rdata = sdns_json_rr(ctx, tmp);
-        int res = 0;
         if (rdata != NULL)
-            res = json_array_append_new(array, rdata);
+            json_array_append_new(array, rdata);
         if (json_object_set_new(tmp_authority, "rdata", rdata) != 0){
             json_decref(rdata);
             return authorities;
@@ -372,9 +370,8 @@ json_t * sdns_json_additional(sdns_context * ctx){
             return additionals;
         }
         json_t * rdata = sdns_json_rr(ctx, tmp);
-        int res = 0;
         if (rdata != NULL)
-            res = json_array_append_new(array, rdata);
+            json_array_append_new(array, rdata);
         if (json_object_set_new(tmp_additional, "rdata", rdata) != 0){
             json_decref(rdata);
             return additionals;
