@@ -35,7 +35,7 @@ NOTE: Another way of using this library in you project is to simply copy all the
 
 ### Documentation
 
-Here is the online documentation of the library: <link to online>
+Here is the online documentation of the library: [https://maroofi.github.io/sdns](https://maroofi.github.io/sdns)
 
 Or you can compile it yourself:
 ```bash
