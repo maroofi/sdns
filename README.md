@@ -4,6 +4,24 @@ A small DNS library written in C
 
 ### How to compile
 
+1. sdns depends on libjansson to produce JSON output. So you must have it installed 
+```bash
+
+# make sure jaonson library is installed
+sudo apt-get install libjansson-dev
+
+# now you can build the library
+make
+```
+
+This will create a `bin` directory and inside you will have `libsdns.so` file.
+
+Now you can use it in your project by passing `-lsdns` switch. For example, here is the command to build the `test1.c` file in `test` directory:
+
+```bash
+gcc  -o test/test -Iinclude test/test1.c  -Lbin -lsdns -ljansson
+```
+
 ### Documentation
 
 Here is the online documentation of the library: <link to online>
