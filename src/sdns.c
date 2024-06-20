@@ -8,7 +8,6 @@
 #include <sdns_dynamic_buffer.h>
 #include <logger.h>
 #include <sdns_utils.h>
-#include <sdns_json.h>
 #include <sdns_print.h>
 //compile: gcc -g -o sdns.o dns_utils.c sdns.c neat_print.c dynamic_buffer.c -I. -DLOG_DEBUG -DLOG_INFO && ./sdns.o
 

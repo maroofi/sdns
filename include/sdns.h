@@ -19,7 +19,7 @@
 #define SDNS_ERROR_BUFFER_IS_SMALL -7                   ///< buffer is shorter than expected
 #define SDNS_ERROR_INVALID_DNS_PACKET -8                ///< The packet is not a valid DNS packet
 #define SDNS_ERROR_MORE_THAN_ONE_QUESTION_FOUND -9      ///< Each DNS packet must have exactly one question section
-#define SDNS_ERROR_RR_NULL -10
+#define SDNS_ERROR_RR_NULL -10                          ///< Resource Record section pointer is NULL
 // these two are success code for encoding label
 #define SDNS_ERROR_ELSIMPLE -11                         ///< Success code for simple encoding of the name
 #define SDNS_ERROR_ELCOMPRESSED -12                     ///< Success code for compressed encoding of the name
@@ -28,7 +28,7 @@
 /** In some cases like RRSIG, the name can not be compressed (e.g., signer's name in RRSIG).
  *  So if we found a compressed name in those sections, we return this error*/
 #define SDNS_ERROR_ILLEGAL_COMPRESSION -14              ///< Compressed label found when it's illegal
-#define SDNS_ERROR_RR_SECTION_MALFORMED -15
+#define SDNS_ERROR_RR_SECTION_MALFORMED -15             ///< Resource Record section is malformed (not enough or wrong data)
 
 
 /** The list of opcodes can be found at:
@@ -62,16 +62,16 @@ typedef enum{
     sdns_rcode_NotAuth=9,           ///< RFC2136, RFC8945
     sdns_rcode_NotZone=10,          ///< RFC2136
     sdns_rcode_DSOTYPENI=11,        ///< RFC8490
-    sdns_rcode_BADVERS=16,          ///< 
-    sdns_rcode_BADSIG=16,           ///<
-    sdns_rcode_BADKEY=17,           ///<
-    sdns_rcode_BADTIME=18,          ///<
-    sdns_rcode_BADMODE=19,          ///<
-    sdns_rcode_BADNAME=20,          ///<
-    sdns_rcode_BADALG=21,           ///<
-    sdns_rcode_BADTRUNC=22,         ///<
-    sdns_rcode_BADCOOKIE=23,        ///<
-    sdns_rcode_Reserved=65535       ///<
+    sdns_rcode_BADVERS=16,          ///< Bad OPT Version RFC6891
+    sdns_rcode_BADSIG=16,           ///< TSIG Signature Failure RFC8945
+    sdns_rcode_BADKEY=17,           ///< Key not recognized RFC8945
+    sdns_rcode_BADTIME=18,          ///< Signature out of time window RFC8945
+    sdns_rcode_BADMODE=19,          ///< Bad TKEY Mode RFC2930
+    sdns_rcode_BADNAME=20,          ///< Duplicate key name RFC2930
+    sdns_rcode_BADALG=21,           ///< Algorithm not supported RFC2930
+    sdns_rcode_BADTRUNC=22,         ///< Bad Truncation RFC8945
+    sdns_rcode_BADCOOKIE=23,        ///< Bad/missing Server Cookie RFC7873
+    sdns_rcode_Reserved=65535       ///< Reserved, can be allocated by Standards Action	RFC6895
 } sdns_rcode;
 
 /**
@@ -118,14 +118,14 @@ typedef struct {
  *
  */
 struct _sdns_opt_rdata{
-    uint16_t option_code;
-    uint16_t option_length;
-    char * option_data;
-    struct _sdns_opt_rdata * next;
+    uint16_t option_code;               ///< 16bit option code
+    uint16_t option_length;             ///< 16bit option length specifies the length of the option data
+    char * option_data;                 ///< Pointer to the option data
+    struct _sdns_opt_rdata * next;      ///< non-rfc field. Just to keep the reference to the next option structure
 };
 
 /** See ::_sdns_opt_rdata structure for detail. */
-typedef struct _sdns_opt_rdata sdns_opt_rdata;
+typedef struct _sdns_opt_rdata sdns_opt_rdata;      ///< see ::_sdns_opt_rdata for more info
 
 
 
@@ -141,10 +141,10 @@ typedef struct _sdns_opt_rdata sdns_opt_rdata;
  * </pre>
  */
 typedef struct{
-    uint32_t extended_rcode :8;
-    uint32_t version        :8;
-    uint32_t DO             :1;
-    uint32_t Z              :15;
+    uint32_t extended_rcode :8;         ///< extended response code
+    uint32_t version        :8;         ///< version of the edns (it's zero)
+    uint32_t DO             :1;         ///< DNSSEC OK bit
+    uint32_t Z              :15;        ///< Reserved (must be zero always)
 } sdns_opt_ttl;
 
 
@@ -202,24 +202,24 @@ struct _sdns_rr{
     uint16_t type;                  ///< RFC1035 - RR type code
     union {
         uint16_t class;             ///< RFC1035 - class of the data in rdata
-        uint16_t udp_size;
+        uint16_t udp_size;          ///< size of the UDP packet
     };
     union {
-        uint32_t ttl;
-        sdns_opt_ttl opt_ttl;
+        uint32_t ttl;               ///< Time To Live
+        sdns_opt_ttl opt_ttl;       ///< will expand to ::sdns_opt_ttl if type=OPT
     };
     uint16_t rdlength;              ///< RFC1035 - length of the RDATA field
     union {
         char * rdata;               ///< resource record data (for all RRs except for OPT)
-        sdns_opt_rdata * opt_rdata;
+        sdns_opt_rdata * opt_rdata; ///< if type=OPT, this will refer to ::sdns_opt_rdata structure
         void * psdns_rr;   ///< this is not DNS-RFC. It's just a reference for our library
     };
     uint8_t decoded;       ///< this is not DNS-RFC. it's just a flag to know if the rdata is decoded or not
-    struct _sdns_rr * next;
+    struct _sdns_rr * next;     ///< non-rfc field, just keep the reference to the next structure (linked-list)
 };
 
 /** See ::_sdns_rr for more information */
-typedef struct _sdns_rr sdns_rr;
+typedef struct _sdns_rr sdns_rr;            ///< See ::_sdns_rr for more info
 
 /**
  * Here is the list of possible RR types reitrieved from:
@@ -242,80 +242,80 @@ typedef enum {
     sdns_rr_type_MINFO=14,          ///< RFC1035 - mailbox or mail list information
     sdns_rr_type_MX=15,             ///< RFC1035 - mail exchange
     sdns_rr_type_TXT=16,            ///< RFC1035 - text strings
-    sdns_rr_type_RP=17,
-    sdns_rr_type_AFSDB=18,
-    sdns_rr_type_X25=19,
-    sdns_rr_type_ISDN=20,
-    sdns_rr_type_RT=21,
-    sdns_rr_type_NSAP=22,
-    sdns_rr_type_NSAP_PTR=23,
-    sdns_rr_type_SIG=24,
-    sdns_rr_type_KEY=25,
-    sdns_rr_type_PX=26,
-    sdns_rr_type_GPOS=27,
+    sdns_rr_type_RP=17,             ///< for Responsible Person	RFC1183
+    sdns_rr_type_AFSDB=18,          ///< for AFS Data Base location	RFC1183, RFC5864
+    sdns_rr_type_X25=19,            ///< for X.25 PSDN address	RFC1183
+    sdns_rr_type_ISDN=20,           ///< for ISDN address	RFC1183
+    sdns_rr_type_RT=21,             ///< for Route Through	RFC1183
+    sdns_rr_type_NSAP=22,           ///< for NSAP address, NSAP style A record (deprecated)
+    sdns_rr_type_NSAP_PTR=23,       ///< for domain name pointer, NSAP style
+    sdns_rr_type_SIG=24,            ///< for security signature	RFC2536, RFC2931, RFC3110, RFC4034
+    sdns_rr_type_KEY=25,            ///< for security key	RFC2536, RFC2539, RFC3110, RFC4034
+    sdns_rr_type_PX=26,             ///< X.400 mail mapping information	FC2163
+    sdns_rr_type_GPOS=27,           ///< Geographical Position	RFC1712
     sdns_rr_type_AAAA=28,           ///< RFC3596 - AAAA record
-    sdns_rr_type_LOC=29,
-    sdns_rr_type_NXT=30,
-    sdns_rr_type_EID=31,
-    sdns_rr_type_NIMLOC=32,
-    sdns_rr_type_SRV=33,
-    sdns_rr_type_ATMA=34,
-    sdns_rr_type_NAPTR=35,
-    sdns_rr_type_KX=36,
-    sdns_rr_type_CERT=37,
-    sdns_rr_type_A6=38,
-    sdns_rr_type_DNAME=39,
-    sdns_rr_type_SINK=40,
+    sdns_rr_type_LOC=29,            ///< Location Information	RFC1876
+    sdns_rr_type_NXT=30,            ///< Next Domain (OBSOLETE)	RFC2535, RFC3755
+    sdns_rr_type_EID=31,            ///< Endpoint Identifier
+    sdns_rr_type_NIMLOC=32,         ///< Nimrod Locator
+    sdns_rr_type_SRV=33,            ///< Server Selection
+    sdns_rr_type_ATMA=34,           ///< ATM Address
+    sdns_rr_type_NAPTR=35,          ///< Naming Authority Pointer
+    sdns_rr_type_KX=36,             ///< Key Exchanger
+    sdns_rr_type_CERT=37,           ///< CERT
+    sdns_rr_type_A6=38,             ///< A6 (OBSOLETE - use AAAA)
+    sdns_rr_type_DNAME=39,          ///< DNAME
+    sdns_rr_type_SINK=40,           ///< SINK
     sdns_rr_type_OPT=41,            ///< RFC6891 - option RR for ends
-    sdns_rr_type_APL=42,
-    sdns_rr_type_DS=43,
-    sdns_rr_type_SSHFP=44,
-    sdns_rr_type_IPSECKEY=45,
-    sdns_rr_type_RRSIG=46,
-    sdns_rr_type_NSEC=47,
-    sdns_rr_type_DNSKEY=48,
-    sdns_rr_type_DHCID=49,
-    sdns_rr_type_NSEC3=50,
-    sdns_rr_type_NSEC3PARAM=51,
-    sdns_rr_type_TLSA=52,
-    sdns_rr_type_SMIMEA=53,
-    sdns_rr_type_HIP=55,
-    sdns_rr_type_NINFO=56,
-    sdns_rr_type_RKEY=57,
-    sdns_rr_type_TALINK=58,
-    sdns_rr_type_CDS=59,
-    sdns_rr_type_CDNSKEY=60,
-    sdns_rr_type_OPENPGPKEY=61,
-    sdns_rr_type_CSYNC=62,
-    sdns_rr_type_ZONEMD=63,
-    sdns_rr_type_SVCB=64,
-    sdns_rr_type_HTTPS=65,
-    sdns_rr_type_SPF=99,
-    sdns_rr_type_UINFO=100,
-    sdns_rr_type_UID=101,
-    sdns_rr_type_GID=102,
-    sdns_rr_type_UNSPEC=103,
-    sdns_rr_type_NID=104,
-    sdns_rr_type_L32=105,
-    sdns_rr_type_L64=106,
-    sdns_rr_type_LP=107,
-    sdns_rr_type_EUI48=108,
-    sdns_rr_type_EUI64=109,
-    sdns_rr_type_TKEY=249,
-    sdns_rr_type_TSIG=250,
-    sdns_rr_type_IXFR=251,
+    sdns_rr_type_APL=42,            ///< APL
+    sdns_rr_type_DS=43,             ///< Delegation Signer	RFC4034
+    sdns_rr_type_SSHFP=44,          ///< SSH Key Fingerprint	RFC4255
+    sdns_rr_type_IPSECKEY=45,       ///< IPSECKEY	RFC4025
+    sdns_rr_type_RRSIG=46,          ///< RRSIG	RFC4034
+    sdns_rr_type_NSEC=47,           ///< NSEC	RFC4034, RFC9077
+    sdns_rr_type_DNSKEY=48,         ///< DNSKEY	RFC4034
+    sdns_rr_type_DHCID=49,          ///< DHCID	RFC4701
+    sdns_rr_type_NSEC3=50,          ///< NSEC3	RFC5155, RFC9077
+    sdns_rr_type_NSEC3PARAM=51,     ///< NSEC3PARAM	[RFC5155
+    sdns_rr_type_TLSA=52,           ///< TLSA	[RFC6698
+    sdns_rr_type_SMIMEA=53,         ///< S/MIME cert association	RFC8162
+    sdns_rr_type_HIP=55,            ///< Host Identity Protocol	RFC8005
+    sdns_rr_type_NINFO=56,          ///< NINFO
+    sdns_rr_type_RKEY=57,           ///< RKEY
+    sdns_rr_type_TALINK=58,         ///< Trust Anchor LINK
+    sdns_rr_type_CDS=59,            ///< Child DS
+    sdns_rr_type_CDNSKEY=60,        ///< DNSKEY(s) the Child wants reflected in DS	RFC7344
+    sdns_rr_type_OPENPGPKEY=61,     ///< OpenPGP Key	RFC7929
+    sdns_rr_type_CSYNC=62,          ///< Child-To-Parent Synchronization	RFC7477
+    sdns_rr_type_ZONEMD=63,         ///< Message Digest Over Zone Data	RFC8976
+    sdns_rr_type_SVCB=64,           ///< General-purpose service binding	RFC9460
+    sdns_rr_type_HTTPS=65,          ///< SVCB-compatible type for use with HTTP	RFC9460
+    sdns_rr_type_SPF=99,            ///< RFC7208
+    sdns_rr_type_UINFO=100,         ///< IANA-Reserved
+    sdns_rr_type_UID=101,           ///< IANA-Reserved
+    sdns_rr_type_GID=102,           ///< IANA-Reserved
+    sdns_rr_type_UNSPEC=103,        ///< IANA-Reserved
+    sdns_rr_type_NID=104,           ///< RFC6742
+    sdns_rr_type_L32=105,           ///< RFC6742
+    sdns_rr_type_L64=106,           ///< RFC6742
+    sdns_rr_type_LP=107,            ///< RFC6742
+    sdns_rr_type_EUI48=108,         ///< an EUI-48 address	RFC7043
+    sdns_rr_type_EUI64=109,         ///< an EUI-64 address	RFC7043
+    sdns_rr_type_TKEY=249,          ///< Transaction Key	RFC2930
+    sdns_rr_type_TSIG=250,          ///< Transaction Signature	RFC8945
+    sdns_rr_type_IXFR=251,          ///< incremental transfer	RFC1995
     sdns_rr_type_AXFR=252,          ///< RFC1035 - request for transfer of entire zone
     sdns_rr_type_MAILB=253,         ///< RFC1035 - request for mailbox related records
     sdns_rr_type_MAILA=254,         ///< RFC1035 - request for mail agent RRs
     sdns_rr_type_star=255,          ///< RFC1035 - request for all records
-    sdns_rr_type_URI=256,
-    sdns_rr_type_CAA=257,
-    sdns_rr_type_AVC=258,
-    sdns_rr_type_DOA=259,
-    sdns_rr_type_AMTRELAY=260,
-    sdns_rr_type_RESINFO=261,
-    sdns_rr_type_TA=32768,
-    sdns_rr_type_DLV=32769
+    sdns_rr_type_URI=256,           ///< URI	RFC7553
+    sdns_rr_type_CAA=257,           ///< Certification Authority Restriction	[RFC8659]
+    sdns_rr_type_AVC=258,           ///< Application Visibility and Control
+    sdns_rr_type_DOA=259,           ///< Digital Object Architecture
+    sdns_rr_type_AMTRELAY=260,      ///< Automatic Multicast Tunneling Relay	[RFC8777]
+    sdns_rr_type_RESINFO=261,       ///< Resolver Information as Key/Value Pairs
+    sdns_rr_type_TA=32768,          ///< DNSSEC Trust Authorities
+    sdns_rr_type_DLV=32769          ///< DNSSEC Lookaside Validation (OBSOLETE)
 } sdns_rr_type;
 
 
@@ -324,27 +324,27 @@ typedef enum {
  * https://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml#dns-parameters-11
  */
 typedef enum{
-   sdns_edns0_option_code_Reserved0=0,
-   sdns_edns0_option_code_LLQ=1,
-   sdns_edns0_option_code_Update_Lease=2,
-   sdns_edns0_option_code_NSID=3,
-   sdns_edns0_option_code_Reserved4=4,
-   sdns_edns0_option_code_DAU=5,
-   sdns_edns0_option_code_DHU=6,
-   sdns_edns0_option_code_N3U=7,
-   sdns_edns0_option_code_edns_client_subnet=8,
-   sdns_edns0_option_code_EDNS_EXPIRE=9,
-   sdns_edns0_option_code_COOKIE=10,
-   sdns_edns0_option_code_edns_tcp_keepalive=11,
-   sdns_edns0_option_code_Padding=12,
-   sdns_edns0_option_code_CHAIN=13,
-   sdns_edns0_option_code_edns_key_tag=14,
-   sdns_edns0_option_code_Extended_DNS_Error=15,
-   sdns_edns0_option_code_EDNS_Client_Tag=16,
-   sdns_edns0_option_code_EDNS_Server_Tag=17,
-   sdns_edns0_option_code_Report_Channel=18,
-   sdns_edns0_option_code_Umbrella_Ident=20292,
-   sdns_edns0_option_code_DeviceID=26946
+   sdns_edns0_option_code_Reserved0=0,              ///< Reserved RFC6891
+   sdns_edns0_option_code_LLQ=1,                    ///< LLQ RFC8764
+   sdns_edns0_option_code_Update_Lease=2,           ///< Update Lease
+   sdns_edns0_option_code_NSID=3,                   ///< NSID RFC5001
+   sdns_edns0_option_code_Reserved4=4,              ///< Reserved
+   sdns_edns0_option_code_DAU=5,                    ///< DAU RFC6975
+   sdns_edns0_option_code_DHU=6,                    ///< DHU RFC6975
+   sdns_edns0_option_code_N3U=7,                    ///< N3U RFC6975
+   sdns_edns0_option_code_edns_client_subnet=8,     ///< edns-client-subnet RFC7871
+   sdns_edns0_option_code_EDNS_EXPIRE=9,            ///< EDNS EXPIRE RFC7314
+   sdns_edns0_option_code_COOKIE=10,                ///< COOKIE RFC7873
+   sdns_edns0_option_code_edns_tcp_keepalive=11,    ///< edns-tcp-keepalive RFC7828
+   sdns_edns0_option_code_Padding=12,               ///< Padding RFC7830
+   sdns_edns0_option_code_CHAIN=13,                 ///< CHAIN RFC7901
+   sdns_edns0_option_code_edns_key_tag=14,          ///< edns-key-tag RFC8145
+   sdns_edns0_option_code_Extended_DNS_Error=15,    ///< Extended DNS Error RFC8914
+   sdns_edns0_option_code_EDNS_Client_Tag=16,       ///< EDNS-Client-Tag	
+   sdns_edns0_option_code_EDNS_Server_Tag=17,       ///< EDNS-Server-Tag
+   sdns_edns0_option_code_Report_Channel=18,        ///< Report-Channel	RFC9567
+   sdns_edns0_option_code_Umbrella_Ident=20292,     ///< Umbrella Ident
+   sdns_edns0_option_code_DeviceID=26946            ///< DeviceID
 } sdns_edns0_option_code;
 
 /**
@@ -419,45 +419,45 @@ typedef struct {
  * The full list is available in <a href="https://www.rfc-editor.org/rfc/rfc8914">RFC 8914</a>
  */
 typedef enum {
-    sdns_ede_code_Other_Error=0,
-    sdns_ede_code_Unsupported_DNSKEY_Algorithm=1,
-    sdns_ede_code_Unsupported_DS_Digest_Type=2,
-    sdns_ede_code_Stale_Answer=3,
-    sdns_ede_code_Forged_Answer=4,
-    sdns_ede_code_DNSSEC_Indeterminate=5,
-    sdns_ede_code_DNSSEC_Bogus=6,
-    sdns_ede_code_Signature_Expired=7,
-    sdns_ede_code_Signature_Not_Yet_Valid=8,
-    sdns_ede_code_DNSKEY_Missing=9,
-    sdns_ede_code_RRSIGs_Missing=10,
-    sdns_ede_code_No_Zone_Key_Bit_Set=11,
-    sdns_ede_code_NSEC_Missing=12,
-    sdns_ede_code_Cached_Error=13,
-    sdns_ede_code_Not_Ready=14,
-    sdns_ede_code_Blocked=15,
-    sdns_ede_code_Censored=16,
-    sdns_ede_code_Filtered=17,
-    sdns_ede_code_Prohibited=18,
-    sdns_ede_code_Stale_NXDomain_Answer=19,
-    sdns_ede_code_Not_Authoritative=20,
-    sdns_ede_code_Not_Supported=21,
-    sdns_ede_code_No_Reachable_Authority=22,
-    sdns_ede_code_Network_Error=23,
-    sdns_ede_code_Invalid_Data=24,
-    sdns_ede_code_Signature_Expired_before_Valid=25,
-    sdns_ede_code_Too_Early=26,
-    sdns_ede_code_Unsupported_NSEC3_Iterations_Value=27,
-    sdns_ede_code_Unable_to_conform_to_policy=28,
-    sdns_ede_code_Synthesized=29
+    sdns_ede_code_Other_Error=0,                         ///< Other
+    sdns_ede_code_Unsupported_DNSKEY_Algorithm=1,        ///< Unsupported DNSKEY Algorithm
+    sdns_ede_code_Unsupported_DS_Digest_Type=2,          ///< Unsupported DS Digest Type
+    sdns_ede_code_Stale_Answer=3,                        ///< Stale Answer
+    sdns_ede_code_Forged_Answer=4,                       ///< For policy reasons (legal obligation or malware filtering, for instance), an answer was forged
+    sdns_ede_code_DNSSEC_Indeterminate=5,                ///< DNSSEC Indeterminate
+    sdns_ede_code_DNSSEC_Bogus=6,                        ///< The resolver attempted to perform DNSSEC validation, but validation ended in the Bogus state
+    sdns_ede_code_Signature_Expired=7,                   ///< Signature Expired
+    sdns_ede_code_Signature_Not_Yet_Valid=8,             ///< Signature Not Yet Valid
+    sdns_ede_code_DNSKEY_Missing=9,                      ///< A DS record existed at a parent, but no supported matching DNSKEY record could be found for the child.
+    sdns_ede_code_RRSIGs_Missing=10,                     ///< RRSIGs Missing
+    sdns_ede_code_No_Zone_Key_Bit_Set=11,                ///< The resolver attempted to perform DNSSEC validation, but no Zone Key Bit was set in a DNSKEY.
+    sdns_ede_code_NSEC_Missing=12,                       ///< NSEC Missing
+    sdns_ede_code_Cached_Error=13,                       ///< Cached Error
+    sdns_ede_code_Not_Ready=14,                          ///< The server is unable to answer the query, as it was not fully functional when the query was received.
+    sdns_ede_code_Blocked=15,                            ///< Blocked
+    sdns_ede_code_Censored=16,                           ///< Censored
+    sdns_ede_code_Filtered=17,                           ///< Filtered
+    sdns_ede_code_Prohibited=18,                         ///< Prohibited
+    sdns_ede_code_Stale_NXDomain_Answer=19,              ///< Stale NXDOMAIN Answer
+    sdns_ede_code_Not_Authoritative=20,                  ///< Not Authoritative
+    sdns_ede_code_Not_Supported=21,                      ///< Not Supported
+    sdns_ede_code_No_Reachable_Authority=22,             ///< No Reachable Authority
+    sdns_ede_code_Network_Error=23,                      ///< Network Error
+    sdns_ede_code_Invalid_Data=24,                       ///< Invalid Data
+    sdns_ede_code_Signature_Expired_before_Valid=25,     ///< Signature Expired before Valid
+    sdns_ede_code_Too_Early=26,                          ///< Too Early	
+    sdns_ede_code_Unsupported_NSEC3_Iterations_Value=27, ///< 	Unsupported NSEC3 Iterations Value
+    sdns_ede_code_Unable_to_conform_to_policy=28,        ///< Unable to conform to policy
+    sdns_ede_code_Synthesized=29                         ///< Synthesized
 }sdns_ede_code;
 
 /** This is the structure of a DNS packet. */
 typedef struct {
-    sdns_header header;
-    sdns_question question;
-    sdns_rr *answer;
-    sdns_rr *authority;
-    sdns_rr *additional;
+    sdns_header header;             ///< See ::sdns_header for more info
+    sdns_question question;         ///< See ::sdns_question for more info
+    sdns_rr *answer;                ///< Answer section of a DNS packet
+    sdns_rr *authority;             ///< Authority section of a DNS packet
+    sdns_rr *additional;            ///< Additional section of a DNS packet
 } sdns_message;
 
 /** Structure to hold the data of RR type */
@@ -467,7 +467,7 @@ typedef struct {
 
 /** Structure to hold the data of RR type AAAA */
 typedef struct {
-    char * address;
+    char * address;             ///< IPv6 address but we keep it as a sequence of bytes
 } sdns_rr_AAAA;
 
 /**
@@ -478,14 +478,14 @@ typedef struct {
  * each less than 255 characters.
  */
 typedef struct {
-    uint8_t len;
-    char * content;
+    uint8_t len;        ///< length of the content filed 
+    char * content;     ///< content filed is not nul-terminated necessarily
 } txt_data;
 
 /** The structure of a TXT record */
 struct _sdns_rr_TXT {
-   txt_data character_string;
-   struct _sdns_rr_TXT * next;
+   txt_data character_string;   ///< see :txt_data for more info
+   struct _sdns_rr_TXT * next;  ///< keep the reference to the next structure
 };
 
 /** check the definition of ::_sdns_rr_TXT. */
@@ -506,24 +506,24 @@ typedef struct {
 
 /** structure of MX RR */
 typedef struct {
-    uint16_t preference;
-    char * exchange;
+    uint16_t preference;        ///< A 16 bit integer which specifies the preference given to this RR among others at the same owner.
+    char * exchange;            ///< A <domain-name> which specifies a host willing to act as a mail exchange for the owner name
 }sdns_rr_MX;
 
 /** structure of NS RRs */
 typedef struct{
-    char * NSDNAME;
+    char * NSDNAME;             ///< A <domain-name> which specifies a host which should be authoritative for the specified class and domain
 }sdns_rr_NS;
 
 
 /** structure of ptr RRs */
 typedef struct{
-    char * PTRDNAME;
+    char * PTRDNAME;            ///< A <domain-name> which points to some location in the domain name space.
 }sdns_rr_PTR;
 
 /** structure of CNAME RRs */
 typedef struct{
-    char * CNAME;
+    char * CNAME;               ///< A <domain-name> which specifies the canonical or primary name for the owner
 }sdns_rr_CNAME;
 
 /** This structure keeps the Extended DNS Errors (EDE with option-code 15) of OPT RRs. */
@@ -558,16 +558,16 @@ typedef struct {
  * </pre>
  * */
 typedef struct{
-    uint16_t type_covered;
-    uint8_t algorithm;
-    uint8_t labels;
-    uint32_t original_ttl;
-    uint32_t signature_expiration;
-    uint32_t signature_inception;
-    uint16_t key_tag;
-    char * signers_name;
-    char * signature;
-    uint16_t signature_len;     ///< This is just a helper not an RFC standard field.
+    uint16_t type_covered;          ///< identifies the type of the RRset that is covered by this RRSIG record
+    uint8_t algorithm;              ///< identifies the cryptographic algorithm used to create the signature
+    uint8_t labels;                 ///< specifies the number of labels in the original RRSIG RR owner name
+    uint32_t original_ttl;          ///< specifies the TTL of the covered RRset as it appears in the authoritative zone
+    uint32_t signature_expiration;  ///< validity period for the signature
+    uint32_t signature_inception;   ///< validity period for the signature
+    uint16_t key_tag;               ///< key tag value of the DNSKEY RR that validates this signature
+    char * signers_name;            ///< the owner name of the DNSKEY RR that a validator is supposed to use to validate this signature
+    char * signature;               ///< the cryptographic signature that covers the RRSIG RDATA and the RRset
+    uint16_t signature_len;         ///< This is just a helper not an RFC standard field.
 }sdns_rr_RRSIG;
 
 
@@ -576,9 +576,9 @@ typedef struct{
  * as the RFC is not clear as previous ones....
  */
 typedef struct{
-    uint16_t Priority;
-    uint16_t Weight;
-    uint16_t Port;
+    uint16_t Priority;         ///< The priority of this target host
+    uint16_t Weight;           ///< A server selection mechanism
+    uint16_t Port;             ///< The port on this target host of this service
     char * Target;             ///< RFC2782: the name compression can not be applied to this name
 }sdns_rr_SRV;
 
@@ -586,10 +586,10 @@ typedef struct{
  * Structure of URL RR based on RFC rfc7553
  */
 typedef struct{
-    uint16_t Priority;
-    uint16_t Weight;
+    uint16_t Priority;      ///< his field holds the priority of the target URI in this RR
+    uint16_t Weight;        ///< This field holds the server selection mechanism
     char * Target;          ///< I didn't find any text in RFC saying this must be a human-readable string!
-    uint16_t target_len;
+    uint16_t target_len;    ///< non-rfc filed. Just used as a helper to know the length of the Target filed
 } sdns_rr_URI;
 
 /**
@@ -604,18 +604,18 @@ typedef struct{
  * This is the structure of the HINFO RR based on RFC 1035
  */
 typedef struct{
-    uint8_t cpu_len;
-    char * cpu;
-    uint8_t os_len;
-    char * os;
+    uint8_t cpu_len;            ///< non-rfc: just to have the length of the CPU field
+    char * cpu;                 ///< CPU information
+    uint8_t os_len;             ///< non-rfc: just to have the length of the OS field
+    char * os;                  ///< OS information
 }sdns_rr_HINFO;
 
 /**
  * this is the structure of the L32 RR based on RFC 6742
  */
 typedef struct{
-    uint16_t Preference;
-    uint32_t Locator32;
+    uint16_t Preference;   ///< a 16-bit preference field
+    uint32_t Locator32;    ///< locator32 is exactly 32 bit so we can have a uint32 type to cover it
 }sdns_rr_L32;
 
 
@@ -646,7 +646,7 @@ typedef struct {
     sdns_message * msg;         ///< This is the DNS packet
     char * raw;                 ///< The raw bytes we received from socket
     uint16_t raw_len;           ///< Length of the raw data we received from socket
-    char * cursor;              // This cursor keeps the position of the pointer in raw data
+    char * cursor;              ///< This cursor keeps the position of the pointer in raw data
     int err;                    ///< This shows the last error code after any operation on the context
 }sdns_context;
 
@@ -864,23 +864,79 @@ int sdns_add_additional_section(sdns_context * ctx, sdns_rr * rr);
 
 
 
+
+/**
+ * @brief This function checks if the given qtype code is valid or not
+ * @param qtype 16-bit unsigned integer
+ *
+ * @return 1 if given qtype is valid on 0 otherwise
+ */
+int check_if_qtype_is_valid(uint16_t qtype);
+
+/**
+ * @brief This function checks if the given RR type is valid or not
+ * @param qtype input Resource record type
+ *
+ * @return 0 if the given value is valid else 1
+ */
+int check_if_rrtype_is_valid(uint16_t qtype);
+
+
+/**
+ * @brief This function checks if the given Question class is valid or not
+ * @param qclass input Resource record class
+ *
+ * @return 0 if the given value is valid else 1
+ */
+int check_if_qclass_is_valid(uint16_t qclass);
+
+/**
+ * @brief This function checks if the given RR class is valid or not
+ * @param qclass input Resource record class
+ *
+ * @return 0 if the given value is valid else 1
+ */
+int check_if_rrclass_is_valid(uint16_t qclass);
+
+/**
+ * @brief Initialize a DNS message structure (::sdns_message).
+ *
+ * Users don't need to this method directly. We use this method internally
+ * when we call sdns_init_context().
+ *
+ */
+sdns_message * sdns_init_message(void);
+
+/**
+ * @brief Initialize an RR data structure.
+ * @param name a pointer to the name of the resource record
+ * @param type the type of the resource record
+ * @param class the class of the resource record
+ * @param ttl the ttl of the resource record
+ * @param rdlength the length of the rdata section of this resource record
+ * @param decoded if resource record is decoded (1) or not (0).
+ * @param rdata a pointer to the raw data (if decode = 0) or a structure (decoded =1)
+ *
+ * One can use this method to add a resource record to a DNS packet that is not supported by 
+ * this library. For all RRs that this library support, we have a sdns_init_rr_*() function.
+ * If you have a new type to add, you can use this method to create it.
+ *
+ * @return an instance of ::sdns_rr structure on success. NULL on fail.
+ */
+sdns_rr * sdns_init_rr(char * name, uint16_t type, uint16_t class, uint32_t ttl,
+                       uint16_t rdlength, uint8_t decoded, void * rdata);
+
+
+
+
+
 int sdns_create_edns_option(uint16_t, uint16_t, char *, sdns_opt_rdata**);
 int sdns_add_edns(sdns_context * ctx, sdns_opt_rdata * opt);
 sdns_opt_rdata * sdns_create_edns0_ede(uint16_t info_code, char * extra_text, uint16_t extra_text_len);
 
 // add whatever function you want to ends0 section
 int sdns_ends0_option_code_to_text(sdns_edns0_option_code oc, char * buffer);
-sdns_opt_rdata * sdns_create_edns0_cookie(char * client_cookie, char * server_cookie, uint8_t server_cookie_len);
 
-int check_if_qtype_is_valid(uint16_t qtype);
-int check_if_rrtype_is_valid(uint16_t qtype);
-int check_if_qclass_is_valid(uint16_t qclass);
-int check_if_rrclass_is_valid(uint16_t qclass);
-
-
-sdns_message * sdns_init_message(void);
-sdns_rr * sdns_init_rr(char * name, uint16_t type, uint16_t class, uint32_t ttl,
-                       uint16_t rdlength, uint8_t decoded, void * rdata);
 
 
 void * decode_rr_section(sdns_context *, sdns_rr *);
@@ -902,6 +958,7 @@ sdns_rr_L64 * sdns_decode_rr_L64(sdns_context * ctx, sdns_rr* rr);
 sdns_rr_LP * sdns_decode_rr_LP(sdns_context * ctx, sdns_rr* rr);
 
 
+
 sdns_rr_A* sdns_init_rr_A(uint32_t ipaddress);
 sdns_rr_AAAA* sdns_init_rr_AAAA(char * aaaa);
 sdns_rr_TXT* sdns_init_rr_TXT(char *, uint16_t);
@@ -920,36 +977,188 @@ sdns_rr_HINFO * sdns_init_rr_HINFO(uint8_t cpu_len, char * cpu, uint8_t os_len, 
 sdns_rr_SOA * sdns_init_rr_SOA(char * mname, char * rname, uint32_t expire, uint32_t minimum,
                                uint32_t refresh, uint32_t retry, uint32_t serial);
 
-void sdns_free_rr_A(sdns_rr_A *);
-void sdns_free_rr_MX(sdns_rr_MX *);
-void sdns_free_rr_TXT(sdns_rr_TXT *);
-void sdns_free_rr_AAAA(sdns_rr_AAAA *);
-void sdns_free_rr_SOA(sdns_rr_SOA *);
-void sdns_free_rr_NS(sdns_rr_NS*);
-void sdns_free_rr_PTR(sdns_rr_PTR*);
-void sdns_free_rr_CNAME(sdns_rr_CNAME*);
-void sdns_free_rr_RRSIG(sdns_rr_RRSIG*);
-void sdns_free_rr_SRV(sdns_rr_SRV*);
+/**
+ * @brief Free the memory of the structure of type ::sdns_rr_A
+ *
+ * @param a A pointer to the structure
+ */
+void sdns_free_rr_A(sdns_rr_A * a);
+
+/**
+ * @brief Free the memory of the structure of type ::sdns_rr_MX
+ *
+ * @param mx A pointer to the structure
+ */
+void sdns_free_rr_MX(sdns_rr_MX * mx);
+
+/**
+ * @brief Free the memory of the structure of type ::sdns_rr_TXT
+ *
+ * @param txt A pointer to the structure
+ */
+void sdns_free_rr_TXT(sdns_rr_TXT * txt);
+
+
+/**
+ * @brief Free the memory of the structure of type ::sdns_rr_AAAA
+ *
+ * @param aaaa A pointer to the structure
+ */
+void sdns_free_rr_AAAA(sdns_rr_AAAA * aaaa);
+
+
+/**
+ * @brief Free the memory of the structure of type ::sdns_rr_SOA
+ *
+ * @param soa A pointer to the structure
+ */
+void sdns_free_rr_SOA(sdns_rr_SOA * soa);
+
+
+/**
+ * @brief Free the memory of the structure of type ::sdns_rr_NS
+ *
+ * @param ns A pointer to the structure
+ */
+void sdns_free_rr_NS(sdns_rr_NS* ns);
+
+
+/**
+ * @brief Free the memory of the structure of type ::sdns_rr_PTR
+ *
+ * @param ptr A pointer to the structure
+ */
+void sdns_free_rr_PTR(sdns_rr_PTR* ptr);
+
+
+
+/**
+ * @brief Free the memory of the structure of type ::sdns_rr_CNAME
+ *
+ * @param cname A pointer to the structure
+ */
+void sdns_free_rr_CNAME(sdns_rr_CNAME* cname);
+
+
+/**
+ * @brief Free the memory of the structure of type ::sdns_rr_RRSIG
+ *
+ * @param rrsig A pointer to the structure
+ */
+void sdns_free_rr_RRSIG(sdns_rr_RRSIG* rrsig);
+
+
+/**
+ * @brief Free the memory of the structure of type ::sdns_rr_SRV
+ *
+ * @param srv A pointer to the structure
+ */
+void sdns_free_rr_SRV(sdns_rr_SRV* srv);
+
+
+/**
+ * @brief Free the memory of the structure of type ::sdns_rr_HINFO
+ *
+ * @param hinfo A pointer to the structure
+ */
 void sdns_free_rr_HINFO(sdns_rr_HINFO * hinfo);
+
+
+/**
+ * @brief Free the memory of the structure of type ::sdns_rr_URI
+ *
+ * @param uri A pointer to the structure
+ */
 void sdns_free_rr_URI(sdns_rr_URI * uri);
+
+
+/**
+ * @brief Free the memory of the structure of type ::sdns_rr_NID
+ *
+ * @param nid A pointer to the structure
+ */
 void sdns_free_rr_NID(sdns_rr_NID * nid);
+
+
+/**
+ * @brief Free the memory of the structure of type ::sdns_rr_L32
+ *
+ * @param l32 A pointer to the structure
+ */
 void sdns_free_rr_L32(sdns_rr_L32 * l32);
+
+
+/**
+ * @brief Free the memory of the structure of type ::sdns_rr_L64
+ *
+ * @param l64 A pointer to the structure
+ */
 void sdns_free_rr_L64(sdns_rr_L64 * l64);
+
+
+/**
+ * @brief Free the memory of the structure of type ::sdns_rr_LP
+ *
+ * @param lp A pointer to the structure
+ */
 void sdns_free_rr_LP(sdns_rr_LP * lp);
 
 
+
+
 int sdns_create_edns_option(uint16_t, uint16_t, char *, sdns_opt_rdata**);
+
+
 int sdns_add_edns(sdns_context * ctx, sdns_opt_rdata * opt);
+
+/**
+ * @brief Creates EDNS0 extended DNS error option.
+ * @param info_code One of the possible values of ::sdns_ede_code
+ * @param extra_text A text description of the error or whatever you want to send
+ * @param extra_text_len the length of the extra_text filed (as it's not necessarily nul-terminated)
+ *
+ * This function creates a new copy of 'extra_text' field. So the caller is responsible to free the 
+ * memory of 'extra_text' if it's a heap-allocated memory.
+ *
+ * @return returns a pointer to a ::sdns_opt_rdata structure on success, NULL on fail.
+ *
+ */
 sdns_opt_rdata * sdns_create_edns0_ede(uint16_t info_code, char * extra_text, uint16_t extra_text_len);
 
-// add whatever function you want to ends0 section
+/**
+ * @brief Copies the text description of the EDNS0 option code to the buffer
+ * @param oc the numerical value of the edns0 option code, one of the possible values of ::sdns_edns0_option_code
+ * @param buffer The user provided buffer to receive the string.
+ *
+ * The user provided buffer must be large enough to cover the longest string. You can pass a buffer of length 100
+ * to make sure it goes well.
+ *
+ * @return 0 on success, other values on failure.
+ *
+ * if the return value is 0, it means the given 'oc' value is a valid EDNS option code.
+ * If the return value is 1, it means the given 'oc' value is not a valid EDNS option code.
+ *
+ * This means you can also use this function as a validator to check of 'oc' is valid or not.
+ */
 int sdns_ends0_option_code_to_text(sdns_edns0_option_code oc, char * buffer);
+
+/**
+ * @brief Creates and adds a cookie in the DNS packet
+ *
+ * @param client_cookie This parameter can not be NULL. It must be provided and the length is exactly 8 characters.
+ * @param server_cookie this is an optional parameter which can be NULL or a pointer to a memory which stores the cookie
+ * @param server_cookie_len The length of the server cookie which can be between 8 and 32 (both valued included).
+ *
+ * @return a pointer to an instance of type ::sdns_opt_rdata on success, NULL on failure.
+ *
+ * On success, you can add the returned structure to the DNS packet by calling sdns_create_edns_option() function.
+ */
 sdns_opt_rdata * sdns_create_edns0_cookie(char * client_cookie, char * server_cookie, uint8_t server_cookie_len);
 
 /** 
  * @brief Gets the string represantation of the **TYPE** tp in to _buffer_
- * @param tp A 16bit integer, one of the possible values of ::sdns_rr_type
- * @param buffer A pointer to the user-provided buffer
+ * @param t A 16bit integer, one of the possible values of ::sdns_rr_type
+ * @param buff A pointer to the user-provided buffer
  *
  * The _buffer_ must be long enough to cover all types.
  *
@@ -961,9 +1170,9 @@ void sdns_rr_type_to_string(uint16_t t, char * buff);
 /** 
  * @brief Gets the string represantation of the **CLASS** cls in to _buffer_
  * @param cls A 16bit integer, one of the possible values of ::sdns_rr_class or ::sdns_q_class
- * @param buffer A pointer to the user-provided buffer
+ * @param buff A pointer to the user-provided buffer
  *
- * The _buffer_ must be long enough to cover all classes.
+ * The _buff_ must be long enough to cover all classes.
  *
  * Currently, a buffer of length 20 is enough.
  */

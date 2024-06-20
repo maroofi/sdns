@@ -7,13 +7,19 @@ SHELL = /bin/bash
 OUTDIR = bin
 DEPS = $(wildcard ./src/*.c)
 HDEPS = $(wildcard ./include/*.h)
-OBJS = sdns.o sdns_print.o sdns_json.o sdns_dynamic_buffer.o sdns_utils.o
-LIBOBJS = sdns.o sdns_print.o sdns_json.o sdns_dynamic_buffer.o sdns_utils.o
+OBJS_wj = sdns.o sdns_print.o sdns_json.o sdns_dynamic_buffer.o sdns_utils.o
+LIBOBJS_wj = sdns.o sdns_print.o sdns_json.o sdns_dynamic_buffer.o sdns_utils.o
 OBJSTEST = sdns.o sdns_print.o sdns_json.o sdns_dynamic_buffer.o sdns_utils.o test1.o
 LIBNAME = libsdns.so
+OBJS = sdns.o sdns_print.o sdns_dynamic_buffer.o sdns_utils.o
+LIBOBJS = sdns.o sdns_print.o sdns_dynamic_buffer.o sdns_utils.o
+
 
 sdns: dummy $(OBJS) $(HDEPS)
 	@$(CC) -shared $(CFLAGS) $(addprefix bin/, $(LIBOBJS)) -Wl,-soname,$(LIBNAME) $ -o bin/$(LIBNAME)
+
+with-json: dummy $(OBJS_wj) $(HDEPS)
+	@$(CC) -shared $(CFLAGS) $(addprefix bin/, $(LIBOBJS_wj)) -Wl,-soname,$(LIBNAME) $ -o bin/$(LIBNAME)
 
 test: dummy $(OBJSTEST) $(HDEPS) test.o
 	echo "Executing test rules...."

@@ -4,23 +4,34 @@ A small DNS library written in C
 
 ### How to compile
 
-1. sdns depends on libjansson to produce JSON output. So you must have it installed 
-```bash
+1. sdns does not have any external dependency. However, all the `sdns_json_*` functions are based on libjansson library.
+So if you don't need JSON output, you can compile it just by making it.
 
+```bash
+# compile the library
+make
+```
+
+2. If you also need `sdns_json_*` functions, you need to have libjansson installed.
+
+```bash
 # make sure jaonson library is installed
 sudo apt-get install libjansson-dev
 
 # now you can build the library
-make
+make with-json
 ```
 
-This will create a `bin` directory and inside you will have `libsdns.so` file.
+
+Both will create a `bin` directory and inside you will have `libsdns.so` file.
 
 Now you can use it in your project by passing `-lsdns` switch. For example, here is the command to build the `test1.c` file in `test` directory:
 
 ```bash
 gcc  -o test/test -Iinclude test/test1.c  -Lbin -lsdns -ljansson
 ```
+
+NOTE: Another way of using this library in you project is to simply copy all the `src/*.c` and `include/*.h` files into your project.
 
 ### Documentation
 
