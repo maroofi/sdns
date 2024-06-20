@@ -958,18 +958,155 @@ sdns_rr_L64 * sdns_decode_rr_L64(sdns_context * ctx, sdns_rr* rr);
 sdns_rr_LP * sdns_decode_rr_LP(sdns_context * ctx, sdns_rr* rr);
 
 
-
+/**
+ * @brief Initialize a structure of ::sdns_rr_A
+ *
+ * @param ipaddress an unsigned 32bit integere representing the IPv4
+ *
+ * The address is an unsigned integer value for example 2130706433 means 127.0.0.1
+ *
+ * @return a pointer to ::sdns_rr_A structure on success and NULL on fail
+ */
 sdns_rr_A* sdns_init_rr_A(uint32_t ipaddress);
+
+/**
+ * @brief Initialize a structure of ::sdns_rr_AAAA
+ *
+ * @param aaaa pointer to the memory address that keeps the 16 bytes of IPv6
+ *
+ * NOTE: do not free the 'aaaa' pointer after calling this method. This function does not copy 
+ * the memory but use the pointer.
+ *
+ * @return a pointer to ::sdns_rr_AAAA structure on success and NULL on fail
+ */
 sdns_rr_AAAA* sdns_init_rr_AAAA(char * aaaa);
-sdns_rr_TXT* sdns_init_rr_TXT(char *, uint16_t);
-sdns_rr_MX * sdns_init_rr_MX(uint16_t, char *);
+
+
+/**
+ * @brief Initialize a structure of ::sdns_rr_TXT
+ *
+ * @param data pointer to the memory address that keeps the data
+ * @param data_len length of the data pointed by 'data' pointer
+ *
+ * NOTE: the 'data' pointer is not necessarily a nul-terminated string. That's why we need to 
+ * know the length of the data.
+ *
+ * NOTE: do not free the 'data' pointer after calling this method. This function does not copy 
+ * the memory but use the pointer. Make sure it's a heap-allocated memory to avoid memory leak.
+ *
+ * @return a pointer to ::sdns_rr_TXT structure on success and NULL on fail
+ */
+sdns_rr_TXT* sdns_init_rr_TXT(char * data, uint16_t data_len);
+
+/**
+ * @brief Initialize a structure of ::sdns_rr_MX
+ *
+ * @param preference a 16-bit integer for the prereference of the MX record
+ * @param exchange pointer to the memory address that keeps the 'exchnage' data
+ *
+ * NOTE: do not free the 'exchange' pointer after calling this method. This function does not copy 
+ * the memory but use the pointer. Make sure it's a heap-allocated memory to avoid memory leak.
+ *
+ * @return a pointer to ::sdns_rr_MX structure on success and NULL on fail
+ */
+sdns_rr_MX * sdns_init_rr_MX(uint16_t preference, char * exchange);
+
+/**
+ * @brief Initialize a structure of ::sdns_rr_NS
+ *
+ * @param nsdname pointer to the memory address that keeps the nsdname data (e.g., ns1.google.com)
+ *
+ * NOTE: do not free the 'nsdname' pointer after calling this method. This function does not copy 
+ * the memory but use the pointer. Make sure it's a heap-allocated memory to avoid memory leak.
+ *
+ * @return a pointer to ::sdns_rr_NS structure on success and NULL on fail
+ */
 sdns_rr_NS * sdns_init_rr_NS(char * nsdname);
+
+
+/**
+ * @brief Initialize a structure of ::sdns_rr_PTR
+ *
+ * @param ptrdname pointer to the memory address that keeps the ptrdname data
+ *
+ * NOTE: do not free the 'ptrdname' pointer after calling this method. This function does not copy 
+ * the memory but use the pointer. Make sure it's a heap-allocated memory to avoid memory leak.
+ *
+ * @return a pointer to ::sdns_rr_PTR structure on success and NULL on fail
+ */
 sdns_rr_PTR * sdns_init_rr_PTR(char * ptrdname);
+
+
+/**
+ * @brief Initialize a structure of ::sdns_rr_CNAME
+ *
+ * @param cname pointer to the memory address that keeps the cname data
+ *
+ * NOTE: do not free the 'cname' pointer after calling this method. This function does not copy 
+ * the memory but use the pointer. Make sure it's a heap-allocated memory to avoid memory leak.
+ *
+ * @return a pointer to ::sdns_rr_CNAME structure on success and NULL on fail
+ */
 sdns_rr_CNAME * sdns_init_rr_CNAME(char * cname);
+
+/**
+ * @brief Initialize a structure of ::sdns_rr_NID
+ *
+ * @param preference 16bit unsigned integer showing the preference value of the NID record
+ * @param nodid pointer to the memory address that keeps the NodeId data
+ *
+ * NOTE: do not free the 'nodeid' pointer after calling this method. This function does not copy 
+ * the memory but use the pointer. Make sure it's a heap-allocated memory to avoid memory leak.
+ *
+ * NOTE: nodeid is exactly 8 bytes based on RFC 6742
+ * @return a pointer to ::sdns_rr_NID structure on success and NULL on fail
+ */
 sdns_rr_NID * sdns_init_rr_NID(uint16_t preference, char * nodid);
+
+
+/**
+ * @brief Initialize a structure of ::sdns_rr_L32
+ *
+ * @param preference 16bit unsigned integer showing the preference value of the L32 record
+ * @param locator32 32bit unsigned integer for Locator32
+ *
+ * @return a pointer to ::sdns_rr_L32 structure on success and NULL on fail
+ */
 sdns_rr_L32 * sdns_init_rr_L32(uint16_t preference, uint32_t locator32);
+
+
+/**
+ * @brief Initialize a structure of ::sdns_rr_L64
+ *
+ * @param preference 16bit unsigned integer showing the preference value of the L64 record
+ * @param locator64 pointer to the memory address that keeps the Locator64 data
+ *
+ * NOTE: do not free the 'locator64' pointer after calling this method. This function does not copy 
+ * the memory but use the pointer. Make sure it's a heap-allocated memory to avoid memory leak.
+ *
+ * NOTE: locator64 is exactly 8 bytes based on RFC 6742
+ *
+ * @return a pointer to ::sdns_rr_L64 structure on success and NULL on fail
+ */
 sdns_rr_L64 * sdns_init_rr_L64(uint16_t preference, char * locator64);
+
+
+/**
+ * @brief Initialize a structure of ::sdns_rr_LP
+ *
+ * @param preference 16bit unsigned integer showing the preference value of the LP record
+ * @param fqdn pointer to the memory address that keeps the fully-qualified-domain-name data
+ *
+ * NOTE: do not free the 'fqdn' pointer after calling this method. This function does not copy 
+ * the memory but use the pointer. Make sure it's a heap-allocated memory to avoid memory leak.
+ *
+ * @return a pointer to ::sdns_rr_LP structure on success and NULL on fail
+ */
 sdns_rr_LP * sdns_init_rr_LP(uint16_t preference, char * fqdn);
+
+
+
+
 sdns_rr_SRV * sdns_init_SRV(uint16_t, uint16_t, uint16_t, char *);
 sdns_rr_URI * sdns_init_rr_URI(uint16_t, uint16_t, char *, uint16_t);
 sdns_rr_RRSIG * sdns_init_rr_RRSIG(uint16_t, uint8_t, uint8_t, uint32_t, uint32_t, uint32_t, uint8_t, char *, char *, uint16_t);
