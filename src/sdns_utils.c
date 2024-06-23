@@ -27,7 +27,7 @@ char * mem2hex(char * mem, unsigned int mem_len){
         return NULL;
     if (mem_len == 0)
         return NULL;
-    char * result = (char *) malloc(mem_len * 2);
+    char * result = (char *) malloc(mem_len * 2 + 1); // one more for automatic NULL character
     if (NULL == result)
         return NULL;
     unsigned int j=0;

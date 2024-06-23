@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "sdns_utils.h"
-
+#include "logger.h"
 #include <sdns.h>
 #include <sdns_print.h>
 
@@ -246,7 +246,6 @@ void sdns_neat_print_rr_RRSIG(sdns_context * ctx, sdns_rr * rr){
 }
 
 void sdns_neat_print_rr_OPT(sdns_context * ctx, sdns_rr * rr){
-    //TODO: fix this one (this only covers the 'decoded' version)
     char buff_type[20] = {0x00};
     char option_code_name[100] = {0x00};
     sdns_rr_type_to_string(rr->type, buff_type);
@@ -259,48 +258,31 @@ void sdns_neat_print_rr_OPT(sdns_context * ctx, sdns_rr * rr){
     fprintf(stdout, "\tDO: %d,", (rr->ttl >> 15) & 0x01);
     fprintf(stdout, "\tZ: %d,", rr->ttl & 0x7F);
     fprintf(stdout, "\tRDlength: %d\n", rr->rdlength);
-    if (rr->decoded){
-        sdns_opt_rdata * opt = rr->opt_rdata;
-        while (opt){
-            sdns_ends0_option_code_to_text(opt->option_code, option_code_name);
-            fprintf(stdout, "\tOption Code: %d (%s)\n", opt->option_code, option_code_name);
-            fprintf(stdout, "\tOption Length: %d\n", opt->option_length);
-            fprintf(stdout, "\tOption Data: ");
-            if (opt->option_length == 0){
-                fprintf(stdout, "(EMPTY)");
-            }else{
-                for (int i=0; i< opt->option_length; ++i){
-                    fprintf(stdout, "0x%02x ", (unsigned char)opt->option_data[i]);
-                }
+    sdns_opt_rdata * opt = NULL;
+    if (rr->decoded)
+        opt = rr->opt_rdata;
+    else
+        opt = sdns_decode_rr_OPT(ctx, rr);
+    if (opt == NULL)
+        return;
+    sdns_opt_rdata * orig = opt;
+    while (opt){
+        sdns_ends0_option_code_to_text(opt->option_code, option_code_name);
+        fprintf(stdout, "\tOption Code: %d (%s)\n", opt->option_code, option_code_name);
+        fprintf(stdout, "\tOption Length: %d\n", opt->option_length);
+        fprintf(stdout, "\tOption Data: ");
+        if (opt->option_length == 0){
+            fprintf(stdout, "(EMPTY)");
+        }else{
+            for (int i=0; i< opt->option_length; ++i){
+                fprintf(stdout, "0x%02x ", (unsigned char)opt->option_data[i]);
             }
-            fprintf(stdout, "\n");
-            opt = opt->next;
         }
-    }else{
-        unsigned cnt = 0;
-        char * rdata = rr->rdata;
-        uint16_t option_code;
-        uint16_t option_length;
-        while(cnt < rr->rdlength){
-           option_code = rdata[cnt] << 8 | rdata[cnt+1];
-           cnt += 2;
-           option_length = rdata[cnt] << 8 | rdata[cnt+1];
-           cnt +=2;
-           sdns_ends0_option_code_to_text(option_code, option_code_name);
-           fprintf(stdout, "\tOption Code: %d (%s)\n", option_code, option_code_name);
-           fprintf(stdout, "\tOption Length: %d\n", option_length);
-           fprintf(stdout, "\tOption Data: ");
-           if (option_length == 0){
-                fprintf(stdout, "(EMPTY)");
-           }else{
-                for (int i=0; i< option_length; ++i){
-                    fprintf(stdout, "0x%02x ", (unsigned char)(rdata + cnt)[i]);
-                }
-                cnt += option_length;
-                fprintf(stdout, "\n");
-           }
-        }
+        fprintf(stdout, "\n");
+        opt = opt->next;
     }
+    if (rr->decoded == 0)
+        sdns_free_opt_rdata(orig);
     return;
 }
 

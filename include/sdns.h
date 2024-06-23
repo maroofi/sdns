@@ -136,7 +136,7 @@ typedef struct _sdns_opt_rdata sdns_opt_rdata;      ///< see ::_sdns_opt_rdata f
  *     +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
  *  0: |         EXTENDED-RCODE        |            VERSION            |
  *     +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
- *  2: |                               Z                               |
+ *  2: |DO |                               Z                           |
  *     +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
  * </pre>
  */
@@ -956,6 +956,7 @@ sdns_rr_NID * sdns_decode_rr_NID(sdns_context * ctx, sdns_rr* rr);
 sdns_rr_L32 * sdns_decode_rr_L32(sdns_context * ctx, sdns_rr* rr);
 sdns_rr_L64 * sdns_decode_rr_L64(sdns_context * ctx, sdns_rr* rr);
 sdns_rr_LP * sdns_decode_rr_LP(sdns_context * ctx, sdns_rr* rr);
+sdns_opt_rdata * sdns_decode_rr_OPT(sdns_context * ctx, sdns_rr * rr);
 
 
 /**
@@ -1106,6 +1107,8 @@ sdns_rr_LP * sdns_init_rr_LP(uint16_t preference, char * fqdn);
 
 
 
+void sdns_free_opt_rdata(sdns_opt_rdata * opt);
+sdns_opt_rdata * sdns_init_opt_rdata(void);
 
 sdns_rr_SRV * sdns_init_SRV(uint16_t, uint16_t, uint16_t, char *);
 sdns_rr_URI * sdns_init_rr_URI(uint16_t, uint16_t, char *, uint16_t);

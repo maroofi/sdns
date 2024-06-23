@@ -44,5 +44,4 @@ json_t * sdns_json_rr_RRSIG(sdns_context * ctx, sdns_rr *rr);
 
 
 
-
 #endif

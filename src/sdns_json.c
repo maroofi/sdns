@@ -233,18 +233,12 @@ json_t * sdns_json_answer(sdns_context * ctx){
             json_decref(tmp_answer);
             return answers;
         }
-
-        json_t * array = json_array();
-        if (NULL == array){
-            json_decref(tmp_answer);
-            return answers;
-        }
         json_t * rdata = sdns_json_rr(ctx, tmp);
-        if (rdata != NULL)
-            json_array_append_new(array, rdata);
-        if (json_object_set_new(tmp_answer, "rdata", rdata) != 0){
-            json_decref(rdata);
-            return answers;
+        if (rdata != NULL){
+            if (json_object_set_new(tmp_answer, "rdata", rdata) != 0){
+                json_decref(rdata);
+                return answers;
+            }
         }
         if (json_array_append_new(answers, tmp_answer) != 0){
             json_decref(tmp_answer);
@@ -299,17 +293,12 @@ json_t * sdns_json_authority(sdns_context * ctx){
             return authorities;
         }
 
-        json_t * array = json_array();
-        if (NULL == array){
-            json_decref(tmp_authority);
-            return authorities;
-        }
         json_t * rdata = sdns_json_rr(ctx, tmp);
-        if (rdata != NULL)
-            json_array_append_new(array, rdata);
-        if (json_object_set_new(tmp_authority, "rdata", rdata) != 0){
-            json_decref(rdata);
-            return authorities;
+        if (rdata != NULL){
+            if (json_object_set_new(tmp_authority, "rdata", rdata) != 0){
+                json_decref(rdata);
+                return authorities;
+            }
         }
         if (json_array_append_new(authorities, tmp_authority) != 0){
             json_decref(tmp_authority);
@@ -333,10 +322,28 @@ json_t * sdns_json_additional(sdns_context * ctx){
     char buff_class[20];
     char buff_type[20];
     while (tmp){
+        // we use another method for EDNS0
+        if (tmp->type == sdns_rr_type_OPT){
+            // json-ize it, append it and continue
+            json_t * tmp_additional = sdns_json_rr_OPT(ctx, tmp);
+            if (tmp_additional != NULL){
+                if (json_array_append_new(additionals, tmp_additional) != 0){
+                    json_decref(tmp_additional);
+                    return additionals;
+                }
+                tmp = tmp->next;
+                continue;
+            }else{
+                // for now just continue
+                tmp = tmp->next;
+                continue;
+            }
+        }
+        // it's a normal RR, so we continue this method
         json_t * tmp_additional = json_object();
         if (NULL == tmp_additional)
             return additionals;
-        
+
         if (json_object_set_new(tmp_additional, "name", json_string(tmp->name)) != 0){
             json_decref(tmp_additional);
             return additionals;
@@ -363,18 +370,12 @@ json_t * sdns_json_additional(sdns_context * ctx){
             json_decref(tmp_additional);
             return additionals;
         }
-
-        json_t * array = json_array();
-        if (NULL == array){
-            json_decref(tmp_additional);
-            return additionals;
-        }
         json_t * rdata = sdns_json_rr(ctx, tmp);
-        if (rdata != NULL)
-            json_array_append_new(array, rdata);
-        if (json_object_set_new(tmp_additional, "rdata", rdata) != 0){
-            json_decref(rdata);
-            return additionals;
+        if (rdata != NULL){
+            if (json_object_set_new(tmp_additional, "rdata", rdata) != 0){
+                json_decref(rdata);
+                return additionals;
+            }
         }
         if (json_array_append_new(additionals, tmp_additional) != 0){
             json_decref(tmp_additional);
@@ -1077,6 +1078,86 @@ json_t * sdns_json_rr_SRV(sdns_context * ctx, sdns_rr *rr){
     return obj;
 }
 
-//TODO: implement these functions
-json_t * sdns_json_rr_OPT(sdns_context * ctx, sdns_rr *rr){return NULL;}
-
+json_t * sdns_json_rr_OPT(sdns_context * ctx, sdns_rr *rr){
+    if (rr == NULL || ctx == NULL)
+        return NULL;
+    sdns_opt_rdata * opt = NULL;
+    if (rr->decoded)
+        opt = (sdns_opt_rdata*) rr;
+    else
+        opt = sdns_decode_rr_OPT(ctx, rr);
+    if (opt == NULL)
+        return NULL;
+    sdns_opt_rdata * orig = opt;
+    json_t * obj = json_object();
+    if (NULL == obj)
+        goto exit_clean;
+    json_t * rdata = json_array();
+    if (NULL == rdata)
+        goto exit_clean_obj;
+    json_t * ttl = json_object();
+    if (ttl == NULL)
+        goto exit_clean_arr;
+    char * name = rr->name;
+    int json_op_result = -1;
+    json_op_result = json_object_set_new(obj, "name", name == NULL?json_null():json_string(name));
+    if (json_op_result != 0)
+        goto exit_clean_ttl;
+    json_op_result = json_object_set_new(ttl, "DO", json_integer((rr->ttl >> 15) & 0x01));
+    json_op_result += json_object_set_new(ttl, "z", json_integer(rr->ttl & 0x7F));
+    json_op_result += json_object_set_new(ttl, "extended_rcode",  json_integer((rr->ttl >> 24) & 0xFF));
+    json_op_result += json_object_set_new(ttl, "version", json_integer((rr->ttl >> 16) & 0xFF));
+    json_op_result += json_object_set_new(obj, "ttl", ttl);
+    json_op_result += json_object_set_new(obj, "udp_size", json_integer(rr->udp_size));
+    char buff_type[20] = {0x00};
+    sdns_rr_type_to_string(rr->type, buff_type);
+    json_op_result += json_object_set_new(obj, "type", json_string(buff_type));
+    if (json_op_result != 0)
+        goto exit_clean_ttl;
+    int enter_loop = 1;
+    if (rr->rdlength == 0)      // nasty coding
+        enter_loop = 0;
+    while(opt && enter_loop){
+        json_t * rdata_element = json_object();
+        if (NULL == rdata_element)
+            goto exit_clean_ttl;
+        json_op_result = json_object_set_new(rdata_element, "option_code", json_integer(opt->option_code));
+        json_op_result += json_object_set_new(rdata_element, "option_length", json_integer(opt->option_length));
+        if (opt->option_data){
+            char * to_hex = mem2hex(opt->option_data, opt->option_length);
+            if (to_hex == NULL){
+                json_decref(rdata_element);
+                goto exit_clean_ttl;
+            }
+            json_op_result += json_object_set_new(rdata_element, "option_data", json_stringn(to_hex, opt->option_length * 2));
+            free(to_hex);
+        }else{
+            json_op_result += json_object_set_new(rdata_element, "option_data", json_null());
+        }
+        if (json_op_result != 0){
+            json_decref(rdata_element);
+            goto exit_clean_ttl;
+        }
+        if(json_array_append_new(rdata, rdata_element) != 0){
+            json_decref(rdata_element);
+            goto exit_clean_ttl;
+        }
+        opt = opt->next;
+    }
+    json_op_result = json_object_set_new(obj, "rdata", rdata);
+    if (json_op_result != 0)
+        goto exit_clean_ttl;
+    goto exit_clean;
+exit_clean_ttl:
+    json_decref(ttl);
+exit_clean_arr:
+    json_decref(rdata);
+    rdata = NULL;
+exit_clean_obj:
+    json_decref(obj);
+    obj = NULL;
+exit_clean:
+    if (rr->decoded == 0)
+        sdns_free_opt_rdata(orig);
+    return obj;
+}

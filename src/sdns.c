@@ -2592,3 +2592,95 @@ sdns_opt_rdata * sdns_create_edns0_cookie(char * client_cookie, char * server_co
     return cookie;
 }
 
+sdns_opt_rdata * sdns_init_opt_rdata(void){
+    sdns_opt_rdata * opt = (sdns_opt_rdata*)malloc(sizeof(sdns_opt_rdata));
+    if (NULL == opt){
+        return NULL;
+    }
+    opt->next = NULL;
+    opt->option_code = 0;
+    opt->option_data = NULL;
+    opt->option_length = 0;
+    return opt;
+}
+
+void sdns_free_opt_rdata(sdns_opt_rdata * opt){
+    if (opt == NULL)
+        return;
+    sdns_opt_rdata * tmp = opt;
+    sdns_opt_rdata * helper = NULL;
+    while (tmp){
+        free(tmp->option_data);
+        helper = tmp->next;
+        free(tmp);
+        tmp = helper;
+    }
+    return;
+}
+
+// this method only decode rr->rdata to option_code and option_info and option_data and next
+// but option_data is still encoded based on different types of option_code
+sdns_opt_rdata * sdns_decode_rr_OPT(sdns_context * ctx, sdns_rr * rr){
+    if (ctx == NULL || rr == NULL){
+        ctx->err = SDNS_ERROR_RR_NULL;
+        return NULL;
+    }
+    sdns_opt_rdata * opt = sdns_init_opt_rdata();
+    if (NULL == opt){
+        ctx->err = SDNS_ERROR_MEMORY_ALLOC_FAILD;
+        return NULL;
+    }
+    if (rr->rdlength == 0){
+        // this is just edns0 aware packet. it has nothing in it
+        return opt;
+    }
+    if (rr->rdlength < 4){  // if it's > 0 then it must be atleast 4
+        free(opt);
+        ctx->err = SDNS_ERROR_RR_SECTION_MALFORMED;
+        return NULL;
+    }
+    unsigned int length = rr->rdlength;
+    unsigned int cnt = 0;
+    sdns_opt_rdata * last = opt;
+    char * rdata = rr->rdata;
+    sdns_opt_rdata * tmp = opt;
+    while (cnt < length){
+        if (tmp == NULL){
+            tmp = sdns_init_opt_rdata();
+            if (tmp == NULL){
+                sdns_free_opt_rdata(opt);
+                ctx->err = SDNS_ERROR_MEMORY_ALLOC_FAILD;
+                return NULL;
+            }
+        }
+        if (length - cnt < 4){
+            sdns_free_opt_rdata(tmp);
+            sdns_free_opt_rdata(opt);
+            ctx->err = SDNS_ERROR_RR_SECTION_MALFORMED;
+            return NULL;
+        }
+        tmp->option_code = (((uint8_t)rdata[cnt] << 8) & 0xFF00) | ((uint8_t)rdata[cnt+1] & 0x00FF);
+        cnt += 2;
+        tmp->option_length = (((uint8_t)rdata[cnt] << 8) & 0xFF00) | ((uint8_t)rdata[cnt+1] & 0x00FF);
+        cnt += 2;
+        if (tmp->option_length > 0){
+            if (tmp->option_length > (length - cnt)){       // there is not enough data
+                sdns_free_opt_rdata(tmp);
+                sdns_free_opt_rdata(opt);
+                ctx->err = SDNS_ERROR_RR_SECTION_MALFORMED;
+                return NULL;
+            }
+            tmp->option_data = mem_copy(rdata + cnt, tmp->option_length);
+            cnt += tmp->option_length;
+        }
+        if (opt == tmp){
+            last = tmp;
+        }else{
+            last->next = tmp;
+            last = tmp;
+        }
+        tmp = NULL;
+    }
+    ctx->err = 0;  // success
+    return opt;
+}
