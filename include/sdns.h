@@ -933,6 +933,7 @@ sdns_rr * sdns_init_rr(char * name, uint16_t type, uint16_t class, uint32_t ttl,
 int sdns_create_edns_option(uint16_t, uint16_t, char *, sdns_opt_rdata**);
 int sdns_add_edns(sdns_context * ctx, sdns_opt_rdata * opt);
 sdns_opt_rdata * sdns_create_edns0_ede(uint16_t info_code, char * extra_text, uint16_t extra_text_len);
+sdns_opt_rdata * sdns_create_edns0_nsid(void);
 
 // add whatever function you want to ends0 section
 int sdns_ends0_option_code_to_text(sdns_edns0_option_code oc, char * buffer);
@@ -1247,9 +1248,9 @@ void sdns_free_rr_LP(sdns_rr_LP * lp);
 
 
 int sdns_create_edns_option(uint16_t, uint16_t, char *, sdns_opt_rdata**);
-
-
 int sdns_add_edns(sdns_context * ctx, sdns_opt_rdata * opt);
+
+
 
 /**
  * @brief Creates EDNS0 extended DNS error option.

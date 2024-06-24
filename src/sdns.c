@@ -277,93 +277,6 @@ static int decode_rr_from_buffer(sdns_context * ctx, sdns_rr ** result_section, 
     return sdns_rcode_NoError;
 }
 
-// this method will return an sdns_opt_rdata* structure and need to be freed by the caller
-// returns NULL on fail
-// if buffer is NULL, we will malloc it else we just fill it
-int sdns_create_edns_option(uint16_t opt_code, uint16_t opt_length, char * opt_data, sdns_opt_rdata** buffer){
-    if (*buffer == NULL){
-        // we have to allocate it
-        *buffer = (sdns_opt_rdata*)malloc(sizeof(sdns_opt_rdata));
-        if (NULL == *buffer)
-            return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
-    (*buffer)->next = NULL;
-    (*buffer)->option_code = opt_code;
-    (*buffer)->option_length = opt_length;
-    (*buffer)->option_data = opt_data;
-    return sdns_rcode_NoError;  //worst possible name for success!
-}
-
-// adds edns option to the current context
-int sdns_add_edns(sdns_context * ctx, sdns_opt_rdata * opt){
-    // if we have additional section -> eaither we have edns, we add this one
-    // or this is the first one and we need to create the section for it
-    if (NULL == ctx || NULL == opt)
-        return SDNS_ERROR_RR_NULL;
-    if (ctx->msg->header.arcount > 0){
-        // we have some additional section
-        // we need to check if it's opt(41) or not
-        int found = 0;
-        sdns_rr * tmp = ctx->msg->additional;
-        while (tmp){
-            if (tmp->type == sdns_rr_type_OPT){
-                found = 1;
-                break;
-            }
-            if (tmp->next)
-                tmp = tmp->next;
-            else
-                break;
-        }
-        // tmp refers to eaither OPT (found=1) or the last entry (found=0)
-        if (found){
-            // if the new record is an empty edns0 record, we just skip
-            if (opt->option_length == 0 || opt->option_data == NULL){
-                free(opt);
-                return sdns_rcode_NoError;
-            }
-            // if the new record has data, we need to check if the last one was empty
-            // or not. if the previous one is empty, we replace it and recalculate the length
-            if (tmp->opt_rdata->option_data == NULL || tmp->opt_rdata->option_length == 0){
-                tmp->opt_rdata = opt;
-                tmp->rdlength = 4 + opt->option_length;
-                // we don't need to increment the header as we replaced the previous one
-                return sdns_rcode_NoError;
-            }else{
-                tmp->rdlength += opt->option_length + 4;
-                tmp->opt_rdata->next = opt;
-                return sdns_rcode_NoError;
-            }
-        }else{
-            // we have additional section but we don't have type OPT(41)
-            // tmp refers to the last entry
-            sdns_rr * new_section = NULL;
-            if (opt->option_length == 0 || opt->option_data == NULL){
-            // this is an empty edns just to say we are edns0 enabled
-                new_section = sdns_init_rr(NULL, sdns_rr_type_OPT, UDP_PAYLOAD_SIZE, 0X00, 0, 1, (void*)opt);
-            }else{
-                new_section = sdns_init_rr(NULL, sdns_rr_type_OPT, UDP_PAYLOAD_SIZE, 0X00, opt->option_length + 4, 1, (void*)opt);
-            }
-            tmp->next = new_section;
-            ctx->msg->header.arcount += 1;
-        }
-    }else{
-        // we need to add a new section (we don't have additional section)
-        //we assume that UDP_PAYLOAD_SIZE=1232 and ttl=0
-        sdns_rr * new_section = NULL;
-        if (opt->option_length == 0 || opt->option_data == NULL){
-            // this is an empty edns just to say we are edns0 enabled
-            new_section = sdns_init_rr(NULL, 41, UDP_PAYLOAD_SIZE, 0x0, 0, 1, (void*) opt);
-        }else{
-            // this is a real edns0 data
-            new_section = sdns_init_rr(NULL, 41, UDP_PAYLOAD_SIZE, 0x0, opt->option_length + 4, 1, (void*) opt);
-        }
-        ctx->msg->additional = new_section;
-        ctx->msg->header.arcount = 1;
-    }
-    return sdns_rcode_NoError;
-}
-
 static int _encode_label_simple(char * label, char * buffer){
     // encode label to the buffer (user-provided and long enough)
     // return sdns_error_elsimple on success and other values for failure
@@ -2547,6 +2460,102 @@ int sdns_add_additional_section(sdns_context * ctx, sdns_rr * rr){
     return sdns_rcode_NoError;
 }
 
+// this method will return an sdns_opt_rdata* structure and need to be freed by the caller
+// returns NULL on fail
+// if buffer is NULL, we will malloc it else we just fill it
+int sdns_create_edns_option(uint16_t opt_code, uint16_t opt_length, char * opt_data, sdns_opt_rdata** buffer){
+    if (*buffer == NULL){
+        // we have to allocate it
+        *buffer = (sdns_opt_rdata*)malloc(sizeof(sdns_opt_rdata));
+        if (NULL == *buffer)
+            return SDNS_ERROR_MEMORY_ALLOC_FAILD;
+    }
+    (*buffer)->next = NULL;
+    (*buffer)->option_code = opt_code;
+    (*buffer)->option_length = opt_length;
+    (*buffer)->option_data = opt_data;
+    return sdns_rcode_NoError;  //worst possible name for success!
+}
+
+// adds edns option to the current context
+int sdns_add_edns(sdns_context * ctx, sdns_opt_rdata * opt){
+    // if we have additional section -> eaither we have edns, we add this one
+    // or this is the first one and we need to create the section for it
+    if (NULL == ctx || NULL == opt)
+        return SDNS_ERROR_RR_NULL;
+    if (ctx->msg->header.arcount > 0){
+        // we have some additional section
+        // we need to check if it's opt(41) or not
+        int found = 0;
+        sdns_rr * tmp = ctx->msg->additional;
+        while (tmp){
+            if (tmp->type == sdns_rr_type_OPT){
+                found = 1;
+                break;
+            }
+            if (tmp->next)
+                tmp = tmp->next;
+            else
+                break;
+        }
+        // tmp refers to eaither OPT (found=1) or the last entry (found=0)
+        if (found){
+            // if the new record is an empty edns0 record, we just skip
+            // this is just edns0-aware structure, we can skip it as the packet already has edns0
+            if (opt->option_length == 0 && opt->option_data == NULL && opt->option_code == 0){
+                free(opt);
+                return sdns_rcode_NoError;
+            }
+            // if the new record has data, we need to check if the last one was empty
+            // or not. if the previous one is empty, we replace it and recalculate the length
+            if (tmp->opt_rdata->option_data == NULL && tmp->opt_rdata->option_length == 0 && tmp->opt_rdata->option_code == 0){
+                // this is not a valid edns0. it's just there to say I'm edns0 aware!
+                // first keep the reference to previos one to make if free later
+                sdns_opt_rdata *just_to_free = tmp->opt_rdata;
+                tmp->opt_rdata = opt;
+                tmp->rdlength = 4 + opt->option_length;
+                // now free() the previous one
+                free(just_to_free);
+                // we don't need to increment the header as we replaced the previous one
+                return sdns_rcode_NoError;
+            }else{
+                tmp->rdlength += opt->option_length + 4;
+                tmp->opt_rdata->next = opt;
+                return sdns_rcode_NoError;
+            }
+        }else{
+            // we have additional section but we don't have type OPT(41)
+            // tmp refers to the last entry
+            sdns_rr * new_section = NULL;
+            if (opt->option_length == 0 && opt->option_data == NULL && opt->option_code == 0){
+            // this is an empty edns just to say we are edns0-aware
+                new_section = sdns_init_rr(NULL, sdns_rr_type_OPT, UDP_PAYLOAD_SIZE, 0x00, 0, 1, (void*)opt);
+            }else{
+                new_section = sdns_init_rr(NULL, sdns_rr_type_OPT, UDP_PAYLOAD_SIZE, 0x00, opt->option_length + 4, 1, (void*)opt);
+            }
+            tmp->next = new_section;
+            ctx->msg->header.arcount += 1;
+        }
+    }else{
+        // we need to add a new section (we don't have additional section)
+        //we assume that UDP_PAYLOAD_SIZE=1232 and ttl=0
+        sdns_rr * new_section = NULL;
+        if (opt->option_length == 0 || opt->option_data == NULL){
+            // this is an empty edns just to say we are edns0 enabled
+            new_section = sdns_init_rr(NULL, 41, UDP_PAYLOAD_SIZE, 0x0, 0, 1, (void*) opt);
+        }else{
+            // this is a real edns0 data
+            new_section = sdns_init_rr(NULL, 41, UDP_PAYLOAD_SIZE, 0x0, opt->option_length + 4, 1, (void*) opt);
+        }
+        ctx->msg->additional = new_section;
+        ctx->msg->header.arcount = 1;
+    }
+    return sdns_rcode_NoError;
+}
+
+
+
+
 //return null on failure, a pointer to sdns_rr_OPT_EDE on success
 //the function creates a copy of the data, so user is responsible to free the extra_text if it's necessary
 sdns_opt_rdata * sdns_create_edns0_ede(uint16_t info_code, char * extra_text, uint16_t extra_text_len){
@@ -2564,6 +2573,19 @@ sdns_opt_rdata * sdns_create_edns0_ede(uint16_t info_code, char * extra_text, ui
     opt->option_data[0] = (uint8_t)((info_code >> 8) & 0xFF);
     opt->option_data[1] = (uint8_t)(info_code & 0xFF);
     memcpy(opt->option_data + 2, extra_text, extra_text_len);
+    return opt;
+}
+
+// this function will add NSID to the packet in edns0 part
+// nsid structure is empty but its option_code is 3
+sdns_opt_rdata * sdns_create_edns0_nsid(void){
+    sdns_opt_rdata * opt = (sdns_opt_rdata *) malloc(sizeof(sdns_opt_rdata));
+    if (NULL == opt)
+        return NULL;
+    opt->option_code = sdns_edns0_option_code_NSID;
+    opt->next = NULL;
+    opt->option_length = 0;
+    opt->option_data = NULL;
     return opt;
 }
 
@@ -2603,6 +2625,7 @@ sdns_opt_rdata * sdns_init_opt_rdata(void){
     opt->option_length = 0;
     return opt;
 }
+
 
 void sdns_free_opt_rdata(sdns_opt_rdata * opt){
     if (opt == NULL)
