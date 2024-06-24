@@ -8,7 +8,7 @@
 #include <linux/if_packet.h>
 
 #include "sdns.h"
-#include "neat_print.h"
+#include "sdns_print.h"
 
 void analyze_data(char *, ssize_t);
 void process_udp_payload(char * src_ip, uint16_t src_port, char* dst_ip, uint16_t dst_port, char * buffer, uint16_t len);
