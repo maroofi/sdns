@@ -1664,13 +1664,23 @@ int sdns_to_wire(sdns_context * ctx){
     tmp_byte[1] = (ctx->msg->header.id) & 0xFF;
     dyn_buffer_append(db, tmp_byte, 2);
     
-    tmpbuff[0] = 0x00 | (ctx->msg->header.qr & 0b10000000) | (ctx->msg->header.opcode & 0b01111000);
-    tmpbuff[0] = tmpbuff[0] | (ctx->msg->header.aa & 0b00000100) | (ctx->msg->header.tc & 0b00000010);
-    tmpbuff[0] = tmpbuff[0] | (ctx->msg->header.rd & 0b00000001);
+    // first 8 bits of flags
+    tmpbuff[0] = 0x00;
+    tmpbuff[0] |= ctx->msg->header.qr > 0?0b10000000:0x00;
+    tmpbuff[0] |= (ctx->msg->header.opcode << 3);
+    tmpbuff[0] |= (ctx->msg->header.aa << 2);
+    tmpbuff[0] |= (ctx->msg->header.tc << 1);
+    tmpbuff[0] |= (ctx->msg->header.rd & 0x01);
     dyn_buffer_append(db, tmpbuff, 1);
-    tmpbuff[1] = 0x00 | (ctx->msg->header.ra & 0b10000000) | (ctx->msg->header.z & 0b01000000);
-    tmpbuff[1] = tmpbuff[1] | (ctx->msg->header.AD & 0b00100000) | (ctx->msg->header.CD & 0b00010000) | (ctx->msg->header.rcode & 0b00001111);
-    dyn_buffer_append(db, tmpbuff + 1, 1);
+ 
+    // second 8 bits of flags
+    tmpbuff[0] = 0x00;
+    tmpbuff[0] |= (ctx->msg->header.ra << 7);
+    tmpbuff[0] |= (ctx->msg->header.z << 6);
+    tmpbuff[0] |= (ctx->msg->header.AD << 5);
+    tmpbuff[0] |= (ctx->msg->header.CD << 4);
+    tmpbuff[0] |= (ctx->msg->header.rcode & 0x0F);
+    dyn_buffer_append(db, tmpbuff, 1);
 
 
     tmp_byte[0] = (ctx->msg->header.qdcount >> 8) & 0xFF;
