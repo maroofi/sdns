@@ -1,0 +1,65 @@
+{
+    "header": {
+        "ID": 36224,
+        "opcode": 0,
+        "rcode": "NoError",
+        "qdcount": 1,
+        "ancount": 1,
+        "arcount": 1,
+        "nscount": 0,
+        "flags": {
+            "qr": 1,
+            "aa": 0,
+            "tc": 0,
+            "rd": 1,
+            "ra": 1,
+            "z": 0,
+            "AD": 0,
+            "CD": 0
+        }
+    },
+    "question": {
+        "qname": "yahoo.com.",
+        "qclass": "IN",
+        "qtype": "SOA"
+    },
+    "answer": [
+        {
+            "name": "yahoo.com.",
+            "class": "IN",
+            "type": "SOA",
+            "ttl": 533,
+            "rdlength": 49,
+            "rdata": {
+                "expire": 1814400,
+                "minimum": 600,
+                "refresh": 3600,
+                "retry": 300,
+                "serial": 2024062801,
+                "mname": "ns1.yahoo.com.",
+                "rname": "hostmaster.yahoo-inc.com."
+            }
+        }
+    ],
+    "authority": [],
+    "additional": [
+        {
+            "name": "",
+            "ttl": {
+                "DO": 0,
+                "z": 0,
+                "extended_rcode": 0,
+                "version": 0
+            },
+            "udp_size": 1232,
+            "type": "OPT",
+            "rdata": [
+                {
+                    "option_code": 3,
+                    "option_length": 6,
+                    "option_data": "3537376d3438"
+                }
+            ]
+        }
+    ]
+}

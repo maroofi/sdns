@@ -1,0 +1,5 @@
+### What are these files in this directory
+
+1. `test<N>.c`: these are c files to test the library
+2. `json_real_for_test<N>.json`: these are expected answers from `test<N>.c` files.
+

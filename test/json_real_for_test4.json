@@ -1,0 +1,269 @@
+{
+    "header": {
+        "ID": 61759,
+        "opcode": 0,
+        "rcode": "NoError",
+        "qdcount": 1,
+        "ancount": 22,
+        "arcount": 1,
+        "nscount": 0,
+        "flags": {
+            "qr": 1,
+            "aa": 0,
+            "tc": 0,
+            "rd": 1,
+            "ra": 1,
+            "z": 0,
+            "AD": 0,
+            "CD": 0
+        }
+    },
+    "question": {
+        "qname": "microsoft.com.",
+        "qclass": "IN",
+        "qtype": "TXT"
+    },
+    "answer": [
+        {
+            "name": "microsoft.com.",
+            "class": "IN",
+            "type": "TXT",
+            "ttl": 1753,
+            "rdlength": 37,
+            "rdata": {
+                "txtdata": "d365mktkey=3uc1cf82cpv750lzk70v9bvf2"
+            }
+        },
+        {
+            "name": "microsoft.com.",
+            "class": "IN",
+            "type": "TXT",
+            "ttl": 1753,
+            "rdlength": 60,
+            "rdata": {
+                "txtdata": "facebook-domain-verification=fwzwhbbzwmg5fzgotc2go51olc3566"
+            }
+        },
+        {
+            "name": "microsoft.com.",
+            "class": "IN",
+            "type": "TXT",
+            "ttl": 1753,
+            "rdlength": 69,
+            "rdata": {
+                "txtdata": "google-site-verification=pjPOauSPcrfXOZS9jnPPa5axowcHGCDAl1_86dCqFpk"
+            }
+        },
+        {
+            "name": "microsoft.com.",
+            "class": "IN",
+            "type": "TXT",
+            "ttl": 1753,
+            "rdlength": 27,
+            "rdata": {
+                "txtdata": "fg2t0gov9424p2tdcuo94goe9j"
+            }
+        },
+        {
+            "name": "microsoft.com.",
+            "class": "IN",
+            "type": "TXT",
+            "ttl": 1753,
+            "rdlength": 27,
+            "rdata": {
+                "txtdata": "t7sebee51jrj7vm932k531hipa"
+            }
+        },
+        {
+            "name": "microsoft.com.",
+            "class": "IN",
+            "type": "TXT",
+            "ttl": 1753,
+            "rdlength": 69,
+            "rdata": {
+                "txtdata": "google-site-verification=M--CVfn_YwsV-2FGbCp_HFaEj23BmT0cTF4l8hXgpvM"
+            }
+        },
+        {
+            "name": "microsoft.com.",
+            "class": "IN",
+            "type": "TXT",
+            "ttl": 1753,
+            "rdlength": 69,
+            "rdata": {
+                "txtdata": "google-site-verification=GfDnTUdATPsK1230J0mXbfsYw-3A9BVMVaKSd4DcKgI"
+            }
+        },
+        {
+            "name": "microsoft.com.",
+            "class": "IN",
+            "type": "TXT",
+            "ttl": 1753,
+            "rdlength": 56,
+            "rdata": {
+                "txtdata": "d365mktkey=SxDf1EZxLvMwx6eEZUxzjFFgHoapF8DvtWEUjwq7ZTwx"
+            }
+        },
+        {
+            "name": "microsoft.com.",
+            "class": "IN",
+            "type": "TXT",
+            "ttl": 1753,
+            "rdlength": 80,
+            "rdata": {
+                "txtdata": "hubspot-developer-verification=OTQ5NGIwYWEtODNmZi00YWE1LTkyNmQtNDhjMDMxY2JjNDAx"
+            }
+        },
+        {
+            "name": "microsoft.com.",
+            "class": "IN",
+            "type": "TXT",
+            "ttl": 1753,
+            "rdlength": 56,
+            "rdata": {
+                "txtdata": "d365mktkey=QDa792dLCZhvaAOOCe2Hz6WTzmTssOp1snABhxWibhMx"
+            }
+        },
+        {
+            "name": "microsoft.com.",
+            "class": "IN",
+            "type": "TXT",
+            "ttl": 1753,
+            "rdlength": 37,
+            "rdata": {
+                "txtdata": "d365mktkey=6358r1b7e13hox60tl1uagv14"
+            }
+        },
+        {
+            "name": "microsoft.com.",
+            "class": "IN",
+            "type": "TXT",
+            "ttl": 1753,
+            "rdlength": 69,
+            "rdata": {
+                "txtdata": "google-site-verification=uFg3wr5PWsK8lV029RoXXBBUW0_E6qf1WEWVHhetkOY"
+            }
+        },
+        {
+            "name": "microsoft.com.",
+            "class": "IN",
+            "type": "TXT",
+            "ttl": 1753,
+            "rdlength": 46,
+            "rdata": {
+                "txtdata": "docusign=d5a3737c-c23c-4bd0-9095-d2ff621f2840"
+            }
+        },
+        {
+            "name": "microsoft.com.",
+            "class": "IN",
+            "type": "TXT",
+            "ttl": 1753,
+            "rdlength": 56,
+            "rdata": {
+                "txtdata": "d365mktkey=j2qHWq9BHdaa3ZXZH8x64daJZxEWsFa0dxDeilxDoYYx"
+            }
+        },
+        {
+            "name": "microsoft.com.",
+            "class": "IN",
+            "type": "TXT",
+            "ttl": 1753,
+            "rdlength": 185,
+            "rdata": {
+                "txtdata": "v=spf1 include:_spf-a.microsoft.com include:_spf-b.microsoft.com include:_spf-c.microsoft.com include:_spf-ssg-a.msft.net include:spf-a.hotmail.com include:_spf1-meo.microsoft.com -all"
+            }
+        },
+        {
+            "name": "microsoft.com.",
+            "class": "IN",
+            "type": "TXT",
+            "ttl": 1753,
+            "rdlength": 95,
+            "rdata": {
+                "txtdata": "atlassian-domain-verification=xvoaqRfxSg3PnlVnR4xCSOlKyw1Aln0MMxRiKXnwWroFG7vI76TUC8xYb03MwMXv"
+            }
+        },
+        {
+            "name": "microsoft.com.",
+            "class": "IN",
+            "type": "TXT",
+            "ttl": 1753,
+            "rdlength": 61,
+            "rdata": {
+                "txtdata": "workplace-domain-verification=lK0QDLk73xymCYMKUXNpfKAT8TY5Mx"
+            }
+        },
+        {
+            "name": "microsoft.com.",
+            "class": "IN",
+            "type": "TXT",
+            "ttl": 1753,
+            "rdlength": 69,
+            "rdata": {
+                "txtdata": "google-site-verification=uhh5_jbxpcQgnb-A7gDIjlrr5Ef34lA2t2_BAveYpnk"
+            }
+        },
+        {
+            "name": "microsoft.com.",
+            "class": "IN",
+            "type": "TXT",
+            "ttl": 1753,
+            "rdlength": 14,
+            "rdata": {
+                "txtdata": "MS=ms79629062"
+            }
+        },
+        {
+            "name": "microsoft.com.",
+            "class": "IN",
+            "type": "TXT",
+            "ttl": 1753,
+            "rdlength": 60,
+            "rdata": {
+                "txtdata": "ms-domain-verification=9feeb5bd-0f21-44bd-aa3d-ad0b1085c629"
+            }
+        },
+        {
+            "name": "microsoft.com.",
+            "class": "IN",
+            "type": "TXT",
+            "ttl": 1753,
+            "rdlength": 56,
+            "rdata": {
+                "txtdata": "d365mktkey=3l6dste9txazu0Qd2zu4135PUB4E35txLxyzJxjkPbsx"
+            }
+        },
+        {
+            "name": "microsoft.com.",
+            "class": "IN",
+            "type": "TXT",
+            "ttl": 1753,
+            "rdlength": 60,
+            "rdata": {
+                "txtdata": "ms-domain-verification=b7655e93-f920-4428-bed9-de5900241a46"
+            }
+        }
+    ],
+    "authority": [],
+    "additional": [
+        {
+            "name": "",
+            "ttl": {
+                "DO": 0,
+                "z": 0,
+                "extended_rcode": 0,
+                "version": 0
+            },
+            "udp_size": 1232,
+            "type": "OPT",
+            "rdata": [
+                {
+                    "option_code": 3,
+                    "option_length": 6,
+                    "option_data": "34396d313532"
+                }
+            ]
+        }
+    ]
+}

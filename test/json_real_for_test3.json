@@ -1,0 +1,59 @@
+{
+    "header": {
+        "ID": 31150,
+        "opcode": 0,
+        "rcode": "NoError",
+        "qdcount": 1,
+        "ancount": 1,
+        "arcount": 1,
+        "nscount": 0,
+        "flags": {
+            "qr": 1,
+            "aa": 0,
+            "tc": 0,
+            "rd": 1,
+            "ra": 1,
+            "z": 0,
+            "AD": 0,
+            "CD": 0
+        }
+    },
+    "question": {
+        "qname": "google.com.",
+        "qclass": "IN",
+        "qtype": "A"
+    },
+    "answer": [
+        {
+            "name": "google.com.",
+            "class": "IN",
+            "type": "A",
+            "ttl": 261,
+            "rdlength": 4,
+            "rdata": {
+                "address": "142.250.200.206"
+            }
+        }
+    ],
+    "authority": [],
+    "additional": [
+        {
+            "name": "",
+            "ttl": {
+                "DO": 0,
+                "z": 0,
+                "extended_rcode": 0,
+                "version": 0
+            },
+            "udp_size": 1232,
+            "type": "OPT",
+            "rdata": [
+                {
+                    "option_code": 3,
+                    "option_length": 6,
+                    "option_data": "34396d323639"
+                }
+            ]
+        }
+    ]
+}
