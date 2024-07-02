@@ -31,6 +31,13 @@
 #define SDNS_ERROR_RR_SECTION_MALFORMED -15             ///< Resource Record section is malformed (not enough or wrong data)
 
 
+// define the section types
+#define DNS_SECTION_ANSWER 1
+#define DNS_SECTION_AUTHORITY 2
+#define DNS_SECTION_ADDITIONAL 3
+#define DNS_SECTION_QUESTION 4
+
+
 /** The list of opcodes can be found at:
  *  http://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml#dns-parameters-5
  */

@@ -741,7 +741,7 @@ json_t * sdns_json_rr_TXT(sdns_context * ctx, sdns_rr *rr){
     }
     if (rr->decoded == 0)
         sdns_free_rr_TXT(txt);
-    json_t * t = json_string(txt_mem);
+    json_t * t = json_stringn(txt_mem, cnt);
     free(txt_mem);
     if (t == NULL){
         return NULL;

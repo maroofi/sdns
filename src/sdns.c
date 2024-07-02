@@ -14,6 +14,29 @@
 
 /****************end of static functions declaration************/
 
+static int check_if_section_is_valid(sdns_rr * section, int section_type){
+    if (section == NULL){
+        return SDNS_ERROR_RR_SECTION_MALFORMED;
+    }
+    if (section_type == DNS_SECTION_ANSWER){
+        // OPT can not appear in answer section
+        if (section->type == sdns_rr_type_OPT)
+            return SDNS_ERROR_RR_SECTION_MALFORMED;
+    }
+    if (section_type == DNS_SECTION_AUTHORITY){
+        // OPT can not appear in answer section
+        if (section->type == sdns_rr_type_OPT)
+            return SDNS_ERROR_RR_SECTION_MALFORMED;
+    }
+    if (section_type == DNS_SECTION_QUESTION){
+        // OPT can not appear in answer section
+        if (section->type == sdns_rr_type_OPT)
+            return SDNS_ERROR_RR_SECTION_MALFORMED;
+    }
+    return 0;
+}
+
+
 // this only able to decode simple labeles (no compression)
 // this is important to make sure we have an appropriate error
 // if the label is compressed.
@@ -62,6 +85,18 @@ static int decode_label_simple(char * label, char * result){
     return sdns_rcode_NoError;
 }
 
+static inline int read_buffer(char * buf, char * upper_bound, uint8_t num_bytes, char * result){
+    // this reads num_bytes from buff making sure we don't bypass the upper_bound
+    // and store the read data into result
+    // return 0 on success otherwise on failure
+    if (buf > upper_bound)
+        return 1;
+    if (buf + num_bytes > upper_bound)
+        return 1;
+    for (uint8_t i=0; i< num_bytes; ++i)
+        result[i] = buf[i];
+    return 0;
+}
 
 
 static int decode_name(sdns_context * ctx, char ** decoded_name){
@@ -73,41 +108,57 @@ static int decode_name(sdns_context * ctx, char ** decoded_name){
     }
     // max length of a label is 255 (is it?)
     char qname_result[256] = {0x00};
+    char * upper_bound = ctx->raw + ctx->raw_len -1;
     uint32_t to_read = 0;
+    char bytes[4] = {0x00};
     char * sofar = ctx->cursor;
     char * tmp_buff = ctx->cursor;
     int label_char_count = 0;
     int l = 0; // this tracks qname_result position to fill
-    char last_method = '?';  // s->simple, c->compressed, ?->unknown
-    while (1){        // make sure it's not an infinite loop!
-        DEBUG("in while...");
+    int success_read = 0;    // at the end of the code, after a successful reading this must be 1
+    while (consumed <= ctx->raw_len){        // make sure it's not an infinite loop!
+
         if (strlen(qname_result) > 255){    // name is too long
             ERROR("Qname length is more than 255 character");
             return SDNS_ERROR_HOSTNAME_TOO_LONG;
         }
-        to_read = (uint8_t)tmp_buff[0];
-        //DEBUG("to_read = %d\n", to_read);
-        if (tmp_buff >= sofar)
+
+        //to_read = (uint8_t)tmp_buff[0];
+        if (read_buffer(tmp_buff, upper_bound, 1, bytes) != 0){
+            return SDNS_ERROR_BUFFER_TOO_SHORT;
+        }
+        to_read = (uint8_t) bytes[0] & 0x000000FF;
+        if (tmp_buff >= sofar)      // only increase consume if we read forward in the packet raw data
             consumed += 1;
         tmp_buff += 1;
-        if (to_read == 0){
+        if (to_read == 0){        // if we reach NULL, we are done!
             //we are done
+            success_read = 1;
             break;
         }
         if (to_read >= 192){       // the first 2bits are 11-> it is compressed
-            // don't let two compression in a row
-            if (last_method == 'c')
-                return sdns_rcode_FormErr;
-            last_method = 'c';
-            to_read = (uint16_t)read_uint16_from_buffer(tmp_buff - 1) & 0x3FFF;
+            // as it's compressed, we need to read another bytes for the offset
+            if (read_buffer(tmp_buff, upper_bound, 1, bytes) != 0){
+                return SDNS_ERROR_BUFFER_TOO_SHORT;
+            }
+            tmp_buff += 1;
+            //to_read = (uint16_t)read_uint16_from_buffer(tmp_buff - 1) & 0x3FFF;
+            uint16_t offset = ((((uint8_t)to_read) & 0x3F) << 8) | (((uint8_t) bytes[0]) & 0xFF);
+            // what is offset > size of the packet?
+            if (offset > ctx->raw_len)          // we don't jump somewhere that does not exist!
+                return SDNS_ERROR_BUFFER_TOO_SHORT;
+            // forward jump and same-place jump is not allowed!
+            if (ctx->raw + offset >= ctx->raw + consumed){
+                return SDNS_ERROR_ILLEGAL_COMPRESSION;
+            }
+            // we are good to jump now
             //DEBUG("We need to jump to %d\n", to_read);
             if (tmp_buff >= sofar)
                 consumed += 1;
-            tmp_buff = ctx->raw + to_read;
+            tmp_buff = ctx->raw + offset;
             continue;
         }else if (to_read <= 63){  // no compression as the first 2 bits are 00
             //read one-character at a time and add it to qname buffer
-            last_method = 's';
             if ((tmp_buff >= consumed + ctx->raw) && (consumed + to_read >= ctx->raw_len)){
                 ERROR("The length of the packet does not cover the name decoding...");
                 return sdns_rcode_FormErr;
@@ -135,6 +186,10 @@ static int decode_name(sdns_context * ctx, char ** decoded_name){
             ERROR("Wrong qname encoding specified (01 or 10)");
             return sdns_rcode_FormErr;
         }
+    }
+    if (success_read != 1){     // we break the while because of the lack of data
+        ctx->err = SDNS_ERROR_RR_SECTION_MALFORMED;
+        return SDNS_ERROR_RR_SECTION_MALFORMED;
     }
     ctx->cursor = ctx->raw + consumed;
     *decoded_name = strdup(qname_result);
@@ -325,6 +380,7 @@ static int _encode_label_simple(char * label, char * buffer){
         DEBUG("%02x ", (uint8_t)buffer[x]);
     }
     DEBUG("\n");
+    DEBUG("end of encode_label_simple()");
     return SDNS_ERROR_ELSIMPLE;
 }
 
@@ -408,7 +464,7 @@ static int _encode_write_rr_NS(sdns_context * ctx, dyn_buffer* db, sdns_rr* tmpr
     int res = _encode_label_compressed(ns->NSDNAME, db, buffer);
     if (res != SDNS_ERROR_ELSIMPLE && res != SDNS_ERROR_ELCOMPRESSED)
         return res;
-    uint16_t rdlength = strlen(buffer);
+    uint16_t rdlength = res == SDNS_ERROR_ELSIMPLE?strlen(buffer)+1:strlen(buffer);
     tmp_bytes[0] = (uint8_t) (rdlength >> 8 & 0xFF);
     tmp_bytes[1] = (uint8_t)(rdlength & 0xFF);
     dyn_buffer_append(db, tmp_bytes, 2);    // rdlength
@@ -514,6 +570,63 @@ static int _encode_write_rr_MX(sdns_context * ctx, dyn_buffer* db, sdns_rr* tmpr
     return sdns_rcode_NoError;
 }
 
+static int _encode_write_rr_RRSIG(sdns_context * ctx, dyn_buffer * db, sdns_rr * tmprr){
+    DEBUG("******************Start encoding rrsig data");
+    sdns_rr_RRSIG * rrsig = (sdns_rr_RRSIG*) tmprr->psdns_rr;
+    uint16_t rdlength = 0;
+    char tmp_bytes[10] = {0x00};
+    // first we go for the name part since this is the only error-prone part
+    char sn_buffer[256] = {0x00};
+    int sn_result = _encode_label_simple(rrsig->signers_name, sn_buffer);
+    if (sn_result != SDNS_ERROR_ELSIMPLE){
+        // there is an error in encoding label
+        return sn_result;
+    }
+    rdlength = strlen(sn_buffer) + 1;       // len + null character (this is simple encoding)
+    rdlength += 2 + 1 + 1 + 4 + 4 + 4 + 2;  // typeCovered + algorithm + original ttl + expiration + inception + keytag
+    rdlength += rrsig->signature_len;
+    // write rdlength
+    tmp_bytes[0] = (uint8_t) ((rdlength >> 8) & 0xFF);
+    tmp_bytes[1] = (uint8_t)(rdlength & 0xFF);
+    dyn_buffer_append(db, tmp_bytes, 2);    // rdlength
+    // type covered
+    tmp_bytes[0] = (uint8_t)((rrsig->type_covered  >> 8) & 0xFF);
+    tmp_bytes[1] = (uint8_t)((rrsig->type_covered & 0xFF));
+    dyn_buffer_append(db, tmp_bytes, 2);
+    // algorithm
+    tmp_bytes[0] = (uint8_t)(rrsig->algorithm & 0xFF);
+    // labels
+    tmp_bytes[1] = (uint8_t)(rrsig->labels & 0xFF);
+    dyn_buffer_append(db, tmp_bytes, 2);
+    // original TTL
+    tmp_bytes[0] = (uint8_t)((rrsig->original_ttl >> 24) & 0xFF);
+    tmp_bytes[1] = (uint8_t)((rrsig->original_ttl >> 16) & 0xFF);
+    tmp_bytes[2] = (uint8_t)((rrsig->original_ttl >> 8) & 0xFF);
+    tmp_bytes[3] = (uint8_t)(rrsig->original_ttl & 0xFF);
+    dyn_buffer_append(db, tmp_bytes, 4);
+    // signature expiration
+    tmp_bytes[0] = (uint8_t)((rrsig->signature_expiration >> 24) & 0xFF);
+    tmp_bytes[1] = (uint8_t)((rrsig->signature_expiration >> 16) & 0xFF);
+    tmp_bytes[2] = (uint8_t)((rrsig->signature_expiration >> 8) & 0xFF);
+    tmp_bytes[3] = (uint8_t)(rrsig->signature_expiration & 0xFF);
+    dyn_buffer_append(db, tmp_bytes, 4);
+    // signature inception
+    tmp_bytes[0] = (uint8_t)((rrsig->signature_inception >> 24) & 0xFF);
+    tmp_bytes[1] = (uint8_t)((rrsig->signature_inception >> 16) & 0xFF);
+    tmp_bytes[2] = (uint8_t)((rrsig->signature_inception >> 8) & 0xFF);
+    tmp_bytes[3] = (uint8_t)(rrsig->signature_inception & 0xFF);
+    dyn_buffer_append(db, tmp_bytes, 4);
+    // key tag
+    tmp_bytes[0] = (uint8_t)((rrsig->key_tag >> 8) & 0xFF);
+    tmp_bytes[1] = (uint8_t)((rrsig->key_tag & 0xFF));
+    dyn_buffer_append(db, tmp_bytes, 2);
+    // append the signer's name
+    dyn_buffer_append(db, sn_buffer, strlen(sn_buffer) + 1);
+    // append the signature
+    dyn_buffer_append(db, rrsig->signature, rrsig->signature_len);
+    return sdns_rcode_NoError;
+}
+
 static int _encode_write_rr_SOA(sdns_context * ctx, dyn_buffer* db, sdns_rr* tmprr){
     int res_mname = -1;
     int res_rname = -1;
@@ -531,46 +644,46 @@ static int _encode_write_rr_SOA(sdns_context * ctx, dyn_buffer* db, sdns_rr* tmp
     rdlength = 20; // + strlen(mname) + strlen(rname);
     rdlength += res_mname == SDNS_ERROR_ELSIMPLE?strlen(mname) + 1:strlen(mname);
     rdlength += res_rname == SDNS_ERROR_ELSIMPLE?strlen(rname) + 1:strlen(rname);
-    tmp_bytes[0] = (uint8_t) (rdlength >> 8 & 0xFF);
+    tmp_bytes[0] = (uint8_t) ((rdlength >> 8) & 0xFF);
     tmp_bytes[1] = (uint8_t)(rdlength & 0xFF);
     dyn_buffer_append(db, tmp_bytes, 2);    // rdlength
     dyn_buffer_append(db, mname, res_mname == SDNS_ERROR_ELSIMPLE?strlen(mname) +1:strlen(mname));
     dyn_buffer_append(db, rname, res_rname == SDNS_ERROR_ELSIMPLE?strlen(rname) +1:strlen(rname));
     //serial
-    tmp_bytes[0] = (uint8_t)(soa->serial >> 24 & 0xFF);
-    tmp_bytes[1] = (uint8_t)(soa->serial >> 16 & 0xFF);
-    tmp_bytes[2] = (uint8_t)(soa->serial >> 8 & 0xFF);
+    tmp_bytes[0] = (uint8_t)((soa->serial >> 24) & 0xFF);
+    tmp_bytes[1] = (uint8_t)((soa->serial >> 16) & 0xFF);
+    tmp_bytes[2] = (uint8_t)((soa->serial >> 8) & 0xFF);
     tmp_bytes[3] = (uint8_t)(soa->serial & 0xFF);
     dyn_buffer_append(db, tmp_bytes, 4);
     //refresh
-    tmp_bytes[0] = (uint8_t)(soa->refresh >> 24 & 0xFF);
-    tmp_bytes[1] = (uint8_t)(soa->refresh >> 16 & 0xFF);
-    tmp_bytes[2] = (uint8_t)(soa->refresh >> 8 & 0xFF);
+    tmp_bytes[0] = (uint8_t)((soa->refresh >> 24) & 0xFF);
+    tmp_bytes[1] = (uint8_t)((soa->refresh >> 16) & 0xFF);
+    tmp_bytes[2] = (uint8_t)((soa->refresh >> 8) & 0xFF);
     tmp_bytes[3] = (uint8_t)(soa->refresh & 0xFF);
     dyn_buffer_append(db, tmp_bytes, 4);
     //retry
-    tmp_bytes[0] = (uint8_t)(soa->retry >> 24 & 0xFF);
-    tmp_bytes[1] = (uint8_t)(soa->retry >> 16 & 0xFF);
-    tmp_bytes[2] = (uint8_t)(soa->retry >> 8 & 0xFF);
+    tmp_bytes[0] = (uint8_t)((soa->retry >> 24) & 0xFF);
+    tmp_bytes[1] = (uint8_t)((soa->retry >> 16) & 0xFF);
+    tmp_bytes[2] = (uint8_t)((soa->retry >> 8) & 0xFF);
     tmp_bytes[3] = (uint8_t)(soa->retry & 0xFF);
     dyn_buffer_append(db, tmp_bytes, 4);
     //expire
-    tmp_bytes[0] = (uint8_t)(soa->expire >> 24 & 0xFF);
-    tmp_bytes[1] = (uint8_t)(soa->expire >> 16 & 0xFF);
-    tmp_bytes[2] = (uint8_t)(soa->expire >> 8 & 0xFF);
+    tmp_bytes[0] = (uint8_t)((soa->expire >> 24) & 0xFF);
+    tmp_bytes[1] = (uint8_t)((soa->expire >> 16) & 0xFF);
+    tmp_bytes[2] = (uint8_t)((soa->expire >> 8) & 0xFF);
     tmp_bytes[3] = (uint8_t)(soa->expire & 0xFF);
     dyn_buffer_append(db, tmp_bytes, 4);
     // minimum
-    tmp_bytes[0] = (uint8_t)(soa->minimum >> 24 & 0xFF);
-    tmp_bytes[1] = (uint8_t)(soa->minimum >> 16 & 0xFF);
-    tmp_bytes[2] = (uint8_t)(soa->minimum >> 8 & 0xFF);
+    tmp_bytes[0] = (uint8_t)((soa->minimum >> 24) & 0xFF);
+    tmp_bytes[1] = (uint8_t)((soa->minimum >> 16) & 0xFF);
+    tmp_bytes[2] = (uint8_t)((soa->minimum >> 8) & 0xFF);
     tmp_bytes[3] = (uint8_t)(soa->minimum & 0xFF);
     dyn_buffer_append(db, tmp_bytes, 4);
     return sdns_rcode_NoError;
 }
 
 static int _encode_write_rr(sdns_context * ctx, dyn_buffer* db, sdns_rr* tmprr){
-    //TODO: implement AAAA, SRV and RRSIG, HINFO
+    //TODO: implement AAAA, SRV, HINFO, L32, L64, URI, NID, LP
     // different strategies based on the typeof RR
     if (tmprr->type == sdns_rr_type_A)
         return _encode_write_rr_A(ctx, db, tmprr);
@@ -588,6 +701,8 @@ static int _encode_write_rr(sdns_context * ctx, dyn_buffer* db, sdns_rr* tmprr){
         return _encode_write_rr_TXT(ctx, db, tmprr);
     if (tmprr->type == sdns_rr_type_SOA)
         return _encode_write_rr_SOA(ctx, db, tmprr);
+    if (tmprr->type == sdns_rr_type_RRSIG)
+        return _encode_write_rr_RRSIG(ctx, db, tmprr);
     ERROR("We have not implemented DNS RR of type: %d", tmprr->type);
     return sdns_rcode_NotImp;
 }
@@ -1039,24 +1154,40 @@ sdns_rr_A * sdns_decode_rr_A(sdns_context * ctx, sdns_rr * rr){
     /**decode the section assuming it's an A record.
      * the section is already parsed so all we have to do is
      * to parse the rdata part of the section.*/
-    if (rr->rdlength != 4)
+    if (rr->rdlength != 4){
+        ctx->err = SDNS_ERROR_RR_SECTION_MALFORMED;
         return NULL;
+    }
+    if (ctx->raw_len - (rr->rdata - ctx->raw) < 4){
+        ctx->err = SDNS_ERROR_RR_SECTION_MALFORMED;
+        return NULL;
+    }
     sdns_rr_A * A = (sdns_rr_A*) malloc(sizeof(sdns_rr_A));
     if (NULL == A)
         return NULL;
     A->address = (((uint8_t)rr->rdata[0] & 0xFF) << 24) | ((uint8_t)rr->rdata[1] << 16);
     A->address += ((uint8_t)rr->rdata[2] << 8) | ((uint8_t)rr->rdata[3]);
+    ctx->err = 0;   // success
     return A;
 }
 
 sdns_rr_AAAA * sdns_decode_rr_AAAA(sdns_context * ctx, sdns_rr * rr){
-    if (rr->rdlength != 16)
+    if (rr->rdlength != 16){
+        ctx->err = SDNS_ERROR_BUFFER_TOO_SHORT;
         return NULL;
+    }
+    if (ctx->raw_len - (rr->rdata - ctx->raw < 16)){
+        ctx->err = SDNS_ERROR_RR_SECTION_MALFORMED;
+        return NULL;
+    }
     sdns_rr_AAAA * aaaa = (sdns_rr_AAAA*) malloc(sizeof(sdns_rr_AAAA));
-    if (NULL == aaaa)
+    if (NULL == aaaa){
+        ctx->err = SDNS_ERROR_RR_SECTION_MALFORMED;
         return NULL;
+    }
     aaaa->address = (char*) malloc(40); // max possible length of AAAA(no double dot)
     if (NULL == aaaa->address){
+        ctx->err = SDNS_ERROR_MEMORY_ALLOC_FAILD;
         free(aaaa);
         return NULL;
     }
@@ -1072,6 +1203,7 @@ sdns_rr_AAAA * sdns_decode_rr_AAAA(sdns_context * ctx, sdns_rr * rr){
             j=0;
         }
     }
+    ctx->err = 0;   //success
     return aaaa;
 }
 
@@ -1153,7 +1285,7 @@ sdns_rr_LP * sdns_decode_rr_LP(sdns_context * ctx, sdns_rr * rr){
         return NULL;
     }
     lp->FQDN = strdup(buffer_label);
-    ctx->err = 0;
+    ctx->err = 0;   // success
     return lp;
 }
 
@@ -1224,7 +1356,7 @@ sdns_rr_SRV * sdns_decode_rr_SRV(sdns_context * ctx, sdns_rr * rr){
         return NULL;
     }
     srv->Target = strdup(buffer_label);
-    ctx->err = 0;
+    ctx->err = 0;       // success
     return srv;
 }
 
@@ -1244,8 +1376,10 @@ sdns_rr_URI * sdns_decode_rr_URI(sdns_context * ctx, sdns_rr* rr){
     cnt += 2;
     uri->Weight = (((uint8_t)tmp[cnt] << 8) & 0xFF00) | ((uint8_t)tmp[cnt + 1] & 0x00FF);
     cnt += 2;
-    if (rr_len == cnt)  // target is empty
+    if (rr_len == cnt){  // target is empty
+        ctx->err = 0;  // success
         return uri;
+    }
     uri->target_len = rr_len - cnt;
     char * target = (char*) malloc(uri->target_len);
     if (NULL == target){
@@ -1255,13 +1389,16 @@ sdns_rr_URI * sdns_decode_rr_URI(sdns_context * ctx, sdns_rr* rr){
     }
     memcpy(target, tmp+cnt, uri->target_len);
     uri->Target = target;
+    ctx->err = 0;   // success
     return uri;
 }
 
 sdns_rr_RRSIG * sdns_decode_rr_RRSIG(sdns_context * ctx, sdns_rr * rr){
     sdns_rr_RRSIG * rrsig = sdns_init_rr_RRSIG(0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0);
-    if (NULL == rrsig)
+    if (NULL == rrsig){
+        ctx->err = SDNS_ERROR_MEMORY_ALLOC_FAILD;
         return NULL;
+    }
     uint16_t cnt = 0;
     uint16_t rr_len = rr->rdlength;
     if (rr_len < 18){
@@ -1287,7 +1424,6 @@ sdns_rr_RRSIG * sdns_decode_rr_RRSIG(sdns_context * ctx, sdns_rr * rr){
     cnt += 4;
     rrsig->key_tag = ((tmp[cnt] << 8) & 0xFF00) | (tmp[cnt+1] & 0x00FF);
     cnt += 2;
-    DEBUG("key Tag is: %d", rrsig->key_tag);
     char buffer_label[256] = {0x00};
     int res = decode_label_simple(tmp+cnt, buffer_label);
     if (res != sdns_rcode_NoError){
@@ -1301,7 +1437,6 @@ sdns_rr_RRSIG * sdns_decode_rr_RRSIG(sdns_context * ctx, sdns_rr * rr){
     // is not compressed => len(label) = strlen(buffer_label) + 1
     cnt += strlen(buffer_label) + 1;
     // the remaining len from rr->rdlength is for 'Signature'
-    DEBUG("signature len is (to allocate): %d", rr_len - cnt);
     rrsig->signature_len = rr_len - cnt;
     rrsig->signature = (char*) malloc(rrsig->signature_len);
     if (NULL == rrsig->signature){
@@ -1310,7 +1445,7 @@ sdns_rr_RRSIG * sdns_decode_rr_RRSIG(sdns_context * ctx, sdns_rr * rr){
         return NULL;
     }
     memcpy(rrsig->signature, tmp + cnt, rrsig->signature_len);
-    ctx->err = 0;
+    ctx->err = 0;       // success
     return rrsig;
 }
 
@@ -1343,25 +1478,44 @@ sdns_rr_TXT * sdns_decode_rr_TXT(sdns_context * ctx, sdns_rr * rr){
         if (NULL == txt){
             txt = sdns_init_rr_TXT(NULL, 0);
             if (NULL == txt){
+                if (original->character_string.content == NULL){    // the first one is NULL
+                    dyn_buffer_free(db);
+                }
                 sdns_free_rr_TXT(original);
-                dyn_buffer_free(db);
                 ctx->err = SDNS_ERROR_MEMORY_ALLOC_FAILD;
                 return NULL;
             }
         }
         offset = db->buffer + db->cursor;
+        if (ctx->raw_len - ((rr->rdata + cnt) - ctx->raw) < 1){
+            if (original->character_string.content == NULL){    // the first one is NULL
+                dyn_buffer_free(db);
+            }
+            sdns_free_rr_TXT(original);
+            ctx->err = SDNS_ERROR_RR_SECTION_MALFORMED;
+            return NULL;
+        }
         to_copy = (uint8_t)* (rr->rdata + cnt);
         cnt++;
         if (rdlen - cnt < to_copy){ // we don't have enough data to copy
+            if (original->character_string.content == NULL){    // the first one is NULL
+                dyn_buffer_free(db);
+            }
             sdns_free_rr_TXT(original);
-            dyn_buffer_free(db);
+            ctx->err = SDNS_ERROR_RR_SECTION_MALFORMED;
+            return NULL;
+        }
+        if (ctx->raw_len - ((rr->rdata + cnt) - ctx->raw) < to_copy){
+            if (original->character_string.content == NULL){    // the first one is NULL
+                dyn_buffer_free(db);
+            }
+            sdns_free_rr_TXT(original);
             ctx->err = SDNS_ERROR_RR_SECTION_MALFORMED;
             return NULL;
         }
         dyn_buffer_append(db, rr->rdata + cnt, to_copy);
         txt->character_string.len = to_copy;
         txt->character_string.content = offset;
-        DEBUG("len: %d, content: %p", to_copy, offset);
         cnt +=  to_copy;
         if (original != txt){
             last->next = txt;
@@ -1372,7 +1526,7 @@ sdns_rr_TXT * sdns_decode_rr_TXT(sdns_context * ctx, sdns_rr * rr){
         txt = NULL;
     }
     free(db);
-    ctx->err = 0;
+    ctx->err = 0;   // success
     return original;
 }
 
@@ -1426,7 +1580,6 @@ sdns_rr_PTR * sdns_decode_rr_PTR(sdns_context * ctx, sdns_rr * rr){
         ERROR("Error in parsing name of the NS record: %d\n", res);
         return NULL;
     }
-    INFO("parsed NSDNAME is: %s\n", name);
     ptr->PTRDNAME = name;
     ctx->err = 0; // success
     return ptr;
@@ -1448,7 +1601,6 @@ sdns_rr_CNAME * sdns_decode_rr_CNAME(sdns_context * ctx, sdns_rr * rr){
         ctx->err = sdns_rcode_FormErr;
         return NULL;
     }
-    INFO("parsed NSDNAME is: %s\n", name);
     cname->CNAME = name;
     ctx->err = 0; // success
     return cname;
@@ -1459,8 +1611,10 @@ sdns_rr_SOA * sdns_decode_rr_SOA(sdns_context * ctx, sdns_rr * rr){
     if (ctx == NULL || rr == NULL)
         return NULL;
     sdns_rr_SOA * soa = sdns_init_rr_SOA(NULL, NULL, 0, 0, 0, 0, 0);
-    if (NULL == soa)
+    if (NULL == soa){
+        ctx->err = SDNS_ERROR_MEMORY_ALLOC_FAILD;
         return NULL;
+    }
     // we assume that we have enough data in the `rr` as we have already parsed it as an rr
     char * name = NULL;
     ctx->cursor = rr->rdata;
@@ -1469,7 +1623,6 @@ sdns_rr_SOA * sdns_decode_rr_SOA(sdns_context * ctx, sdns_rr * rr){
         ERROR("Error in parsing mname of soa record: %d\n", res);
         return NULL;
     }
-    INFO("parsed MNAME is: %s\n", name);
     soa->mname = name;
     name = NULL;
     res = decode_name(ctx, &name);
@@ -1477,10 +1630,16 @@ sdns_rr_SOA * sdns_decode_rr_SOA(sdns_context * ctx, sdns_rr * rr){
         ERROR("Error in parsing rname of soa record: %d\n", res);
         return NULL;
     }
-    INFO("parsed RNAME is: %s\n", name);
     soa->rname = name;
     name = NULL;
     if (rr->rdlength - (ctx->cursor - rr->rdata) < 20){
+        ERROR("packet is not long enought.....");
+        sdns_free_rr_SOA(soa);
+        ctx->err = SDNS_ERROR_RR_SECTION_MALFORMED;
+        return NULL;
+    }
+    if (ctx->raw_len - (ctx->cursor - ctx->raw) < 20){
+        ERROR("packet is not long en.....");
         sdns_free_rr_SOA(soa);
         ctx->err = SDNS_ERROR_RR_SECTION_MALFORMED;
         return NULL;
@@ -1495,6 +1654,7 @@ sdns_rr_SOA * sdns_decode_rr_SOA(sdns_context * ctx, sdns_rr * rr){
     ctx->cursor += 4;
     soa->minimum = read_uint32_from_buffer(ctx->cursor);
     ctx->cursor += 4;
+    ctx->err = 0;   // success
     return soa;
 }
 
@@ -1554,6 +1714,11 @@ int sdns_from_wire(sdns_context * ctx){
             ERROR("Error happend in decoding answer seciton: %d", an_result);
             return an_result;
         }
+        if (check_if_section_is_valid(section, DNS_SECTION_ANSWER) != 0){
+            ERROR("Error invalid section found in answer part");
+            ctx->err = SDNS_ERROR_RR_SECTION_MALFORMED;
+            return SDNS_ERROR_RR_SECTION_MALFORMED;
+        }
         ctx->msg->answer = section;
     }else{
         ctx->msg->answer = NULL;
@@ -1564,6 +1729,11 @@ int sdns_from_wire(sdns_context * ctx){
         if (ns_result != sdns_rcode_NoError){
             ERROR("Error happend in decoding authority seciton: %d", ns_result);
             return ns_result;
+        }
+        if (check_if_section_is_valid(section, DNS_SECTION_ANSWER) != 0){
+            ERROR("Error invalid section found in answer part");
+            ctx->err = SDNS_ERROR_RR_SECTION_MALFORMED;
+            return SDNS_ERROR_RR_SECTION_MALFORMED;
         }
         ctx->msg->authority = section;
     }else{
@@ -1657,6 +1827,8 @@ int sdns_to_wire(sdns_context * ctx){
     if (!ctx)
         return SDNS_ERROR_BUFFER_TOO_SHORT;
     dyn_buffer * db = dyn_buffer_init(ctx->raw, ctx->raw_len, ctx->cursor - ctx->raw);
+    if (NULL == db)
+        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
     char tmp_byte[8] = {0x00};
     char tmpbuff[4] = {0};
 
@@ -2014,6 +2186,8 @@ void sdns_error_string(int err, char ** err_buffer){
         strcpy(*err_buffer, "The question section has more than one part");
     else if (err == SDNS_ERROR_LABEL_MAX_63)
         strcpy(*err_buffer, "The maximum possible length of the label is 63 (RFC1034 section 3.1)");
+    else if (err == SDNS_ERROR_RR_SECTION_MALFORMED)
+        strcpy(*err_buffer, "Resource Record Section is malformed");
     else if (err == sdns_rcode_FormErr)
         strcpy(*err_buffer, "FormErr");
     else if (err == sdns_rcode_NoError)
@@ -2172,6 +2346,16 @@ sdns_rr_MX * sdns_decode_rr_MX(sdns_context * ctx, sdns_rr * rr){
         return NULL;
     ctx->cursor = rr->rdata;
     char * qname = NULL;
+    if (rr->rdlength < 2){      // we must have preference
+        ctx->err = SDNS_ERROR_RR_SECTION_MALFORMED;
+        sdns_free_rr_MX(mx);
+        return NULL;
+    }
+    if (ctx->raw_len - (ctx->cursor - ctx->raw) < 2){
+        ctx->err = SDNS_ERROR_RR_SECTION_MALFORMED;
+        sdns_free_rr_MX(mx);
+        return NULL;
+    }
     mx->preference = read_uint16_from_buffer(ctx->cursor);
     ctx->cursor += 2;
     int res = decode_name(ctx, &qname);
