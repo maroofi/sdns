@@ -19,35 +19,35 @@ except:
     sys.exit(2)
 # end try
 
+DATA_DIR = "{}/data".format(os.path.abspath(os.path.dirname(__file__)))
+
+
 
 def func_test1(data):
     data = json.loads(data)
-    real_answer = json.loads(open("json_real_for_test1.json").read())
+    real_answer = json.loads(open("{}/json_real_for_test1.json".format(DATA_DIR)).read())
     assert(Compare().check(data, real_answer) == NO_DIFF)
     return 0
 # end def
 
 def func_test2(data):
     data = json.loads(data)
-    real_answer = json.loads(open("json_real_for_test2.json").read())
+    real_answer = json.loads(open("{}/json_real_for_test2.json".format(DATA_DIR)).read())
     assert(Compare().check(data, real_answer) == NO_DIFF)
     return 0
 # end def
 
 def func_test3(data):
     data = json.loads(data)
-    real_answer = json.loads(open("json_real_for_test3.json").read())
+    real_answer = json.loads(open("{}/json_real_for_test3.json".format(DATA_DIR)).read())
     assert(Compare().check(data, real_answer) == NO_DIFF)
     return 0
 # end def
 
 def func_test4(data):
     data = json.loads(data)
-    real_answer = json.loads(open("json_real_for_test4.json").read())
+    real_answer = json.loads(open("{}/json_real_for_test4.json".format(DATA_DIR)).read())
     assert(Compare().check(data, real_answer) == NO_DIFF)
     return 0
 # end def
-
-
-
 
