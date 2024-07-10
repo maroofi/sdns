@@ -89,10 +89,12 @@ static inline int read_buffer(char * buf, char * upper_bound, uint8_t num_bytes,
     // this reads num_bytes from buff making sure we don't bypass the upper_bound
     // and store the read data into result
     // return 0 on success otherwise on failure
-    if (buf > upper_bound)
+    if (buf > upper_bound){
         return 1;
-    if (buf + num_bytes > upper_bound)
+    }
+    if (buf + num_bytes -1 > upper_bound){
         return 1;
+    }
     for (uint8_t i=0; i< num_bytes; ++i)
         result[i] = buf[i];
     return 0;
@@ -123,7 +125,7 @@ static int decode_name(sdns_context * ctx, char ** decoded_name){
             return SDNS_ERROR_HOSTNAME_TOO_LONG;
         }
 
-        //to_read = (uint8_t)tmp_buff[0];
+        to_read = (uint8_t)tmp_buff[0];
         if (read_buffer(tmp_buff, upper_bound, 1, bytes) != 0){
             return SDNS_ERROR_BUFFER_TOO_SHORT;
         }
@@ -534,6 +536,9 @@ static int _encode_write_rr_OPT(sdns_context * ctx, dyn_buffer* db, sdns_rr* tmp
     tmp_bytes[1] = (uint8_t)(tmprr->rdlength & 0xFF);
     dyn_buffer_append(db, tmp_bytes, 2);    // rdlength
     sdns_opt_rdata * opt = tmprr->opt_rdata;
+    if (tmprr->rdlength == 0){  // there is nothing to write
+        return sdns_rcode_NoError;
+    }
     while (opt){
         // opt-code
         tmp_bytes[0] = (uint8_t) (opt->option_code >> 8 & 0xFF);
@@ -2188,6 +2193,14 @@ void sdns_error_string(int err, char ** err_buffer){
         strcpy(*err_buffer, "The maximum possible length of the label is 63 (RFC1034 section 3.1)");
     else if (err == SDNS_ERROR_RR_SECTION_MALFORMED)
         strcpy(*err_buffer, "Resource Record Section is malformed");
+    else if (err == SDNS_ERROR_INVALID_HEX_VALUE)
+        strcpy(*err_buffer, "Invalid HEX representation of the input string");
+    else if (err == SDNS_ERROR_WRONG_INPUT_PARAMETER)
+        strcpy(*err_buffer, "Wrong input parameter for the function");
+    else if (err == SDNS_ERROR_NSID_NOT_FOUND)
+        strcpy(*err_buffer, "There is no NSID in the DNS packet");
+    else if (err == SDNS_ERROR_CLIENT_COOKIE_NOT_FOUND)
+        strcpy(*err_buffer, "There is no client cookie in the DNS packet");
     else if (err == sdns_rcode_FormErr)
         strcpy(*err_buffer, "FormErr");
     else if (err == sdns_rcode_NoError)
@@ -2565,6 +2578,213 @@ sdns_rr * sdns_init_rr(char * name, uint16_t type, uint16_t class, uint32_t ttl,
 }
 
 
+int sdns_convert_type_to_int(char * type){
+    // no allocation no leak
+    if (type == NULL)
+        return -1;
+    if (strcasecmp(type, "A") == 0)
+        return sdns_rr_type_A;
+    if (strcasecmp(type, "NS") == 0)
+        return sdns_rr_type_NS;
+    if (strcasecmp(type, "MD") == 0)
+        return sdns_rr_type_MD;
+    if (strcasecmp(type, "MF") == 0)
+        return sdns_rr_type_MF;
+    if (strcasecmp(type, "CNAME") == 0)
+        return sdns_rr_type_CNAME;
+    if (strcasecmp(type, "SOA") == 0)
+        return sdns_rr_type_SOA;
+    if (strcasecmp(type, "MB") == 0)
+        return sdns_rr_type_MB;
+    if (strcasecmp(type, "MG") == 0)
+        return sdns_rr_type_MG;
+    if (strcasecmp(type, "MR") == 0)
+        return sdns_rr_type_MR;
+    if (strcasecmp(type, "NULL") == 0)
+        return sdns_rr_type_NULL;
+    if (strcasecmp(type, "WKS") == 0)
+        return sdns_rr_type_WKS;
+    if (strcasecmp(type, "PTR") == 0)
+        return sdns_rr_type_PTR;
+    if (strcasecmp(type, "HINFO") == 0)
+        return sdns_rr_type_HINFO;
+    if (strcasecmp(type, "MINFO") == 0)
+        return sdns_rr_type_MINFO;
+    if (strcasecmp(type, "MX") == 0)
+        return sdns_rr_type_MX;
+    if (strcasecmp(type, "TXT") == 0)
+        return sdns_rr_type_TXT;
+    if (strcasecmp(type, "RP") == 0)
+        return sdns_rr_type_RP;
+    if (strcasecmp(type, "AFSDB") == 0)
+        return sdns_rr_type_AFSDB;
+    if (strcasecmp(type, "X25") == 0)
+        return sdns_rr_type_X25;
+    if (strcasecmp(type, "ISDN") == 0)
+        return sdns_rr_type_ISDN;
+    if (strcasecmp(type, "RT") == 0)
+        return sdns_rr_type_RT;
+    if (strcasecmp(type, "NSAP") == 0)
+        return sdns_rr_type_NSAP;
+    if (strcasecmp(type, "NSAP-PTR") == 0)
+        return sdns_rr_type_NSAP_PTR;
+    if (strcasecmp(type, "SIG") == 0)
+        return sdns_rr_type_SIG;
+    if (strcasecmp(type, "KEY") == 0)
+        return sdns_rr_type_KEY;
+    if (strcasecmp(type, "PX") == 0)
+        return sdns_rr_type_PX;
+    if (strcasecmp(type, "GPOS") == 0)
+        return sdns_rr_type_GPOS;
+    if (strcasecmp(type, "AAAA") == 0)
+        return sdns_rr_type_AAAA;
+    if (strcasecmp(type, "LOC") == 0)
+        return sdns_rr_type_LOC;
+    if (strcasecmp(type, "NXT") == 0)
+        return sdns_rr_type_NXT;
+    if (strcasecmp(type, "EID") == 0)
+        return sdns_rr_type_EID;
+    if (strcasecmp(type, "NIMLOC") == 0)
+        return sdns_rr_type_NIMLOC;
+    if (strcasecmp(type, "SRV") == 0)
+        return sdns_rr_type_SRV;
+    if (strcasecmp(type, "ATMA") == 0)
+        return sdns_rr_type_ATMA;
+    if (strcasecmp(type, "NAPTR") == 0)
+        return sdns_rr_type_NAPTR;
+    if (strcasecmp(type, "KX") == 0)
+        return sdns_rr_type_KX;
+    if (strcasecmp(type, "CERT") == 0)
+        return sdns_rr_type_CERT;
+    if (strcasecmp(type, "A6") == 0)
+        return sdns_rr_type_A6;
+    if (strcasecmp(type, "DNAME") == 0)
+        return sdns_rr_type_DNAME;
+    if (strcasecmp(type, "SINK") == 0)
+        return sdns_rr_type_SINK;
+    if (strcasecmp(type, "OPT") == 0)
+        return sdns_rr_type_OPT;
+    if (strcasecmp(type, "APL") == 0)
+        return sdns_rr_type_APL;
+    if (strcasecmp(type, "DS") == 0)
+        return sdns_rr_type_DS;
+    if (strcasecmp(type, "SSHFP") == 0)
+        return sdns_rr_type_SSHFP;
+    if (strcasecmp(type, "IPSECKEY") == 0)
+        return sdns_rr_type_IPSECKEY;
+    if (strcasecmp(type, "RRSIG") == 0)
+        return sdns_rr_type_RRSIG;
+    if (strcasecmp(type, "NSEC") == 0)
+        return sdns_rr_type_NSEC;
+    if (strcasecmp(type, "DNSKEY") == 0)
+        return sdns_rr_type_DNSKEY;
+    if (strcasecmp(type, "DHCID") == 0)
+        return sdns_rr_type_DHCID;
+    if (strcasecmp(type, "NSEC3") == 0)
+        return sdns_rr_type_NSEC3;
+    if (strcasecmp(type, "NSEC3PARAM") == 0)
+        return sdns_rr_type_NSEC3PARAM;
+    if (strcasecmp(type, "TLSA") == 0)
+        return sdns_rr_type_TLSA;
+    if (strcasecmp(type, "SMIMEA") == 0)
+        return sdns_rr_type_SMIMEA;
+    if (strcasecmp(type, "HIP") == 0)
+        return sdns_rr_type_HIP;
+    if (strcasecmp(type, "NINFO") == 0)
+        return sdns_rr_type_NINFO;
+    if (strcasecmp(type, "RKEY") == 0)
+        return sdns_rr_type_RKEY;
+    if (strcasecmp(type, "TALINK") == 0)
+        return sdns_rr_type_TALINK;
+    if (strcasecmp(type, "CDS") == 0)
+        return sdns_rr_type_CDS;
+    if (strcasecmp(type, "CDNSKEY") == 0)
+        return sdns_rr_type_CDNSKEY;
+    if (strcasecmp(type, "OPENPGPKEY") == 0)
+        return sdns_rr_type_OPENPGPKEY;
+    if (strcasecmp(type, "CSYNC") == 0)
+        return sdns_rr_type_CSYNC;
+    if (strcasecmp(type, "ZONEMD") == 0)
+        return sdns_rr_type_ZONEMD;
+    if (strcasecmp(type, "SVCB") == 0)
+        return sdns_rr_type_SVCB;
+    if (strcasecmp(type, "HTTPS") == 0)
+        return sdns_rr_type_HTTPS;
+    if (strcasecmp(type, "SPF") == 0)
+        return sdns_rr_type_SPF;
+    if (strcasecmp(type, "UINFO") == 0)
+        return sdns_rr_type_UINFO;
+    if (strcasecmp(type, "UID") == 0)
+        return sdns_rr_type_UID;
+    if (strcasecmp(type, "GID") == 0)
+        return sdns_rr_type_GID;
+    if (strcasecmp(type, "UNSPEC") == 0)
+        return sdns_rr_type_UNSPEC;
+    if (strcasecmp(type, "NID") == 0)
+        return sdns_rr_type_NID;
+    if (strcasecmp(type, "L32") == 0)
+        return sdns_rr_type_L32;
+    if (strcasecmp(type, "L64") == 0)
+        return sdns_rr_type_L64;
+    if (strcasecmp(type, "LP") == 0)
+        return sdns_rr_type_LP;
+    if (strcasecmp(type, "EUI48") == 0)
+        return sdns_rr_type_EUI48;
+    if (strcasecmp(type, "EUI64") == 0)
+        return sdns_rr_type_EUI64;
+    if (strcasecmp(type, "TKEY") == 0)
+        return sdns_rr_type_TKEY;
+    if (strcasecmp(type, "TSIG") == 0)
+        return sdns_rr_type_TSIG;
+    if (strcasecmp(type, "IXFR") == 0)
+        return sdns_rr_type_IXFR;
+    if (strcasecmp(type, "AXFR") == 0)
+        return sdns_rr_type_AXFR;
+    if (strcasecmp(type, "MAILB") == 0)
+        return sdns_rr_type_MAILB;
+    if (strcasecmp(type, "MAILA") == 0)
+        return sdns_rr_type_MAILA;
+    if (strcasecmp(type, "*") == 0)
+        return 255;
+    if (strcasecmp(type, "URI") == 0)
+        return sdns_rr_type_URI;
+    if (strcasecmp(type, "CAA") == 0)
+        return sdns_rr_type_CAA;
+    if (strcasecmp(type, "AVC") == 0)
+        return sdns_rr_type_AVC;
+    if (strcasecmp(type, "DOA") == 0)
+        return sdns_rr_type_DOA;
+    if (strcasecmp(type, "AMTRELAY") == 0)
+        return sdns_rr_type_AMTRELAY;
+    if (strcasecmp(type, "RESINFO") == 0)
+        return sdns_rr_type_RESINFO;
+    if (strcasecmp(type, "WALLET") == 0)
+        return sdns_rr_type_WALLET;
+    if (strcasecmp(type, "TA") == 0)
+        return sdns_rr_type_TA;
+    if (strcasecmp(type, "DLV") == 0)
+        return sdns_rr_type_DLV;
+    return -2;
+}
+
+
+int sdns_convert_class_to_int(char * cls){
+    // no allocation no leak
+    if (cls == NULL)
+        return -1;
+    if (strcasecmp(cls, "IN") == 0)
+        return sdns_q_class_IN;
+    if (strcasecmp(cls, "CH") == 0)
+        return sdns_q_class_CH;
+    if (strcasecmp(cls, "CS") == 0)
+        return sdns_q_class_CH;
+    if (strcasecmp(cls, "HS") == 0)
+        return sdns_q_class_HS;
+    if (strcasecmp(cls, "*") == 0)
+        return sdns_q_class_STAR;
+    return -2;
+}
+
 sdns_context * sdns_init_context(void){
     sdns_message * msg = sdns_init_message();
     if (NULL == msg)
@@ -2650,7 +2870,7 @@ int sdns_add_additional_section(sdns_context * ctx, sdns_rr * rr){
         else
             break;
     tmp->next = rr;
-    ctx->msg->header.nscount += 1;
+    ctx->msg->header.arcount += 1;
     return sdns_rcode_NoError;
 }
 
@@ -2734,7 +2954,7 @@ int sdns_add_edns(sdns_context * ctx, sdns_opt_rdata * opt){
         // we need to add a new section (we don't have additional section)
         //we assume that UDP_PAYLOAD_SIZE=1232 and ttl=0
         sdns_rr * new_section = NULL;
-        if (opt->option_length == 0 || opt->option_data == NULL){
+        if (opt->option_length == 0 && opt->option_data == NULL  && opt->option_code == 0){
             // this is an empty edns just to say we are edns0 enabled
             new_section = sdns_init_rr(NULL, 41, UDP_PAYLOAD_SIZE, 0x0, 0, 1, (void*) opt);
         }else{
@@ -2766,20 +2986,25 @@ sdns_opt_rdata * sdns_create_edns0_ede(uint16_t info_code, char * extra_text, ui
     }
     opt->option_data[0] = (uint8_t)((info_code >> 8) & 0xFF);
     opt->option_data[1] = (uint8_t)(info_code & 0xFF);
-    memcpy(opt->option_data + 2, extra_text, extra_text_len);
+    if (extra_text != NULL)
+        memcpy(opt->option_data + 2, extra_text, extra_text_len);
     return opt;
 }
 
 // this function will add NSID to the packet in edns0 part
 // nsid structure is empty but its option_code is 3
-sdns_opt_rdata * sdns_create_edns0_nsid(void){
+sdns_opt_rdata * sdns_create_edns0_nsid(char * nsid, uint16_t nsid_len){
     sdns_opt_rdata * opt = (sdns_opt_rdata *) malloc(sizeof(sdns_opt_rdata));
     if (NULL == opt)
         return NULL;
+    if (nsid == NULL && nsid_len != 0){
+        sdns_free_opt_rdata(opt);
+        return NULL;    // can not have NULL with length > 0
+    }
     opt->option_code = sdns_edns0_option_code_NSID;
     opt->next = NULL;
-    opt->option_length = 0;
-    opt->option_data = NULL;
+    opt->option_length = nsid_len;
+    opt->option_data = nsid;
     return opt;
 }
 
@@ -2856,6 +3081,12 @@ sdns_opt_rdata * sdns_decode_rr_OPT(sdns_context * ctx, sdns_rr * rr){
         ctx->err = SDNS_ERROR_RR_SECTION_MALFORMED;
         return NULL;
     }
+    if (rr->rdata + rr->rdlength > ctx->raw + ctx->raw_len){
+        // we don't have enough data in the packet
+        free(opt);
+        ctx->err = SDNS_ERROR_RR_SECTION_MALFORMED;
+        return NULL;
+    }
     unsigned int length = rr->rdlength;
     unsigned int cnt = 0;
     sdns_opt_rdata * last = opt;
@@ -2871,8 +3102,9 @@ sdns_opt_rdata * sdns_decode_rr_OPT(sdns_context * ctx, sdns_rr * rr){
             }
         }
         if (length - cnt < 4){
-            sdns_free_opt_rdata(tmp);
             sdns_free_opt_rdata(opt);
+            if (tmp != opt)
+                sdns_free_opt_rdata(tmp);
             ctx->err = SDNS_ERROR_RR_SECTION_MALFORMED;
             return NULL;
         }
@@ -2882,8 +3114,9 @@ sdns_opt_rdata * sdns_decode_rr_OPT(sdns_context * ctx, sdns_rr * rr){
         cnt += 2;
         if (tmp->option_length > 0){
             if (tmp->option_length > (length - cnt)){       // there is not enough data
-                sdns_free_opt_rdata(tmp);
                 sdns_free_opt_rdata(opt);
+                if (tmp != opt)
+                    sdns_free_opt_rdata(tmp);
                 ctx->err = SDNS_ERROR_RR_SECTION_MALFORMED;
                 return NULL;
             }

@@ -7,12 +7,12 @@ SHELL = /bin/bash
 OUTDIR = bin
 DEPS = $(wildcard ./src/*.c)
 HDEPS = $(wildcard ./include/*.h)
-OBJS_wj = sdns.o sdns_print.o sdns_json.o sdns_dynamic_buffer.o sdns_utils.o
-LIBOBJS_wj = sdns.o sdns_print.o sdns_json.o sdns_dynamic_buffer.o sdns_utils.o
-OBJSTEST = sdns.o sdns_print.o sdns_json.o sdns_dynamic_buffer.o sdns_utils.o test1.o
+OBJS_wj = sdns.o sdns_print.o sdns_json.o sdns_dynamic_buffer.o sdns_utils.o sdns_api.o
+LIBOBJS_wj = sdns.o sdns_print.o sdns_json.o sdns_dynamic_buffer.o sdns_utils.o sdns_api.o
+OBJSTEST = sdns.o sdns_print.o sdns_json.o sdns_dynamic_buffer.o sdns_utils.o test1.o sdns_api.o
 LIBNAME = libsdns.so
-OBJS = sdns.o sdns_print.o sdns_dynamic_buffer.o sdns_utils.o
-LIBOBJS = sdns.o sdns_print.o sdns_dynamic_buffer.o sdns_utils.o
+OBJS = sdns.o sdns_print.o sdns_dynamic_buffer.o sdns_utils.o sdns_api.o
+LIBOBJS = sdns.o sdns_print.o sdns_dynamic_buffer.o sdns_utils.o sdns_api.o
 
 
 sdns: dummy $(OBJS) $(HDEPS)
@@ -29,6 +29,9 @@ sdns.o: src/sdns.c include/sdns.h
 	@$(CC) $(CFLAGS) -fPIC -c $< -o bin/$@
 
 sdns_print.o: src/sdns_print.c include/sdns_print.h
+	@$(CC) $(CFLAGS) -fPIC -c $< -o bin/$@
+
+sdns_api.o: src/sdns_api.c include/sdns_api.h
 	@$(CC) $(CFLAGS) -fPIC -c $< -o bin/$@
 
 sdns_json.o: src/sdns_json.c include/sdns_json.h

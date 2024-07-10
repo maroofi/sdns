@@ -4,6 +4,154 @@
 #include <stdint.h>
 #include <time.h>
 
+int safe_strcase_equal(const char * a, const char * b){
+    if (NULL == a || b == NULL)
+        return a==NULL && b==NULL?0:1;
+    else
+        return strcasecmp(a, b)==0?0:1;
+    return 1;
+}
+
+char * safe_strdup(const char * s){
+    return s==NULL?NULL:strdup(s);
+}
+
+unsigned long int cstr_len(const char * str){
+    if (!str)
+        return 0;
+    char * p = (char*)str;
+    unsigned long long int len = 0;
+    while (*p++)
+        len++;
+    return len;
+}
+
+
+char *cstr_chr(const char *s, int c){
+    if (!s)
+        return NULL;
+    char * t = (char*) s;
+    if (c == '\0')
+        return t + cstr_len(s);
+    while (*t != '\0'){
+        if (*t == c)
+            return t;
+        t++;
+    }
+    return NULL;
+}
+
+
+unsigned int cstr_count(const char * str, int ch){
+    // counts the number of occurrence of ch in str
+    // str must not be null
+    int cnt = 0;
+    char * tmp = (char*)str;
+    while (*tmp){
+        if (*tmp == ch)
+            cnt++;
+        tmp++;
+    }
+    return cnt;
+}
+
+unsigned int cstr_to_uint(const char * str){
+    // convert str to unsigned integer
+    // str must be positive integer less than 2^32-1
+    int i = 0;
+    int digit;
+    char * tmp = (char*)str;
+    while(*tmp){
+        digit = (int)(*tmp) - 0x30;
+        i = i * 10 + digit;
+        tmp++;
+    }
+    return i;
+}
+
+unsigned int cis_digit(int c){
+    return c >= 0x30 && c <= 0x39?1:0;
+}
+
+int cipv4_is_ip_valid(const char * ip){
+    if ((!ip) || (cstr_len(ip) < 7) || (cstr_count(ip, '.') != 3) || (cstr_len(ip) > 15))
+        return 0;
+    char * tmp = (char*)ip;
+    char * dot_pos = NULL;
+    char buffer[16] = {0};
+    int i = 0;
+    int is_invalid = 0;
+    int j = 0;
+    unsigned int part = 0;
+    size_t buffer_len = 0;
+    for(i =0; i<3; i++){
+        dot_pos = cstr_chr(tmp, '.');
+        j = 0;
+        while (tmp<dot_pos){
+            if (!cis_digit(*tmp))
+                return 0;
+            buffer[j] = *tmp;
+            tmp++;
+            j++;
+        }
+        buffer[j] = '\0';
+        buffer_len = cstr_len(buffer);
+        if ((buffer_len > 1 && buffer[0] == '0') || (buffer_len == 0))
+            return 0;
+
+        part = cstr_to_uint(buffer);
+        if (part > 255 || part < 0)
+            return 0;
+        tmp = dot_pos+1;
+    }
+    i = 0;
+    while (*tmp){
+        if (!cis_digit(*tmp))
+            return 0;
+        buffer[i++] = *tmp++;
+    }
+    buffer[i] = '\0';
+    buffer_len = cstr_len(buffer);
+    if ((buffer_len > 1 && buffer[0] == '0') || (buffer_len == 0))
+        return 0;
+    part = cstr_to_uint(buffer);
+    if (part < 0 || part > 255)
+        return 0;
+    return is_invalid == 1?0:1;           // valid
+}
+
+
+uint32_t cipv4_str_to_uint(const char *ip){
+    // convert IPv4 ip to a number representation
+    // example: 1.2.3.4 -> 16909060
+    // you need to make sure the input IP address is valid
+    // you can use cipv4_is_ip_valid() function for that.
+    uint32_t result = 0;
+    int i = 0;
+    int j = 0;
+    char * tmp = (char*)ip;
+    uint32_t part = 0;
+    char buffer[4] = {0};
+    char * dot_pos = NULL;
+    for (i=0; i< 3; i++){
+        dot_pos = cstr_chr(tmp, '.');
+        j = 0;
+        while(tmp < dot_pos)
+            buffer[j++] = *tmp++;
+        buffer[j] = '\0';
+        part = cstr_to_uint(buffer);
+        result = result + (part << ((3-i)*8));
+        tmp = dot_pos+1;
+    }
+    i = 0;
+    while (*tmp)
+        buffer[i++] = *tmp++;
+    buffer[i] = '\0';
+    part = cstr_to_uint(buffer);
+    result = result + part;
+    return result;
+}
+
 
 void print_c_array(char * buffer, unsigned long int buffer_len){
     // no allocation no leak
@@ -21,6 +169,27 @@ void print_c_array(char * buffer, unsigned long int buffer_len){
     }
     fprintf(stdout, "\n}\n");
 }
+
+char * hex2mem(char * hexdata){
+    // hexdata is a null-terminated string
+    // we calculate the length by strlen
+    uint16_t hexdata_len = hexdata == NULL?0:strlen(hexdata);
+    if (hexdata_len == 0)
+        return NULL;
+    if (hexdata_len % 2 != 0)
+        return NULL;
+    char * mem = (char *) malloc((int)(hexdata_len / 2));
+    if (mem == NULL)
+        return NULL;
+    char * pos = hexdata;
+    for (int i=0; i< (int)(hexdata_len/2); ++i){
+        sscanf(pos, "%2hhx", &(mem[i]));
+        pos += 2;
+    }
+    return mem;
+}
+
+
 
 char * mem2hex(char * mem, unsigned int mem_len){
     if (mem == NULL)

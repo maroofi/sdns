@@ -51,3 +51,62 @@ def func_test4(data):
     return 0
 # end def
 
+def func_testapi1(data):
+    assert(data.strip() == "success")
+    return 0;
+# end def
+
+def func_testapi_cookie1(data):
+    assert(data.strip() == "success")
+    return 0;
+# end def
+
+def func_testapi_cookie2(data):
+    assert(data.strip() == "success")
+    return 0;
+# end def
+
+def func_testapi_cookie3(data):
+    assert(data.strip() == "success")
+    return 0;
+# end def
+
+def func_testapi_nsid1(data):
+    assert(data.strip() == "success")
+    return 0;
+# end def
+
+def func_testapi_nsid(data):
+    assert(data.strip() == "success")
+    return 0;
+# end def
+
+def func_testapi_nsid2(data):
+    assert(data.strip() == "success")
+    return 0;
+# end def
+
+def func_testapi_nsid3(data):
+    assert(data.strip() == "success")
+    return 0;
+# end def
+
+def func_testapi_nsid4(data):
+    assert(data.strip() == "success")
+    return 0;
+# end def
+
+def func_testapi_nsid5(data):
+    assert(data.strip() == "success")
+    return 0;
+# end def
+
+def func_testapi_nsid6(data):
+    assert(data.strip() == "success")
+    return 0;
+# end def
+
+def func_testapi_nsid7(data):
+    assert(data.strip() == "success")
+    return 0;
+# end def

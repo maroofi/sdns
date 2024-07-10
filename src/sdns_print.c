@@ -323,6 +323,7 @@ void sdns_neat_print_rr_OPT(sdns_context * ctx, sdns_rr * rr){
         fprintf(stdout, "\n");
         opt = opt->next;
     }
+    fprintf(stdout, "\t*********\n");
     if (rr->decoded == 0)
         sdns_free_opt_rdata(orig);
     return;
@@ -354,6 +355,8 @@ void sdns_neat_print_rr_A(sdns_context * ctx, sdns_rr * rr){
     ipaddress = a->address;
     cipv4_uint_to_str(ipaddress, ip);
     fprintf(stdout, "\t%s\t%u\t%s\t%s\t\t%s\n", rr->name, rr->ttl, buff_class, buff_type, ip);
+    if (rr->decoded == 0)
+        sdns_free_rr_A(a);
 }
 
 void sdns_neat_print_rr_TXT(sdns_context * ctx, sdns_rr * rr){

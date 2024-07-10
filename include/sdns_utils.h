@@ -5,6 +5,15 @@
 #define DNS_UTILS_H
 
 ///////////////////////declaration/////////////////////////////////
+
+char * safe_strdup(const char * s);
+int safe_strcase_equal(const char * a, const char * b);
+
+
+int cipv4_is_ip_valid(const char *);
+uint32_t cipv4_str_to_uint(const char *ip);
+
+char * hex2mem(char * hexdata);
 char * mem2hex(char * mem, unsigned int mem_len);
 uint32_t bytes_to_unix_timestamp(char * bytes);
 void print_c_array(char * buffer, unsigned long int buffer_len);

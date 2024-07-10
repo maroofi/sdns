@@ -29,6 +29,11 @@
  *  So if we found a compressed name in those sections, we return this error*/
 #define SDNS_ERROR_ILLEGAL_COMPRESSION -14              ///< Compressed label found when it's illegal
 #define SDNS_ERROR_RR_SECTION_MALFORMED -15             ///< Resource Record section is malformed (not enough or wrong data)
+#define SDNS_ERROR_INVALID_HEX_VALUE -16               ///< User entered a hex string that is not valid
+#define SDNS_ERROR_WRONG_INPUT_PARAMETER -17           ///< The input parameter is not valid
+#define SDNS_ERROR_NSID_NOT_FOUND        -18           ///< There is no NSID in the DNS packet.
+#define SDNS_ERROR_CLIENT_COOKIE_NOT_FOUND   -19       ///< There is no client cookie in the DNS packet.
+
 
 
 // define the section types
@@ -321,6 +326,7 @@ typedef enum {
     sdns_rr_type_DOA=259,           ///< Digital Object Architecture
     sdns_rr_type_AMTRELAY=260,      ///< Automatic Multicast Tunneling Relay	[RFC8777]
     sdns_rr_type_RESINFO=261,       ///< Resolver Information as Key/Value Pairs
+    sdns_rr_type_WALLET=262,        ///< Public wallet address
     sdns_rr_type_TA=32768,          ///< DNSSEC Trust Authorities
     sdns_rr_type_DLV=32769          ///< DNSSEC Lookaside Validation (OBSOLETE)
 } sdns_rr_type;
@@ -940,7 +946,8 @@ sdns_rr * sdns_init_rr(char * name, uint16_t type, uint16_t class, uint32_t ttl,
 int sdns_create_edns_option(uint16_t, uint16_t, char *, sdns_opt_rdata**);
 int sdns_add_edns(sdns_context * ctx, sdns_opt_rdata * opt);
 sdns_opt_rdata * sdns_create_edns0_ede(uint16_t info_code, char * extra_text, uint16_t extra_text_len);
-sdns_opt_rdata * sdns_create_edns0_nsid(void);
+
+sdns_opt_rdata * sdns_create_edns0_nsid(char * nsid, uint16_t nsid_len);
 
 // add whatever function you want to ends0 section
 int sdns_ends0_option_code_to_text(sdns_edns0_option_code oc, char * buffer);
@@ -1006,6 +1013,22 @@ sdns_rr_AAAA* sdns_init_rr_AAAA(char * aaaa);
  * @return a pointer to ::sdns_rr_TXT structure on success and NULL on fail
  */
 sdns_rr_TXT* sdns_init_rr_TXT(char * data, uint16_t data_len);
+
+/**
+ * @brief Initialize a structure of ::sdns_rr_SRV
+ *
+ * @param Priority 16-bit unsigned value for the priority of the SRV record
+ * @param Weight 16-bit unsigned value for the weight of the SRV record
+ * @param Port 16-bit unsigned value for the port of the SRV record
+ * @param target A pointer to the target value of the SRV record
+ *
+ * NOTE: do not free the 'target' pointer after calling this method. This function does not copy 
+ * the memory but use the pointer. Make sure it's a heap-allocated memory to avoid memory leak.
+ *
+ * @return a pointer to ::sdns_rr_SRV structure on success and NULL on fail
+ */
+sdns_rr_SRV * sdns_init_rr_SRV(uint16_t Priority, uint16_t Weight, uint16_t Port, char * target);
+
 
 /**
  * @brief Initialize a structure of ::sdns_rr_MX
@@ -1293,9 +1316,12 @@ int sdns_ends0_option_code_to_text(sdns_edns0_option_code oc, char * buffer);
 /**
  * @brief Creates and adds a cookie in the DNS packet
  *
- * @param client_cookie This parameter can not be NULL. It must be provided and the length is exactly 8 characters.
+ * @param client_cookie This parameter can not be NULL. It must be provided and the length is exactly 8 bytes.
  * @param server_cookie this is an optional parameter which can be NULL or a pointer to a memory which stores the cookie
  * @param server_cookie_len The length of the server cookie which can be between 8 and 32 (both valued included).
+ *
+ * the caller can free() the memory of 'client_cookie' and 'server_cookie' params after calling the method. The
+ * library creates an internal copy of the data.
  *
  * @return a pointer to an instance of type ::sdns_opt_rdata on success, NULL on failure.
  *
@@ -1325,5 +1351,29 @@ void sdns_rr_type_to_string(uint16_t t, char * buff);
  * Currently, a buffer of length 20 is enough.
  */
 void sdns_class_to_string(uint16_t cls, char * buff);
+
+
+/**
+ * @brief Converts text type to its numerical value
+ * @param type a pointer to the type string (e.g., "AAAA")
+ *
+ *
+ * @return A positive integer on success showing the type or negative value in case of unknown type
+ */
+int sdns_convert_type_to_int(char * type);
+
+
+/**
+ * @brief Converts text class to its numerical value
+ * @param type a pointer to the class string (e.g., "IN" or "ch")
+ *
+ *
+ * @return A positive integer on success showing the DNS class or negative value in case of unknown class
+ */
+int sdns_convert_class_to_int(char * cls);
+
+
+
+
 
 #endif
