@@ -27,3 +27,5 @@ jobs:
 
     - name: Make
       run: make
+    - name: Run tests without valgrind
+      run: cd test && ./sdns_test.sh
