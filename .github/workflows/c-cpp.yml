@@ -13,7 +13,7 @@ jobs:
 
     steps:
     - name: use repo content
-    - uses: action/checkout@main
+      uses: action/checkout@main
 
     - name: Install dependencies
       run: 
