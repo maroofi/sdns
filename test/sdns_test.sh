@@ -1,5 +1,14 @@
 #!/bin/bash
 
+with_valgrind=$1
+valgrind=0
+if [ "$with_valgrind" =  "with-valgrind" ] 
+then
+   valgrind=1
+fi
+
+echo "testing with valgrind...."
+
 script_dir=$(dirname "$(realpath $0)")
 echo "Current directory is: $script_dir"
 
@@ -45,6 +54,22 @@ do
         exit 1
     fi
     echo "Success"
+
+    if [ $valgrind -eq 1 ]
+    then
+        echo  -n "Testing valgrind ($c_file)...."
+        valgrind --leak-check=full -s ./test > tmp_result 2>&1
+        cat tmp_result | grep -F 'ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)' > /dev/null
+        if [ $? -ne 0 ]
+        then
+            echo ""
+            echo "Error in valgrind.....for test: $c_file"
+            cat tmp_result
+            rm -f tmp_result
+            exit 2
+        fi
+        echo "Success"
+    fi
     # remove the result temporary file
     rm -f tmp_result
     rm -f test
