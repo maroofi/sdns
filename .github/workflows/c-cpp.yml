@@ -28,6 +28,6 @@ jobs:
     - name: Make
       run: make with-json
     - name: Run tests without valgrind
-      run: cd test && ./sdns_test.sh
+      run: cd test && ./sdns_test.sh with-valgrind
     - name: Done
       run: echo 'Github Actions are terrible!'
