@@ -1,3 +1,5 @@
+[![C-build-and-test](https://github.com/maroofi/sdns/actions/workflows/c-cpp.yml/badge.svg)](https://github.com/maroofi/sdns/actions/workflows/c-cpp.yml)
+
 ### sdns - low-level DNS library in C
 
 A small DNS library written in C
