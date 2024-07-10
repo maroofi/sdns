@@ -14,11 +14,14 @@ jobs:
     steps:
     - name: use repo content
       uses: actions/checkout@main
-
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
     - name: Install dependencies
       run: 
         sudo apt install -y libjansson-dev
-        pip3 install jsoncomparison
+        python -m pip install jsoncomparison
 
     - name: Make
       run: make
