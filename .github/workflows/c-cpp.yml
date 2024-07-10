@@ -19,13 +19,15 @@ jobs:
       with:
         python-version: '3.x'
     - name: Install dependencies
-      run: 
-        sudo apt install -y libjansson-dev
+      run:
+        sudo apt install -y libjansson-dev valgrind
     - name: Install python package
       run:
         python -m pip install jsoncomparison
 
     - name: Make
-      run: make
+      run: make with-json
     - name: Run tests without valgrind
       run: cd test && ./sdns_test.sh
+    - name: Done
+      run: echo 'Github Actions are terrible!'
