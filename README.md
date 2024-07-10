@@ -33,6 +33,23 @@ gcc  -o test/test -Iinclude test/test1.c  -Lbin -lsdns -ljansson
 
 NOTE: Another way of using this library in you project is to simply copy all the `src/*.c` and `include/*.h` files into your project.
 
+### Running tests
+
+Tests are using Python3 and bash. You can optionally use valgrind to check memory leaks as well. You need to have 'jsoncomparison' package installed.
+```bash
+# make sure you make the library with-json
+make with-json
+
+cd test
+pip install jsoncomparison
+
+# Running the tests without valgrind
+./sdns_test.sh
+
+# Or running the tests with valgrind
+./sdns_test.sh with-valgrind
+```
+
 ### Documentation
 
 Here is the online documentation of the library: [https://maroofi.github.io/sdns](https://maroofi.github.io/sdns)
