@@ -19,7 +19,6 @@ sdns_context * sdns_from_network(char * buff, uint16_t buff_len){
     dns->raw_len = buff_len;
     int res = sdns_from_wire(dns);
     if (res != 0){
-        fprintf(stderr, "result of decoding is: %d\n", res);
         sdns_free_context(dns);
         return NULL;
     }
@@ -770,6 +769,121 @@ int sdns_add_rr_additional_SRV(sdns_context * dns, char * name, uint32_t ttl,
         return res;
     }
     return 0;   // success
+}
+
+int sdns_add_rr_answer_HINFO(sdns_context * dns, char * name, uint32_t ttl,
+                                 char * os, uint8_t os_len, char* cpu, uint8_t cpu_len){
+    if (NULL == dns)
+        return SDNS_ERROR_BUFFER_IS_NULL;
+    char * new_os = NULL;
+    char * new_cpu = NULL;
+    if (os_len > 0 && os == NULL)
+        return SDNS_ERROR_WRONG_INPUT_PARAMETER;
+    if (cpu_len > 0 && cpu == NULL)
+        return SDNS_ERROR_WRONG_INPUT_PARAMETER;
+    if (cpu_len > 0 && cpu != NULL)
+        new_cpu = mem_copy(cpu, cpu_len);
+    if (os_len > 0 && os != NULL)
+        new_os = mem_copy(os, os_len);
+    
+    sdns_rr_HINFO * hinfo  = sdns_init_rr_HINFO(cpu_len, new_cpu, os_len, new_os);
+    if (NULL == hinfo){
+        free(new_os);
+        free(new_cpu);
+        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
+    }
+    char * section_name = name == NULL?NULL:strdup(name);
+    sdns_rr * rr = sdns_init_rr(section_name, sdns_rr_type_HINFO, sdns_q_class_IN, ttl, 0, 1, (void*) hinfo);
+    if (NULL == rr){
+        sdns_free_rr_HINFO(hinfo);
+        free(section_name);
+        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
+    }
+    int res = sdns_add_answer_section(dns, rr);
+    if (res != 0){
+        free(rr->name);
+        free(rr);
+        free(hinfo);
+        return res;
+    }
+    return 0;   //success
+}
+
+int sdns_add_rr_authority_HINFO(sdns_context * dns, char * name, uint32_t ttl,
+                                 char * os, uint8_t os_len, char* cpu, uint8_t cpu_len){
+    if (NULL == dns)
+        return SDNS_ERROR_BUFFER_IS_NULL;
+    char * new_os = NULL;
+    char * new_cpu = NULL;
+    if (os_len > 0 && os == NULL)
+        return SDNS_ERROR_WRONG_INPUT_PARAMETER;
+    if (cpu_len > 0 && cpu == NULL)
+        return SDNS_ERROR_WRONG_INPUT_PARAMETER;
+    if (cpu_len > 0 && cpu != NULL)
+        new_cpu = mem_copy(cpu, cpu_len);
+    if (os_len > 0 && os != NULL)
+        new_os = mem_copy(os, os_len);
+    
+    sdns_rr_HINFO * hinfo  = sdns_init_rr_HINFO(cpu_len, new_cpu, os_len, new_os);
+    if (NULL == hinfo){
+        free(new_os);
+        free(new_cpu);
+        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
+    }
+    char * section_name = name == NULL?NULL:strdup(name);
+    sdns_rr * rr = sdns_init_rr(section_name, sdns_rr_type_HINFO, sdns_q_class_IN, ttl, 0, 1, (void*) hinfo);
+    if (NULL == rr){
+        sdns_free_rr_HINFO(hinfo);
+        free(section_name);
+        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
+    }
+    int res = sdns_add_authority_section(dns, rr);
+    if (res != 0){
+        free(rr->name);
+        free(rr);
+        free(hinfo);
+        return res;
+    }
+    return 0;   //success
+}
+
+
+int sdns_add_rr_additional_HINFO(sdns_context * dns, char * name, uint32_t ttl,
+                                 char * os, uint8_t os_len, char* cpu, uint8_t cpu_len){
+    if (NULL == dns)
+        return SDNS_ERROR_BUFFER_IS_NULL;
+    char * new_os = NULL;
+    char * new_cpu = NULL;
+    if (os_len > 0 && os == NULL)
+        return SDNS_ERROR_WRONG_INPUT_PARAMETER;
+    if (cpu_len > 0 && cpu == NULL)
+        return SDNS_ERROR_WRONG_INPUT_PARAMETER;
+    if (cpu_len > 0 && cpu != NULL)
+        new_cpu = mem_copy(cpu, cpu_len);
+    if (os_len > 0 && os != NULL)
+        new_os = mem_copy(os, os_len);
+    
+    sdns_rr_HINFO * hinfo  = sdns_init_rr_HINFO(cpu_len, new_cpu, os_len, new_os);
+    if (NULL == hinfo){
+        free(new_os);
+        free(new_cpu);
+        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
+    }
+    char * section_name = name == NULL?NULL:strdup(name);
+    sdns_rr * rr = sdns_init_rr(section_name, sdns_rr_type_HINFO, sdns_q_class_IN, ttl, 0, 1, (void*) hinfo);
+    if (NULL == rr){
+        sdns_free_rr_HINFO(hinfo);
+        free(section_name);
+        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
+    }
+    int res = sdns_add_additional_section(dns, rr);
+    if (res != 0){
+        free(rr->name);
+        free(rr);
+        free(hinfo);
+        return res;
+    }
+    return 0;   //success
 }
 
 

@@ -9,7 +9,7 @@
 
 
 /**
- * @brief Covnerts the received binary data from the socket to a DNS packet
+ * @brief Converts the received binary data from the socket to a DNS packet
  * @param buff A pointer to the buffer we received the data from socket
  * @param buff_len an unsigned 16-bit integer showing the size of the buffer
  * 
@@ -136,6 +136,7 @@ int sdns_add_rr_additional_TXT(sdns_context * dns, char * name, uint32_t ttl, ch
  * @param name the domain name we want to query
  * @param type the type string in a form of "A", "AAAA", ...
  * @param cls the class of query in a form of "IN", "ch"
+ * 
  * 
  * All the parameters are copied internally. The caller can free them after calling the method (if it's necessary).
  *
@@ -300,6 +301,21 @@ int sdns_add_rr_authority_SRV(sdns_context * dns, char * name, uint32_t ttl,
  */
 int sdns_add_rr_additional_SRV(sdns_context * dns, char * name, uint32_t ttl, 
                            uint16_t priority, uint16_t weight, uint16_t port, char * target);
+
+
+int sdns_add_rr_answer_HINFO(sdns_context * dns, char * name, uint32_t ttl,
+                             char * os, uint8_t os_len, char * cpu, uint8_t cpu_len);
+
+
+int sdns_add_rr_authority_HINFO(sdns_context * dns, char * name, uint32_t ttl,
+                             char * os, uint8_t os_len, char * cpu, uint8_t cpu_len);
+
+
+int sdns_add_rr_additional_HINFO(sdns_context * dns, char * name, uint32_t ttl,
+                             char * os, uint8_t os_len, char * cpu, uint8_t cpu_len);
+
+
+
 
 /**
  * @brief Adds cookie to DNS packet. 
@@ -478,6 +494,7 @@ char * sdns_get_value_nsid(sdns_context * dns, int * err, uint16_t *nsid_len);
  * @return A pointer to the memory the client cookie is stored or NULL in case of error.
  */
 char * sdns_get_value_cookie_client(sdns_context * dns, int * err);
+
 
 
 

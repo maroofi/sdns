@@ -294,6 +294,7 @@ static int decode_rr_from_buffer(sdns_context * ctx, sdns_rr ** result_section, 
         ctx->cursor += 2;
             
         if (! check_if_rrtype_is_valid(tmp_rr_section->type)){
+            ERROR("The rr name is: %s\n", tmp_rr_section->name);
             ERROR("The RR type is not recognised: %d\n", tmp_rr_section->type);
             _free_unknown_rr(rr_section);
             return sdns_rcode_FormErr;
@@ -482,7 +483,7 @@ static int _encode_write_rr_PTR(sdns_context * ctx, dyn_buffer* db, sdns_rr* tmp
     int res = _encode_label_compressed(ptr->PTRDNAME, db, buffer);
     if (res != SDNS_ERROR_ELSIMPLE && res != SDNS_ERROR_ELCOMPRESSED)
         return res;
-    uint16_t rdlength = strlen(buffer);
+    uint16_t rdlength = res == SDNS_ERROR_ELSIMPLE?strlen(buffer)+1:strlen(buffer);
     tmp_bytes[0] = (uint8_t) (rdlength >> 8 & 0xFF);
     tmp_bytes[1] = (uint8_t)(rdlength & 0xFF);
     dyn_buffer_append(db, tmp_bytes, 2);    // rdlength
@@ -632,6 +633,67 @@ static int _encode_write_rr_RRSIG(sdns_context * ctx, dyn_buffer * db, sdns_rr *
     return sdns_rcode_NoError;
 }
 
+static int _encode_write_rr_SRV(sdns_context * ctx, dyn_buffer* db, sdns_rr * tmprr){
+    // the 'target' field of SRV can not use compression based on RFC 2782
+    int res_target = -1;
+    char target[256] = {0x00};
+    char tmp_bytes[10] = {0x00};
+    uint16_t rdlength = 0;
+    sdns_rr_SRV * srv = (sdns_rr_SRV*) tmprr->psdns_rr;
+    res_target = _encode_label_simple(srv->Target, target);
+    if (res_target != SDNS_ERROR_ELSIMPLE){
+        ctx->err = res_target;
+        return res_target;
+    }
+    rdlength = strlen(target) + 1 + 6; // len(target)+1+priority+weight+port
+    tmp_bytes[0] = (uint8_t) ((rdlength >> 8) & 0xFF);
+    tmp_bytes[1] = (uint8_t)(rdlength & 0xFF);
+    dyn_buffer_append(db, tmp_bytes, 2);    // rdlength
+    // priority
+    tmp_bytes[0] = (uint8_t)((srv->Priority >> 8) & 0xFF);
+    tmp_bytes[1] = (uint8_t)(srv->Priority & 0xFF);
+    dyn_buffer_append(db, tmp_bytes, 2);
+
+    // weight
+    tmp_bytes[0] = (uint8_t)((srv->Weight >> 8) & 0xFF);
+    tmp_bytes[1] = (uint8_t)(srv->Weight & 0xFF);
+    dyn_buffer_append(db, tmp_bytes, 2);
+    // port
+    tmp_bytes[0] = (uint8_t)((srv->Port >> 8) & 0xFF);
+    tmp_bytes[1] = (uint8_t)(srv->Port & 0xFF);
+    dyn_buffer_append(db, tmp_bytes, 2);
+    // target
+    dyn_buffer_append(db, target, strlen(target)+1);
+    return sdns_rcode_NoError;
+}
+
+static int _encode_write_rr_HINFO(sdns_context * ctx, dyn_buffer* db, sdns_rr* tmprr){
+    // cpu and os are each, ONE <character-string>
+    char tmp_bytes[10] = {0x00};
+    sdns_rr_HINFO * hinfo = (sdns_rr_HINFO*) tmprr->psdns_rr;
+    if (hinfo->cpu_len > 255 || hinfo->os_len > 255){
+       return SDNS_ERROR_CHARACTER_STRING_TOO_LONG;
+    }
+    uint16_t rdlength = hinfo->cpu_len + hinfo->os_len;
+    rdlength += 2;  // one byte for the length itself of each <character-string>
+    tmp_bytes[0] = (uint8_t) ((rdlength >> 8) & 0xFF);
+    tmp_bytes[1] = (uint8_t)(rdlength & 0xFF);
+    dyn_buffer_append(db, tmp_bytes, 2);    // rdlength
+    // cpu-len
+    tmp_bytes[0] = (uint8_t) hinfo->cpu_len;
+    dyn_buffer_append(db, tmp_bytes, 1);
+    if (hinfo->cpu_len > 0){
+        dyn_buffer_append(db, hinfo->cpu, hinfo->cpu_len);
+    }
+    // os-len
+    tmp_bytes[0] = (uint8_t) hinfo->os_len;
+    dyn_buffer_append(db, tmp_bytes, 1);
+    if (hinfo->os_len > 0){
+        dyn_buffer_append(db, hinfo->os, hinfo->os_len);
+    }
+    return sdns_rcode_NoError;
+}
+
 static int _encode_write_rr_SOA(sdns_context * ctx, dyn_buffer* db, sdns_rr* tmprr){
     int res_mname = -1;
     int res_rname = -1;
@@ -688,7 +750,7 @@ static int _encode_write_rr_SOA(sdns_context * ctx, dyn_buffer* db, sdns_rr* tmp
 }
 
 static int _encode_write_rr(sdns_context * ctx, dyn_buffer* db, sdns_rr* tmprr){
-    //TODO: implement AAAA, SRV, HINFO, L32, L64, URI, NID, LP
+    //TODO: implement AAAA, L32, L64, URI, NID, LP
     // different strategies based on the typeof RR
     if (tmprr->type == sdns_rr_type_A)
         return _encode_write_rr_A(ctx, db, tmprr);
@@ -708,6 +770,10 @@ static int _encode_write_rr(sdns_context * ctx, dyn_buffer* db, sdns_rr* tmprr){
         return _encode_write_rr_SOA(ctx, db, tmprr);
     if (tmprr->type == sdns_rr_type_RRSIG)
         return _encode_write_rr_RRSIG(ctx, db, tmprr);
+    if (tmprr->type == sdns_rr_type_SRV)
+        return _encode_write_rr_SRV(ctx, db, tmprr);
+    if (tmprr->type == sdns_rr_type_HINFO)
+        return _encode_write_rr_HINFO(ctx, db, tmprr);
     ERROR("We have not implemented DNS RR of type: %d", tmprr->type);
     return sdns_rcode_NotImp;
 }
@@ -1582,7 +1648,7 @@ sdns_rr_PTR * sdns_decode_rr_PTR(sdns_context * ctx, sdns_rr * rr){
     int res = decode_name(ctx, &name);
     if (res != sdns_rcode_NoError){
         ctx->err = sdns_rcode_FormErr;
-        ERROR("Error in parsing name of the NS record: %d\n", res);
+        ERROR("Error in parsing name of the PTR record: %d\n", res);
         return NULL;
     }
     ptr->PTRDNAME = name;
@@ -2201,6 +2267,8 @@ void sdns_error_string(int err, char ** err_buffer){
         strcpy(*err_buffer, "There is no NSID in the DNS packet");
     else if (err == SDNS_ERROR_CLIENT_COOKIE_NOT_FOUND)
         strcpy(*err_buffer, "There is no client cookie in the DNS packet");
+    else if (err == SDNS_ERROR_CHARACTER_STRING_TOO_LONG)
+        strcpy(*err_buffer, "Maximum size of a <character-string> is 255 bytes");
     else if (err == sdns_rcode_FormErr)
         strcpy(*err_buffer, "FormErr");
     else if (err == sdns_rcode_NoError)

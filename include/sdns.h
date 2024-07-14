@@ -33,7 +33,7 @@
 #define SDNS_ERROR_WRONG_INPUT_PARAMETER -17           ///< The input parameter is not valid
 #define SDNS_ERROR_NSID_NOT_FOUND        -18           ///< There is no NSID in the DNS packet.
 #define SDNS_ERROR_CLIENT_COOKIE_NOT_FOUND   -19       ///< There is no client cookie in the DNS packet.
-
+#define SDNS_ERROR_CHARACTER_STRING_TOO_LONG -20       ///< Maximum size of character string is 255 character
 
 
 // define the section types
