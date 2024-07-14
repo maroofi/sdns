@@ -130,8 +130,10 @@ static int decode_name(sdns_context * ctx, char ** decoded_name){
             return SDNS_ERROR_BUFFER_TOO_SHORT;
         }
         to_read = (uint8_t) bytes[0] & 0x000000FF;
-        if (tmp_buff >= sofar)      // only increase consume if we read forward in the packet raw data
+        if (tmp_buff >= sofar){      // only increase consume if we read forward in the packet raw data
             consumed += 1;
+            sofar += 1;
+        }
         tmp_buff += 1;
         if (to_read == 0){        // if we reach NULL, we are done!
             //we are done
@@ -154,9 +156,11 @@ static int decode_name(sdns_context * ctx, char ** decoded_name){
                 return SDNS_ERROR_ILLEGAL_COMPRESSION;
             }
             // we are good to jump now
-            //DEBUG("We need to jump to %d\n", to_read);
-            if (tmp_buff >= sofar)
+            DEBUG("We need to jump to %d\n", offset);
+            if (tmp_buff >= sofar){
                 consumed += 1;
+                sofar += 1;
+            }
             tmp_buff = ctx->raw + offset;
             continue;
         }else if (to_read <= 63){  // no compression as the first 2 bits are 00
@@ -170,7 +174,7 @@ static int decode_name(sdns_context * ctx, char ** decoded_name){
                     ERROR("NULL character found in the middle of qname");
                     return sdns_rcode_FormErr;
                 }
-                //DEBUG("READ one byte: %c\n", tmp_buff[i]);
+                DEBUG("READ one byte: %c\n", tmp_buff[i]);
                 qname_result[l] = tmp_buff[i];
                 label_char_count++;
                 if (label_char_count > 63){  // can 't have a label > 63
@@ -182,8 +186,10 @@ static int decode_name(sdns_context * ctx, char ** decoded_name){
             label_char_count = 0;
             l++;
             tmp_buff += to_read;
-            if (tmp_buff >= sofar)
+            if (tmp_buff >= sofar){
                 consumed += to_read;
+                sofar += to_read;
+            }
         }else{  // 01 and 10 are not used yet!
             ERROR("Wrong qname encoding specified (01 or 10)");
             return sdns_rcode_FormErr;
@@ -1689,6 +1695,13 @@ sdns_rr_SOA * sdns_decode_rr_SOA(sdns_context * ctx, sdns_rr * rr){
     // we assume that we have enough data in the `rr` as we have already parsed it as an rr
     char * name = NULL;
     ctx->cursor = rr->rdata;
+    if (ctx->raw_len - (ctx->cursor - ctx->raw) < rr->rdlength){
+        ERROR("packet is not long enough.....");
+        sdns_free_rr_SOA(soa);
+        ctx->err = SDNS_ERROR_RR_SECTION_MALFORMED;
+        return NULL;
+    }
+
     int res = decode_name(ctx, &name);
     if (res != sdns_rcode_NoError){
         ERROR("Error in parsing mname of soa record: %d\n", res);
@@ -1703,18 +1716,7 @@ sdns_rr_SOA * sdns_decode_rr_SOA(sdns_context * ctx, sdns_rr * rr){
     }
     soa->rname = name;
     name = NULL;
-    if (rr->rdlength - (ctx->cursor - rr->rdata) < 20){
-        ERROR("packet is not long enought.....");
-        sdns_free_rr_SOA(soa);
-        ctx->err = SDNS_ERROR_RR_SECTION_MALFORMED;
-        return NULL;
-    }
-    if (ctx->raw_len - (ctx->cursor - ctx->raw) < 20){
-        ERROR("packet is not long en.....");
-        sdns_free_rr_SOA(soa);
-        ctx->err = SDNS_ERROR_RR_SECTION_MALFORMED;
-        return NULL;
-    }
+
     soa->serial = read_uint32_from_buffer(ctx->cursor);
     ctx->cursor += 4;
     soa->refresh = read_uint32_from_buffer(ctx->cursor);
