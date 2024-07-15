@@ -52,6 +52,7 @@ void dyn_buffer_free(dyn_buffer * ctx){
     free(ctx->buffer);
     ctx->buffer = NULL;
     free(ctx);
+    ctx = NULL;
 }
 
 void dyn_buffer_reset(dyn_buffer * ctx){

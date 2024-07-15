@@ -11,6 +11,7 @@
 #include <sdns_print.h>
 //compile: gcc -g -o sdns.o dns_utils.c sdns.c neat_print.c dynamic_buffer.c -I. -DLOG_DEBUG -DLOG_INFO && ./sdns.o
 
+static void sdns_free_message(sdns_message * msg);
 
 /****************end of static functions declaration************/
 
@@ -273,6 +274,7 @@ static int decode_rr_from_buffer(sdns_context * ctx, sdns_rr ** result_section, 
         if (tmp_rr_section == NULL){
             tmp_rr_section = sdns_init_rr(NULL, 0, 0, 0, 0, 0, NULL);
             if (tmp_rr_section == NULL){
+                ERROR("we hit _free_unknown_rr");
                 _free_unknown_rr(rr_section);
                 return SDNS_ERROR_MEMORY_ALLOC_FAILD;
             }
@@ -287,12 +289,14 @@ static int decode_rr_from_buffer(sdns_context * ctx, sdns_rr ** result_section, 
         an_res = decode_name(ctx, &qname_result);
         if (an_res != sdns_rcode_NoError){
             DEBUG("We got error, let's free the memory.......");
+            ERROR("There is an error here");
             _free_unknown_rr(rr_section);
             return an_res;
         }
         tmp_rr_section->name = qname_result;
         INFO("NAME from answer #%d: %s", i+1, qname_result);
         if (ctx->raw_len < (ctx->cursor - ctx->raw + 10)){
+            ERROR("we hit here");
             _free_unknown_rr(rr_section);
             return sdns_rcode_FormErr;
         }
@@ -328,6 +332,7 @@ static int decode_rr_from_buffer(sdns_context * ctx, sdns_rr ** result_section, 
             if (ctx->raw_len >= (ctx->cursor - ctx->raw)){
                 tmp_rr_section->rdata = ctx->cursor;
             }else{
+                ERROR("we have error here");
                 _free_unknown_rr(rr_section);
                 return sdns_rcode_FormErr;
             }
@@ -1565,8 +1570,10 @@ sdns_rr_TXT * sdns_decode_rr_TXT(sdns_context * ctx, sdns_rr * rr){
         }
         offset = db->buffer + db->cursor;
         if (ctx->raw_len - ((rr->rdata + cnt) - ctx->raw) < 1){
+            ERROR("the packet is malformed..........");
             if (original->character_string.content == NULL){    // the first one is NULL
                 dyn_buffer_free(db);
+                db = NULL;
             }
             sdns_free_rr_TXT(original);
             ctx->err = SDNS_ERROR_RR_SECTION_MALFORMED;
@@ -1575,19 +1582,33 @@ sdns_rr_TXT * sdns_decode_rr_TXT(sdns_context * ctx, sdns_rr * rr){
         to_copy = (uint8_t)* (rr->rdata + cnt);
         cnt++;
         if (rdlen - cnt < to_copy){ // we don't have enough data to copy
-            if (original->character_string.content == NULL){    // the first one is NULL
+            if (original->character_string.content == NULL){
                 dyn_buffer_free(db);
+                db = NULL;
             }
+            if (original != txt)
+                sdns_free_rr_TXT(txt);
             sdns_free_rr_TXT(original);
             ctx->err = SDNS_ERROR_RR_SECTION_MALFORMED;
+            if (db != NULL){
+                db->buffer = NULL;
+                free(db);
+            }
             return NULL;
         }
         if (ctx->raw_len - ((rr->rdata + cnt) - ctx->raw) < to_copy){
-            if (original->character_string.content == NULL){    // the first one is NULL
+            if (original->character_string.content == NULL){
                 dyn_buffer_free(db);
+                db = NULL;
             }
+            if (original != txt)
+                sdns_free_rr_TXT(txt);
             sdns_free_rr_TXT(original);
             ctx->err = SDNS_ERROR_RR_SECTION_MALFORMED;
+            if (db != NULL){
+                db->buffer = NULL;
+                free(db);
+            }
             return NULL;
         }
         dyn_buffer_append(db, rr->rdata + cnt, to_copy);
@@ -1817,6 +1838,9 @@ int sdns_from_wire(sdns_context * ctx){
         int ar_result = decode_rr_from_buffer(ctx, &section, ctx->msg->header.arcount);
         if (ar_result != sdns_rcode_NoError){
             ERROR("Error happend in decoding additional seciton: %d", ar_result);
+            // what should be free here?
+            sdns_free_message(ctx->msg);
+            ctx->msg = NULL;
             return ar_result;
         }
         ctx->msg->additional = section;
@@ -2569,7 +2593,7 @@ void sdns_free_rr(sdns_rr * rr){
     }
 }
 
-void sdns_free_message(sdns_message * msg){
+static void sdns_free_message(sdns_message * msg){
     if (NULL == msg)
         return;
     free(msg->question.qname);
