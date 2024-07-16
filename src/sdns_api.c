@@ -325,6 +325,59 @@ int sdns_add_rr_additional_TXT(sdns_context * dns, char * name, uint32_t ttl, ch
     return 0;  //success
 }
 
+int sdns_remove_edns(sdns_context * dns){
+    // this function remove edns0 (type OPT) from a packet if exists
+    if (dns == NULL)
+        return SDNS_ERROR_BUFFER_IS_NULL;
+    sdns_rr* additional = dns->msg->additional;
+    if (NULL == additional)    // there is nothing to remove
+        return 0;
+    sdns_rr * tmp = additional;
+    int found = 0;
+    while(additional){
+        if (additional->type == sdns_rr_type_OPT){
+            found = 1;
+            break;
+        }
+        if (tmp != additional){
+            tmp = additional;
+        }
+        additional = additional->next;
+    }
+    if (found == 1){
+        // we have found an OPT record and 'additional' points to it. 
+        // 'tmp' points to the previous rr of additional section
+        // link previous to next one
+        tmp->next = additional->next;
+        if (tmp == additional){
+            // this is the first record
+            dns->msg->additional = tmp->next;
+        }
+        // now we need to free additional
+        free(additional->name);
+        additional->next = NULL;
+        // we need to reduce the arcount  in the header as well
+        dns->msg->header.arcount -= 1;
+        if (additional->decoded == 1){
+            sdns_opt_rdata * opt = additional->opt_rdata;
+            sdns_opt_rdata * tmpopt = opt;
+            while (opt){
+                free(opt->option_data);
+                tmpopt = opt->next;
+                free(opt);
+                opt = tmpopt;
+            }
+            free(additional);
+        }else{
+            free(additional->rdata);
+            free(additional);
+        }
+    }else{
+        // we don't have OPT record. Let's return
+        return 0;
+    }
+    return 0;  // success
+}
 
 sdns_context * sdns_create_query(char * name, char * type, char * cls){
     if (name == NULL || type == NULL || cls == NULL)
@@ -973,7 +1026,7 @@ int sdns_set_do(sdns_context * dns, uint8_t do_bit){
         }
         additional = additional->next;
     }
-    return 1;   //success
+    return 0;   //success
 }
 
 int sdns_set_tc(sdns_context * dns, uint8_t tc_bit){

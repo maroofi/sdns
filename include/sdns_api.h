@@ -303,17 +303,44 @@ int sdns_add_rr_additional_SRV(sdns_context * dns, char * name, uint32_t ttl,
                            uint16_t priority, uint16_t weight, uint16_t port, char * target);
 
 
+
+/**
+ * @brief Adds a HINFO record to the answer section of the DNS context
+ * @param dns a pointer to the DNS context
+ * @param name name of the section
+ * @param ttl TTL value of the seciton
+ * @param os Pointer to the OS name
+ * @param os_len 8bit length of the OS string
+ * @param cpu Pointer to the CPU label
+ * @param cpu_len 8bit length of the CPU string
+ *
+ * 
+ * The caller can free 'cpu' and 'os' params if it's necessary since the function copies the value internally.
+ *
+ * 'cpu' and 'os' string are not necessarily nul-terminated. That's why the length of both must be provided.
+ *
+ * @return 0 on success other values on fail.
+ */
 int sdns_add_rr_answer_HINFO(sdns_context * dns, char * name, uint32_t ttl,
                              char * os, uint8_t os_len, char * cpu, uint8_t cpu_len);
 
 
+/**
+ * @brief Add a HINFO record to the authority section of the DNS packet.
+ *
+ * Check the documentation of sdns_add_rr_answer_HINFO()
+ */
 int sdns_add_rr_authority_HINFO(sdns_context * dns, char * name, uint32_t ttl,
                              char * os, uint8_t os_len, char * cpu, uint8_t cpu_len);
 
 
+/**
+ * @brief Add a HINFO record to the additional section of the DNS packet.
+ *
+ * Check the documentation of sdns_add_rr_answer_HINFO()
+ */
 int sdns_add_rr_additional_HINFO(sdns_context * dns, char * name, uint32_t ttl,
                              char * os, uint8_t os_len, char * cpu, uint8_t cpu_len);
-
 
 
 
@@ -496,6 +523,15 @@ char * sdns_get_value_nsid(sdns_context * dns, int * err, uint16_t *nsid_len);
 char * sdns_get_value_cookie_client(sdns_context * dns, int * err);
 
 
+/**
+ * @brief Revemos EDNS0 option from a DNS context
+ * @param dns the DNS context created by sdns_init_context()
+ * 
+ * By default, create_query() function adds EDNS0 option to the additional section
+ * of the DNS context. If you don't want it, you can remove it using this function.
+ * @return 0 on success, other values on failure
+*/
+int sdns_remove_edns(sdns_context * dns);
 
 
 

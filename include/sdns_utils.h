@@ -6,6 +6,7 @@
 
 ///////////////////////declaration/////////////////////////////////
 
+int parse_IPv6 ( const char** ppszText, unsigned char* abyAddr);
 char * safe_strdup(const char * s);
 int safe_strcase_equal(const char * a, const char * b);
 

@@ -468,4 +468,108 @@ int hex_dump(const char * buffer, unsigned long int offset,unsigned long int len
     return 0; 
 }
 
+static unsigned int _parseHex ( const char** pchCursor ){
+    unsigned int nVal = 0;
+    char chNow;
+    while ( chNow = **pchCursor & 0x5f, //(collapses case, but mutilates digits)
+            (chNow >= ('0'&0x5f) && chNow <= ('9'&0x5f)) || 
+            (chNow >= 'A' && chNow <= 'F') 
+            )
+    {
+        unsigned char nybbleValue;
+        chNow -= 0x10;  //scootch digital values down; hex now offset by x31
+        nybbleValue = ( chNow > 9 ? chNow - (0x31-0x0a) : chNow );
+        //shift nybble in
+        nVal <<= 4;
+        nVal += nybbleValue;
+
+        ++*pchCursor;
+    }
+    return nVal;
+}
+
+
+int parse_IPv6 ( const char** ppszText, unsigned char* abyAddr){
+    // adopted from rosettacode. changed to only parse IPv6. No IPv4/6 compination. No IPv4 value.
+    // returns 1 on successful parsing otherwise 0
+    // in case of success to byte representation of IPv6 will be in abyAddr memory passed by caller
+    unsigned char* abyAddrLocal;
+
+    const char* pchColon = strchr ( *ppszText, ':' );
+    // don't parse it if it's combined
+    if (strchr(*ppszText, '.') != NULL){
+        return 0;
+    }
+
+
+    //we'll consider this to (probably) be IPv6 if we find an open
+    //bracket, or an absence of dots, or if there is a colon, and it
+    //precedes any dots that may or may not be there
+    int bIsIPv6local = NULL != pchColon?1:0;
+    if (bIsIPv6local == 0){
+        return 0;   // fail
+    }
+    abyAddrLocal = abyAddr; 
+    
+
+    unsigned char* pbyAddrCursor;
+    unsigned char* pbyZerosLoc;
+    int nIdx;
+    //up to 8 16-bit hex quantities, separated by colons, with at most one
+    //empty quantity, acting as a stretchy run of zeroes.  optional port
+    //if there are brackets followed by colon and decimal port number.
+    //A further form allows an ipv4 dotted quad instead of the last two
+    //16-bit quantities, but only if in the ipv4 space ::ffff:x:x .
+    
+    pbyAddrCursor = abyAddrLocal;
+    pbyZerosLoc = NULL; //if we find a 'zero compression' location
+    for ( nIdx = 0; nIdx < 8; ++nIdx ){  //we've got up to 8 of these, so we will use a loop
+        const char* pszTextBefore = *ppszText;
+        unsigned nVal =_parseHex ( ppszText );      //get value; these are hex
+        if ( pszTextBefore == *ppszText ){   //if empty, we are zero compressing; note the loc
+            if ( NULL != pbyZerosLoc ){  //there can be only one!
+                //unless it's a terminal empty field, then this is OK, it just means we're done with the host part
+                if ( pbyZerosLoc == pbyAddrCursor )
+                {
+                    --nIdx;
+                    break;
+                }
+                return 0;   //otherwise, it's a format error
+            }
+            if ( ':' != **ppszText )    //empty field can only be via :
+                return 0;
+            if ( 0 == nIdx ){    //leading zero compression requires an extra peek, and adjustment
+                ++(*ppszText);
+                if ( ':' != **ppszText )
+                    return 0;
+            }
+            pbyZerosLoc = pbyAddrCursor;
+            ++(*ppszText);
+        }else{
+            if ( nVal > 65535 ) //must be 16 bit quantity
+                return 0;
+            *(pbyAddrCursor++) = nVal >> 8;     //transfer in network order
+            *(pbyAddrCursor++) = nVal & 0xff;
+            if ( ':' == **ppszText )    //typical case inside; carry on
+            {
+                ++(*ppszText);
+            }
+            else    //some other terminating character; done with this parsing parts
+            {
+                break;
+            }
+        }
+    }
+    
+    //handle any zero compression we found
+    if ( NULL != pbyZerosLoc )
+    {
+        int nHead = (int)( pbyZerosLoc - abyAddrLocal );    //how much before zero compression
+        int nTail = nIdx * 2 - (int)( pbyZerosLoc - abyAddrLocal ); //how much after zero compression
+        int nZeros = 16 - nTail - nHead;        //how much zeros
+        memmove ( &abyAddrLocal[16-nTail], pbyZerosLoc, nTail );    //scootch stuff down
+        memset ( pbyZerosLoc, 0, nZeros );      //clear the compressed zeros
+    }
+    return 1;
+}
 
