@@ -1089,7 +1089,6 @@ char * sdns_get_value_cookie_client(sdns_context * dns, int * err){
     return result;
 }
 
-
 sdns_rr * sdns_get_answer(sdns_context * dns, int * err, uint16_t num){
     if (dns == NULL){
         *err = SDNS_ERROR_BUFFER_IS_NULL;
@@ -1133,3 +1132,93 @@ sdns_rr * sdns_get_answer(sdns_context * dns, int * err, uint16_t num){
     *err = sdns_rcode_NoError;
     return result;
 }
+
+sdns_rr * sdns_get_authority(sdns_context * dns, int * err, uint16_t num){
+    if (dns == NULL){
+        *err = SDNS_ERROR_BUFFER_IS_NULL;
+        return NULL;
+    }
+    if (num + 1 > dns->msg->header.nscount || dns->msg->authority == NULL){
+        *err = SDNS_ERROR_NO_AUTHORITY_FOUND;
+        return NULL;
+    }
+    sdns_rr * tmp = NULL;
+    sdns_rr * authority = dns->msg->authority;
+    uint16_t cnt = 0;
+    while(authority){
+        tmp = authority;
+        if (cnt >= num)
+            break;
+        cnt++;
+        authority = authority->next;
+    }
+    if (tmp == NULL){  // there is no authority numero 'num+1'
+        *err = SDNS_ERROR_NO_AUTHORITY_FOUND;
+        return NULL;
+    }
+    // tmp points the the right authority
+    char * name = safe_strdup(tmp->name);
+    sdns_rr * result = sdns_init_rr(name, tmp->type, tmp->class, tmp->ttl, tmp->rdlength, 1, NULL);
+    void * rdata = NULL;
+    if (tmp->decoded){
+        rdata = sdns_copy_rr_section(dns, tmp);
+    }else{
+        rdata = sdns_decode_rr_section(dns, tmp);
+    }
+    if (rdata == NULL){
+        // we can not decode it
+        free(result->name);
+        free(result);
+        *err = SDNS_ERROR_CAN_NOT_READ_SECTION;
+        return NULL;
+    }
+    result->psdns_rr = rdata;
+    *err = sdns_rcode_NoError;
+    return result;
+}
+
+
+sdns_rr * sdns_get_additional(sdns_context * dns, int * err, uint16_t num){
+    if (dns == NULL){
+        *err = SDNS_ERROR_BUFFER_IS_NULL;
+        return NULL;
+    }
+    if (num + 1 > dns->msg->header.arcount || dns->msg->additional == NULL){
+        *err = SDNS_ERROR_NO_ADDITIONAL_FOUND;
+        return NULL;
+    }
+    sdns_rr * tmp = NULL;
+    sdns_rr * additional = dns->msg->additional;
+    uint16_t cnt = 0;
+    while(additional){
+        tmp = additional;
+        if (cnt >= num)
+            break;
+        cnt++;
+        additional = additional->next;
+    }
+    if (tmp == NULL){  // there is no additional numero 'num+1'
+        *err = SDNS_ERROR_NO_ADDITIONAL_FOUND;
+        return NULL;
+    }
+    // tmp points the the right additional
+    char * name = safe_strdup(tmp->name);
+    sdns_rr * result = sdns_init_rr(name, tmp->type, tmp->class, tmp->ttl, tmp->rdlength, 1, NULL);
+    void * rdata = NULL;
+    if (tmp->decoded){
+        rdata = sdns_copy_rr_section(dns, tmp);
+    }else{
+        rdata = sdns_decode_rr_section(dns, tmp);
+    }
+    if (rdata == NULL){
+        // we can not decode it
+        free(result->name);
+        free(result);
+        *err = SDNS_ERROR_CAN_NOT_READ_SECTION;
+        return NULL;
+    }
+    result->psdns_rr = rdata;
+    *err = sdns_rcode_NoError;
+    return result;
+}
+

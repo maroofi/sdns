@@ -551,6 +551,22 @@ int sdns_remove_edns(sdns_context * dns);
 sdns_rr * sdns_get_answer(sdns_context * dns, int * err, uint16_t num);
 
 /**
+ * @brief Returns the authority section of the DNS context
+ *
+ * For the list of parameters, check sdns_get_answer() function
+ */
+sdns_rr * sdns_get_authority(sdns_context * dns, int * err, uint16_t num);
+
+
+/**
+ * @brief Returns the additional section of the DNS context
+ *
+ * For the list of parameters, check sdns_get_answer() function
+ */
+sdns_rr * sdns_get_additional(sdns_context * dns, int * err, uint16_t num);
+
+
+/**
  * @brief Adds AAAA record to the asnwer section of the DNS context.
  * @param dns a pointer to the DNS context
  * @param name name of the section

@@ -37,6 +37,8 @@
 #define SDNS_ERROR_NO_ANSWER_FOUND           -21       ///< This error shows that the DNS context has no answer section
 #define SDNS_ERROR_CAN_NOT_READ_SECTION      -22       ///< For any reason, it's not possible to decode or copy the rdata of the section
 #define SDNS_ERROR_INVALID_IPv6_FOUND        -23       ///< The code only accepts IPv6 in a format of ":" separated hex values
+#define SDNS_ERROR_NO_AUTHORITY_FOUND        -24       ///< This error shows that the DNS context has no authority section
+#define SDNS_ERROR_NO_ADDITIONAL_FOUND       -25       ///< This error shows that the DNS context has no additional section
 // define the section types
 #define DNS_SECTION_ANSWER 1
 #define DNS_SECTION_AUTHORITY 2

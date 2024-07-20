@@ -4,6 +4,8 @@
 
 A small DNS library written in C
 
+(if you are interested in the Lua binding of the library, check the [lua](./lua) directory.)
+
 ### How to compile
 
 1. sdns does not have any external dependency. However, all the `sdns_json_*` functions are based on libjansson library.
