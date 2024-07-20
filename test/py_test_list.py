@@ -120,3 +120,45 @@ def func_test_txt_1(data):
     assert(data.strip() == "success")
     return 0
 # end def
+
+
+def func_test_apiget_answer_a(data):
+    assert(data.strip() == "success")
+    return 0
+# end def
+
+def func_test_apiget_answer_hinfo(data):
+    assert(data.strip() == "success")
+    return 0
+# end def
+
+def func_test_apiget_answer_ns(data):
+    assert(data.strip() == "success")
+    return 0
+# end def
+
+def func_test_apiget_answer_srv(data):
+    assert(data.strip() == "success")
+    return 0
+# end def
+
+def func_test_apiget_answer_mx(data):
+    assert(data.strip() == "success")
+    return 0
+# end def
+
+def func_test_apiget_answer_cname(data):
+    assert(data.strip() == "success")
+    return 0
+# end def
+
+def func_test_apiget_answer_soa(data):
+    assert(data.strip() == "success")
+    return 0
+# end def
+
+def func_test_apiget_answer_txt(data):
+    assert(data.strip() == "success")
+    return 0
+# end def
+

@@ -4,6 +4,37 @@
 #include <stdint.h>
 #include <time.h>
 
+void * malloc_or_abort(size_t n){
+    void * p = malloc(n);
+    if (NULL == p){
+        fprintf(stderr, "Can not allocate %ld bytes of memory...aborting...\n", n);
+        abort();
+    }
+    return p;
+}
+
+char * ipv6_mem_to_str(char * mem){
+    // mem must be exactly 16 bytes
+    // the returned string is null terminated
+    char * addr = (char*) malloc_or_abort(40); // max possible length of AAAA(no double dot)
+    addr[39] = '\0';
+    int j = 1;
+    int l = 0;
+    for (int i=0; i< 16; ++i, j++){
+        sprintf(addr + l, "%02x", (uint8_t)*(mem + i));
+        l += 2;
+        if (j == 2 && i != 16 -1){
+            sprintf(addr + l, "%c", ':');
+            l++;
+            j=0;
+        }
+    }
+    return addr;
+}
+
+
+
+
 int safe_strcase_equal(const char * a, const char * b){
     if (NULL == a || b == NULL)
         return a==NULL && b==NULL?0:1;
@@ -178,9 +209,7 @@ char * hex2mem(char * hexdata){
         return NULL;
     if (hexdata_len % 2 != 0)
         return NULL;
-    char * mem = (char *) malloc((int)(hexdata_len / 2));
-    if (mem == NULL)
-        return NULL;
+    char * mem = (char *) malloc_or_abort((int)(hexdata_len / 2));
     char * pos = hexdata;
     for (int i=0; i< (int)(hexdata_len/2); ++i){
         sscanf(pos, "%2hhx", &(mem[i]));
@@ -196,9 +225,7 @@ char * mem2hex(char * mem, unsigned int mem_len){
         return NULL;
     if (mem_len == 0)
         return NULL;
-    char * result = (char *) malloc(mem_len * 2 + 1); // one more for automatic NULL character
-    if (NULL == result)
-        return NULL;
+    char * result = (char *) malloc_or_abort(mem_len * 2 + 1); // one more for automatic NULL character
     unsigned int j=0;
     for (unsigned int i=0; i< mem_len; ++i){
         sprintf(result + j, "%02x", (uint8_t)mem[i]);
@@ -256,9 +283,7 @@ void * memmem(const void *l, size_t l_len, const void *s, size_t s_len){
 //allocate memory and copy data into allocated memory and return the address
 //caller is responsible for freeing the allocated memory
 char * mem_copy(char * data, unsigned long int len){
-    char * tmp = (char *) malloc(len);
-    if (!tmp)
-        return NULL;
+    char * tmp = (char *) malloc_or_abort(len);
     memcpy(tmp, data, len);
     return tmp;
 }
@@ -351,7 +376,7 @@ int hex_dump(const char * buffer, unsigned long int offset,unsigned long int len
     int x = 0;
     int read = 0;
     uint8_t ch = 0;
-    int * data = (int*)malloc(16 * sizeof(int));
+    int * data = (int*)malloc_or_abort(16 * sizeof(int));
     unsigned int mov = offset;
     while (read < len){
         ch = buffer[mov++];

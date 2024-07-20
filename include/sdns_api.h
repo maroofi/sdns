@@ -533,6 +533,64 @@ char * sdns_get_value_cookie_client(sdns_context * dns, int * err);
 */
 int sdns_remove_edns(sdns_context * dns);
 
+/**
+ * @brief Returns the answer section of the dns context
+ * @param dns the DNS context created by sdns_init_context()
+ * @param err A pointer to the place that receives the error/success code of calling this function
+ * @param num number of the answer starts from zero.
+ * 
+ * 'num' parameter is the number of the answer in the DNS packet or DNS context. For example if a DNS packet
+ * returns 2 A records in the answer section, the first on is num=0 and for the second one num=1.
+ * If you continue asking for the third one, you will get ::SDNS_ERROR_NO_ANSWER_FOUND error code in 'err' param.
+ *
+ * If there is no answer section in the DNS context, the code will return ::SDNS_ERROR_NO_ANSWER_FOUND
+ * which shows there is no answer section in the DNS packet or DNS context passed by the caller.
+ *
+ * @return a pointer to the link-list of ::sdns_rr structure. 
+ */
+sdns_rr * sdns_get_answer(sdns_context * dns, int * err, uint16_t num);
+
+/**
+ * @brief Adds AAAA record to the asnwer section of the DNS context.
+ * @param dns a pointer to the DNS context
+ * @param name name of the section
+ * @param ttl TTL value of the seciton
+ * @param ipv6 A pointer to a nul-terminated string representing IPv6 address.
+ *
+ * The 'ipv6' params must be in a form of ':' seperated hex values representing IPv6 either in compressed
+ * or uncompressed way: e.g., ::1 or cd23::5612:32a8:8933:cc3
+ *
+ * Caller is responsible to free 'ipv6' param if necessary as the library copies the value internally.
+ *
+ * It's not possible to pass the combination of IPv4 and IPv6 as the internal parser does not support it
+ *
+ * @return 0 on success, other values on failure
+ */
+int sdns_add_rr_answer_AAAA(sdns_context * dns, char * name, uint32_t ttl, const char * ipv6);
+
+
+
+/**
+ * @brief Adds AAAA record to the authority section of the DNS.
+ *
+ * Check the documentation of sdns_add_rr_answer_AAAA()
+ */
+int sdns_add_rr_authority_AAAA(sdns_context * dns, char * name, uint32_t ttl, const char * ipv6);
+
+
+/**
+ * @brief Adds AAAA record to the additional section of the DNS.
+ *
+ * Check the documentation of sdns_add_rr_answer_AAAA()
+ */
+int sdns_add_rr_additional_AAAA(sdns_context * dns, char * name, uint32_t ttl, const char * ipv6);
+
+
+
+// the length of the nodeid memory is always 8 bytes so we don't need to pass it
+int sdns_add_rr_answer_NID(sdns_context * dns, char * name, uint32_t ttl, uint16_t preference, char * nodeid);
+int sdns_add_rr_authority_NID(sdns_context * dns, char * name, uint32_t ttl, uint16_t preference, char * nodeid);
+int sdns_add_rr_additional_NID(sdns_context * dns, char * name, uint32_t ttl, uint16_t preference, char * nodeid);
 
 
 #endif

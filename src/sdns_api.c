@@ -67,15 +67,8 @@ int sdns_add_rr_answer_A(sdns_context * dns, char * name, uint32_t ttl, char * i
         return 100;     // invalid IP
     uint32_t ipaddress = cipv4_str_to_uint(ip);
     sdns_rr_A * a  = sdns_init_rr_A(ipaddress);
-    if (NULL == a)
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    char * section_name = name == NULL?NULL:strdup(name);
+    char * section_name = safe_strdup(name); 
     sdns_rr * rr = sdns_init_rr(section_name, sdns_rr_type_A, sdns_q_class_IN, ttl, 0, 1, (void*) a);
-    if (NULL == rr){
-        free(section_name);
-        sdns_free_rr_A(a);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
     int res = sdns_add_answer_section(dns, rr);
     if (res != 0){
         free(rr->name);
@@ -96,15 +89,8 @@ int sdns_add_rr_additional_A(sdns_context * dns, char * name, uint32_t ttl, char
         return 100;     // invalid IP
     uint32_t ipaddress = cipv4_str_to_uint(ip);
     sdns_rr_A * a  = sdns_init_rr_A(ipaddress);
-    if (NULL == a)
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    char * section_name = name == NULL?NULL:strdup(name);
+    char * section_name = safe_strdup(name);
     sdns_rr * rr = sdns_init_rr(section_name, sdns_rr_type_A, sdns_q_class_IN, ttl, 0, 1, (void*) a);
-    if (NULL == rr){
-        free(section_name);
-        sdns_free_rr_A(a);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
     int res = sdns_add_additional_section(dns, rr);
     if (res != 0){
         free(rr->name);
@@ -124,15 +110,8 @@ int sdns_add_rr_authority_A(sdns_context * dns, char * name, uint32_t ttl, char 
         return 100;     // invalid IP
     uint32_t ipaddress = cipv4_str_to_uint(ip);
     sdns_rr_A * a  = sdns_init_rr_A(ipaddress);
-    if (NULL == a)
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    char * section_name = name == NULL?NULL:strdup(name);
+    char * section_name = safe_strdup(name);
     sdns_rr * rr = sdns_init_rr(section_name, sdns_rr_type_A, sdns_q_class_IN, ttl, 0, 1, (void*) a);
-    if (NULL == rr){
-        free(section_name);
-        sdns_free_rr_A(a);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
     int res = sdns_add_authority_section(dns, rr);
     if (res != 0){
         free(rr->name);
@@ -144,22 +123,14 @@ int sdns_add_rr_authority_A(sdns_context * dns, char * name, uint32_t ttl, char 
 }
 
 
+
 int sdns_add_rr_answer_NS(sdns_context * dns, char * name, uint32_t ttl, char * nsname){
     if (NULL == dns)
         return SDNS_ERROR_BUFFER_IS_NULL;
-    char * new_name = NULL;
-    if (nsname != NULL)
-        new_name = strdup(nsname);
+    char * new_name = safe_strdup(nsname);
     sdns_rr_NS * ns  = sdns_init_rr_NS(new_name);
-    if (NULL == ns)
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    char * section_name = name == NULL?NULL:strdup(name);
+    char * section_name = safe_strdup(name);
     sdns_rr * rr = sdns_init_rr(section_name, sdns_rr_type_NS, sdns_q_class_IN, ttl, 0, 1, (void*) ns);
-    if (NULL == rr){
-        free(section_name);
-        sdns_free_rr_NS(ns);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
     int res = sdns_add_answer_section(dns, rr);
     if (res != 0){
         free(rr->name);
@@ -174,19 +145,10 @@ int sdns_add_rr_answer_NS(sdns_context * dns, char * name, uint32_t ttl, char * 
 int sdns_add_rr_authority_NS(sdns_context * dns, char * name, uint32_t ttl, char * nsname){
     if (NULL == dns)
         return SDNS_ERROR_BUFFER_IS_NULL;
-    char * new_name = NULL;
-    if (nsname != NULL)
-        new_name = strdup(nsname);
+    char * new_name = safe_strdup(nsname);
     sdns_rr_NS * ns  = sdns_init_rr_NS(new_name);
-    if (NULL == ns)
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    char * section_name = name == NULL?NULL:strdup(name);
+    char * section_name = safe_strdup(name);
     sdns_rr * rr = sdns_init_rr(section_name, sdns_rr_type_NS, sdns_q_class_IN, ttl, 0, 1, (void*) ns);
-    if (NULL == rr){
-        sdns_free_rr_NS(ns);
-        free(section_name);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
     int res = sdns_add_authority_section(dns, rr);
     if (res != 0){
         free(rr->name);
@@ -201,19 +163,10 @@ int sdns_add_rr_authority_NS(sdns_context * dns, char * name, uint32_t ttl, char
 int sdns_add_rr_additional_NS(sdns_context * dns, char * name, uint32_t ttl, char * nsname){
     if (NULL == dns)
         return SDNS_ERROR_BUFFER_IS_NULL;
-    char * new_name = NULL;
-    if (nsname != NULL)
-        new_name = strdup(nsname);
+    char * new_name = safe_strdup(nsname);
     sdns_rr_NS * ns  = sdns_init_rr_NS(new_name);
-    if (NULL == ns)
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    char * section_name = name == NULL?NULL:strdup(name);
+    char * section_name = safe_strdup(name);
     sdns_rr * rr = sdns_init_rr(section_name, sdns_rr_type_NS, sdns_q_class_IN, ttl, 0, 1, (void*) ns);
-    if (NULL == rr){
-        sdns_free_rr_NS(ns);
-        free(section_name);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
     int res = sdns_add_additional_section(dns, rr);
     if (res != 0){
         free(rr->name);
@@ -237,17 +190,8 @@ int sdns_add_rr_answer_TXT(sdns_context * dns, char * name, uint32_t ttl, char *
         }
     }
     sdns_rr_TXT * txt = sdns_init_rr_TXT(new_txt, text_len);
-    if (txt == NULL){
-        free(new_txt);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
-    char * section_name = name == NULL?NULL:strdup(name);
+    char * section_name = safe_strdup(name);
     sdns_rr * rr = sdns_init_rr(section_name, sdns_rr_type_TXT, sdns_q_class_IN, ttl, 0, 1, (void*) txt);
-    if (NULL == rr){
-        free(section_name);
-        sdns_free_rr_TXT(txt);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
     int res = sdns_add_answer_section(dns, rr);
     if (res != 0){
         free(rr->name);
@@ -270,17 +214,8 @@ int sdns_add_rr_authority_TXT(sdns_context * dns, char * name, uint32_t ttl, cha
         }
     }
     sdns_rr_TXT * txt = sdns_init_rr_TXT(new_txt, text_len);
-    if (txt == NULL){
-        free(new_txt);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
-    char * section_name = name == NULL?NULL:strdup(name);
+    char * section_name = safe_strdup(name);
     sdns_rr * rr = sdns_init_rr(section_name, sdns_rr_type_TXT, sdns_q_class_IN, ttl, 0, 1, (void*) txt);
-    if (NULL == rr){
-        sdns_free_rr_TXT(txt);
-        free(section_name);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
     int res = sdns_add_authority_section(dns, rr);
     if (res != 0){
         free(rr->name);
@@ -304,17 +239,8 @@ int sdns_add_rr_additional_TXT(sdns_context * dns, char * name, uint32_t ttl, ch
         }
     }
     sdns_rr_TXT * txt = sdns_init_rr_TXT(new_txt, text_len);
-    if (txt == NULL){
-        free(new_txt);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
-    char * section_name = name == NULL?NULL:strdup(name);
+    char * section_name = safe_strdup(name);
     sdns_rr * rr = sdns_init_rr(section_name, sdns_rr_type_TXT, sdns_q_class_IN, ttl, 0, 1, (void*) txt);
-    if (NULL == rr){
-        sdns_free_rr_TXT(txt);
-        free(section_name);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
     int res = sdns_add_additional_section(dns, rr);
     if (res != 0){
         free(rr->name);
@@ -406,22 +332,12 @@ int sdns_add_rr_answer_SOA(sdns_context * dns, char * name, uint32_t ttl,  char 
         return SDNS_ERROR_BUFFER_IS_NULL;
     if (NULL == name)
         return SDNS_ERROR_BUFFER_IS_NULL;
-    char * new_mname = mname == NULL?NULL:strdup(mname);
-    char * new_rname = rname == NULL?NULL:strdup(rname);
+    char * new_mname = safe_strdup(mname);
+    char * new_rname = safe_strdup(rname);
     
     sdns_rr_SOA * soa = sdns_init_rr_SOA(new_mname, new_rname, expire, minimum, refresh, retry, serial);
-    if (NULL == soa){
-        free(new_rname);
-        free(new_mname);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
-    char * section_name = name == NULL?NULL:strdup(name);
+    char * section_name = safe_strdup(name);
     sdns_rr * rr = sdns_init_rr(section_name, sdns_rr_type_SOA, sdns_q_class_IN, ttl, 0, 1, (void*) soa);
-    if (NULL == rr){
-        free(section_name);
-        sdns_free_rr_SOA(soa);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
     int res = sdns_add_answer_section(dns, rr);
     if (res != 0){
         free(rr->name);
@@ -439,22 +355,12 @@ int sdns_add_rr_authority_SOA(sdns_context * dns, char * name, uint32_t ttl,  ch
         return SDNS_ERROR_BUFFER_IS_NULL;
     if (NULL == name)
         return SDNS_ERROR_BUFFER_IS_NULL;
-    char * new_mname = mname == NULL?NULL:strdup(mname);
-    char * new_rname = rname == NULL?NULL:strdup(rname);
+    char * new_mname = safe_strdup(mname);
+    char * new_rname = safe_strdup(rname);
     
     sdns_rr_SOA * soa = sdns_init_rr_SOA(new_mname, new_rname, expire, minimum, refresh, retry, serial);
-    if (NULL == soa){
-        free(new_rname);
-        free(new_mname);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
-    char * section_name = name == NULL?NULL:strdup(name);
+    char * section_name = safe_strdup(name);
     sdns_rr * rr = sdns_init_rr(section_name, sdns_rr_type_SOA, sdns_q_class_IN, ttl, 0, 1, (void*) soa);
-    if (NULL == rr){
-        sdns_free_rr_SOA(soa);
-        free(section_name);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
     int res = sdns_add_authority_section(dns, rr);
     if (res != 0){
         free(rr->name);
@@ -471,22 +377,12 @@ int sdns_add_rr_additional_SOA(sdns_context * dns, char * name, uint32_t ttl,  c
         return SDNS_ERROR_BUFFER_IS_NULL;
     if (NULL == name)
         return SDNS_ERROR_BUFFER_IS_NULL;
-    char * new_mname = mname == NULL?NULL:strdup(mname);
-    char * new_rname = rname == NULL?NULL:strdup(rname);
+    char * new_mname = safe_strdup(mname);
+    char * new_rname = safe_strdup(rname);
     
     sdns_rr_SOA * soa = sdns_init_rr_SOA(new_mname, new_rname, expire, minimum, refresh, retry, serial);
-    if (NULL == soa){
-        free(new_rname);
-        free(new_mname);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
-    char * section_name = name == NULL?NULL:strdup(name);
+    char * section_name = safe_strdup(name);
     sdns_rr * rr = sdns_init_rr(section_name, sdns_rr_type_SOA, sdns_q_class_IN, ttl, 0, 1, (void*) soa);
-    if (NULL == rr){
-        sdns_free_rr_SOA(soa);
-        free(section_name);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
     int res = sdns_add_additional_section(dns, rr);
     if (res != 0){
         free(rr->name);
@@ -504,17 +400,8 @@ int sdns_add_rr_answer_CNAME(sdns_context * dns, char * name, uint32_t ttl, char
         return SDNS_ERROR_BUFFER_IS_NULL;
     char * new_cname = cname == NULL?NULL:strdup(cname);
     sdns_rr_CNAME * cn = sdns_init_rr_CNAME(new_cname);
-    if (NULL == cn){
-        free(new_cname);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
     char * section_name = name == NULL?NULL:strdup(name);
     sdns_rr * rr = sdns_init_rr(section_name, sdns_rr_type_CNAME, sdns_q_class_IN, ttl, 0, 1, (void*) cn);
-    if (NULL == rr){
-        sdns_free_rr_CNAME(cn);
-        free(section_name);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
     int res = sdns_add_answer_section(dns, rr);
     if (res != 0){
         sdns_free_rr_CNAME(cn);
@@ -530,17 +417,8 @@ int sdns_add_rr_authority_CNAME(sdns_context * dns, char * name, uint32_t ttl, c
         return SDNS_ERROR_BUFFER_IS_NULL;
     char * new_cname = cname == NULL?NULL:strdup(cname);
     sdns_rr_CNAME * cn = sdns_init_rr_CNAME(new_cname);
-    if (NULL == cn){
-        free(new_cname);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
     char * section_name = name == NULL?NULL:strdup(name);
     sdns_rr * rr = sdns_init_rr(section_name, sdns_rr_type_CNAME, sdns_q_class_IN, ttl, 0, 1, (void*) cn);
-    if (NULL == rr){
-        sdns_free_rr_CNAME(cn);
-        free(section_name);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
     int res = sdns_add_authority_section(dns, rr);
     if (res != 0){
         sdns_free_rr_CNAME(cn);
@@ -557,17 +435,8 @@ int sdns_add_rr_additional_CNAME(sdns_context * dns, char * name, uint32_t ttl, 
         return SDNS_ERROR_BUFFER_IS_NULL;
     char * new_cname = cname == NULL?NULL:strdup(cname);
     sdns_rr_CNAME * cn = sdns_init_rr_CNAME(new_cname);
-    if (NULL == cn){
-        free(new_cname);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
     char * section_name = name == NULL?NULL:strdup(name);
     sdns_rr * rr = sdns_init_rr(section_name, sdns_rr_type_CNAME, sdns_q_class_IN, ttl, 0, 1, (void*) cn);
-    if (NULL == rr){
-        sdns_free_rr_CNAME(cn);
-        free(section_name);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
     int res = sdns_add_additional_section(dns, rr);
     if (res != 0){
         sdns_free_rr_CNAME(cn);
@@ -578,23 +447,73 @@ int sdns_add_rr_additional_CNAME(sdns_context * dns, char * name, uint32_t ttl, 
     return 0;  //success
 }
 
+int sdns_add_rr_answer_NID(sdns_context * dns, char * name, uint32_t ttl, uint16_t preference, char * nodeid){
+    if (NULL == dns)
+        return SDNS_ERROR_BUFFER_IS_NULL;
+    if (nodeid == NULL){
+        return SDNS_ERROR_BUFFER_IS_NULL;
+    }
+    char * new_nodeid = mem_copy(nodeid, 8);
+    sdns_rr_NID * nid = sdns_init_rr_NID(preference, new_nodeid);
+    char * section_name = safe_strdup(name);
+    sdns_rr * rr = sdns_init_rr(section_name, sdns_rr_type_NID, sdns_q_class_IN, ttl, 0, 1, (void*) nid);
+    int res = sdns_add_answer_section(dns, rr);
+    if (res != 0){
+        sdns_free_rr_NID(nid);
+        free(rr->name);
+        free(rr);
+        return res;
+    }
+    return 0;   // success
+}
+
+int sdns_add_rr_authority_NID(sdns_context * dns, char * name, uint32_t ttl, uint16_t preference, char * nodeid){
+    if (NULL == dns)
+        return SDNS_ERROR_BUFFER_IS_NULL;
+    if (nodeid == NULL){
+        return SDNS_ERROR_BUFFER_IS_NULL;
+    }
+    char * new_nodeid = mem_copy(nodeid, 8);
+    sdns_rr_NID * nid = sdns_init_rr_NID(preference, new_nodeid);
+    char * section_name = safe_strdup(name);
+    sdns_rr * rr = sdns_init_rr(section_name, sdns_rr_type_NID, sdns_q_class_IN, ttl, 0, 1, (void*) nid);
+    int res = sdns_add_authority_section(dns, rr);
+    if (res != 0){
+        sdns_free_rr_NID(nid);
+        free(rr->name);
+        free(rr);
+        return res;
+    }
+    return 0;   // success
+}
+
+int sdns_add_rr_additional_NID(sdns_context * dns, char * name, uint32_t ttl, uint16_t preference, char * nodeid){
+    if (NULL == dns)
+        return SDNS_ERROR_BUFFER_IS_NULL;
+    if (nodeid == NULL){
+        return SDNS_ERROR_BUFFER_IS_NULL;
+    }
+    char * new_nodeid = mem_copy(nodeid, 8);
+    sdns_rr_NID * nid = sdns_init_rr_NID(preference, new_nodeid);
+    char * section_name = safe_strdup(name);
+    sdns_rr * rr = sdns_init_rr(section_name, sdns_rr_type_NID, sdns_q_class_IN, ttl, 0, 1, (void*) nid);
+    int res = sdns_add_additional_section(dns, rr);
+    if (res != 0){
+        sdns_free_rr_NID(nid);
+        free(rr->name);
+        free(rr);
+        return res;
+    }
+    return 0;   // success
+}
 
 int sdns_add_rr_answer_MX(sdns_context * dns, char * name, uint32_t ttl, uint16_t preference, char * exchange){
     if (NULL == dns)
         return SDNS_ERROR_BUFFER_IS_NULL;
     char * new_exchange = safe_strdup(exchange);
     sdns_rr_MX * mx = sdns_init_rr_MX(preference, new_exchange);
-    if (NULL ==  mx){
-        free(new_exchange);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
     char * section_name = safe_strdup(name);
     sdns_rr * rr = sdns_init_rr(section_name, sdns_rr_type_MX, sdns_q_class_IN, ttl, 0, 1, (void*) mx);
-    if (NULL == rr){
-        sdns_free_rr_MX(mx);
-        free(section_name);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
     int res = sdns_add_answer_section(dns, rr);
     if (res != 0){
         sdns_free_rr_MX(mx);
@@ -611,17 +530,8 @@ int sdns_add_rr_authority_MX(sdns_context * dns, char * name, uint32_t ttl, uint
         return SDNS_ERROR_BUFFER_IS_NULL;
     char * new_exchange = safe_strdup(exchange);
     sdns_rr_MX * mx = sdns_init_rr_MX(preference, new_exchange);
-    if (NULL ==  mx){
-        free(new_exchange);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
     char * section_name = safe_strdup(name);
     sdns_rr * rr = sdns_init_rr(section_name, sdns_rr_type_MX, sdns_q_class_IN, ttl, 0, 1, (void*) mx);
-    if (NULL == rr){
-        sdns_free_rr_MX(mx);
-        free(section_name);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
     int res = sdns_add_authority_section(dns, rr);
     if (res != 0){
         sdns_free_rr_MX(mx);
@@ -638,17 +548,8 @@ int sdns_add_rr_additional_MX(sdns_context * dns, char * name, uint32_t ttl, uin
         return SDNS_ERROR_BUFFER_IS_NULL;
     char * new_exchange = safe_strdup(exchange);
     sdns_rr_MX * mx = sdns_init_rr_MX(preference, new_exchange);
-    if (NULL ==  mx){
-        free(new_exchange);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
     char * section_name = safe_strdup(name);
     sdns_rr * rr = sdns_init_rr(section_name, sdns_rr_type_MX, sdns_q_class_IN, ttl, 0, 1, (void*) mx);
-    if (NULL == rr){
-        sdns_free_rr_MX(mx);
-        free(section_name);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
     int res = sdns_add_additional_section(dns, rr);
     if (res != 0){
         sdns_free_rr_MX(mx);
@@ -665,17 +566,8 @@ int sdns_add_rr_answer_PTR(sdns_context * dns, char * name, uint32_t ttl, char *
         return SDNS_ERROR_BUFFER_IS_NULL;
     char * new_ptrdname = safe_strdup(ptrdname);
     sdns_rr_PTR * ptr = sdns_init_rr_PTR(new_ptrdname);
-    if (NULL == ptr){
-        free(new_ptrdname);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
     char * section_name = safe_strdup(name);
     sdns_rr * rr = sdns_init_rr(section_name, sdns_rr_type_PTR, sdns_q_class_IN, ttl, 0, 1, (void*)ptr);
-    if (NULL == rr){
-        sdns_free_rr_PTR(ptr);
-        free(section_name);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
     int res = sdns_add_answer_section(dns, rr);
     if (res != 0){
         sdns_free_rr_PTR(ptr);
@@ -692,17 +584,8 @@ int sdns_add_rr_authority_PTR(sdns_context * dns, char * name, uint32_t ttl, cha
         return SDNS_ERROR_BUFFER_IS_NULL;
     char * new_ptrdname = safe_strdup(ptrdname);
     sdns_rr_PTR * ptr = sdns_init_rr_PTR(new_ptrdname);
-    if (NULL == ptr){
-        free(new_ptrdname);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
     char * section_name = safe_strdup(name);
     sdns_rr * rr = sdns_init_rr(section_name, sdns_rr_type_PTR, sdns_q_class_IN, ttl, 0, 1, (void*)ptr);
-    if (NULL == rr){
-        sdns_free_rr_PTR(ptr);
-        free(section_name);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
     int res = sdns_add_authority_section(dns, rr);
     if (res != 0){
         sdns_free_rr_PTR(ptr);
@@ -719,17 +602,8 @@ int sdns_add_rr_additional_PTR(sdns_context * dns, char * name, uint32_t ttl, ch
         return SDNS_ERROR_BUFFER_IS_NULL;
     char * new_ptrdname = safe_strdup(ptrdname);
     sdns_rr_PTR * ptr = sdns_init_rr_PTR(new_ptrdname);
-    if (NULL == ptr){
-        free(new_ptrdname);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
     char * section_name = safe_strdup(name);
     sdns_rr * rr = sdns_init_rr(section_name, sdns_rr_type_PTR, sdns_q_class_IN, ttl, 0, 1, (void*)ptr);
-    if (NULL == rr){
-        sdns_free_rr_PTR(ptr);
-        free(section_name);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
     int res = sdns_add_additional_section(dns, rr);
     if (res != 0){
         sdns_free_rr_PTR(ptr);
@@ -747,17 +621,8 @@ int sdns_add_rr_answer_SRV(sdns_context * dns, char * name, uint32_t ttl,
         return SDNS_ERROR_BUFFER_IS_NULL;
     char * new_target = safe_strdup(target);
     sdns_rr_SRV * srv = sdns_init_rr_SRV(priority, weight, port, new_target);
-    if (NULL == srv){
-        free(new_target);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
     char * section_name = safe_strdup(name);
     sdns_rr * rr = sdns_init_rr(section_name, sdns_rr_type_SRV, sdns_q_class_IN, ttl, 0, 1, (void*)srv);
-    if (NULL == rr){
-        sdns_free_rr_SRV(srv);
-        free(section_name);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
     int res = sdns_add_answer_section(dns, rr);
     if (res != 0){
         sdns_free_rr_SRV(srv);
@@ -775,17 +640,8 @@ int sdns_add_rr_authority_SRV(sdns_context * dns, char * name, uint32_t ttl,
         return SDNS_ERROR_BUFFER_IS_NULL;
     char * new_target = safe_strdup(target);
     sdns_rr_SRV * srv = sdns_init_rr_SRV(priority, weight, port, new_target);
-    if (NULL == srv){
-        free(new_target);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
     char * section_name = safe_strdup(name);
     sdns_rr * rr = sdns_init_rr(section_name, sdns_rr_type_SRV, sdns_q_class_IN, ttl, 0, 1, (void*)srv);
-    if (NULL == rr){
-        sdns_free_rr_SRV(srv);
-        free(section_name);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
     int res = sdns_add_authority_section(dns, rr);
     if (res != 0){
         sdns_free_rr_SRV(srv);
@@ -803,17 +659,8 @@ int sdns_add_rr_additional_SRV(sdns_context * dns, char * name, uint32_t ttl,
         return SDNS_ERROR_BUFFER_IS_NULL;
     char * new_target = safe_strdup(target);
     sdns_rr_SRV * srv = sdns_init_rr_SRV(priority, weight, port, new_target);
-    if (NULL == srv){
-        free(new_target);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
     char * section_name = safe_strdup(name);
     sdns_rr * rr = sdns_init_rr(section_name, sdns_rr_type_SRV, sdns_q_class_IN, ttl, 0, 1, (void*)srv);
-    if (NULL == rr){
-        sdns_free_rr_SRV(srv);
-        free(section_name);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
     int res = sdns_add_additional_section(dns, rr);
     if (res != 0){
         sdns_free_rr_SRV(srv);
@@ -840,23 +687,13 @@ int sdns_add_rr_answer_HINFO(sdns_context * dns, char * name, uint32_t ttl,
         new_os = mem_copy(os, os_len);
     
     sdns_rr_HINFO * hinfo  = sdns_init_rr_HINFO(cpu_len, new_cpu, os_len, new_os);
-    if (NULL == hinfo){
-        free(new_os);
-        free(new_cpu);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
     char * section_name = name == NULL?NULL:strdup(name);
     sdns_rr * rr = sdns_init_rr(section_name, sdns_rr_type_HINFO, sdns_q_class_IN, ttl, 0, 1, (void*) hinfo);
-    if (NULL == rr){
-        sdns_free_rr_HINFO(hinfo);
-        free(section_name);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
     int res = sdns_add_answer_section(dns, rr);
     if (res != 0){
         free(rr->name);
         free(rr);
-        free(hinfo);
+        sdns_free_rr_HINFO(hinfo);
         return res;
     }
     return 0;   //success
@@ -878,23 +715,13 @@ int sdns_add_rr_authority_HINFO(sdns_context * dns, char * name, uint32_t ttl,
         new_os = mem_copy(os, os_len);
     
     sdns_rr_HINFO * hinfo  = sdns_init_rr_HINFO(cpu_len, new_cpu, os_len, new_os);
-    if (NULL == hinfo){
-        free(new_os);
-        free(new_cpu);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
     char * section_name = name == NULL?NULL:strdup(name);
     sdns_rr * rr = sdns_init_rr(section_name, sdns_rr_type_HINFO, sdns_q_class_IN, ttl, 0, 1, (void*) hinfo);
-    if (NULL == rr){
-        sdns_free_rr_HINFO(hinfo);
-        free(section_name);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
     int res = sdns_add_authority_section(dns, rr);
     if (res != 0){
         free(rr->name);
         free(rr);
-        free(hinfo);
+        sdns_free_rr_HINFO(hinfo);
         return res;
     }
     return 0;   //success
@@ -917,26 +744,83 @@ int sdns_add_rr_additional_HINFO(sdns_context * dns, char * name, uint32_t ttl,
         new_os = mem_copy(os, os_len);
     
     sdns_rr_HINFO * hinfo  = sdns_init_rr_HINFO(cpu_len, new_cpu, os_len, new_os);
-    if (NULL == hinfo){
-        free(new_os);
-        free(new_cpu);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
+    if (name == NULL){
+        return SDNS_ERROR_BUFFER_IS_NULL;
     }
     char * section_name = name == NULL?NULL:strdup(name);
     sdns_rr * rr = sdns_init_rr(section_name, sdns_rr_type_HINFO, sdns_q_class_IN, ttl, 0, 1, (void*) hinfo);
-    if (NULL == rr){
-        sdns_free_rr_HINFO(hinfo);
-        free(section_name);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-    }
     int res = sdns_add_additional_section(dns, rr);
     if (res != 0){
         free(rr->name);
         free(rr);
-        free(hinfo);
+        sdns_free_rr_HINFO(hinfo);
         return res;
     }
     return 0;   //success
+}
+
+int sdns_add_rr_answer_AAAA(sdns_context * dns, char * name, uint32_t ttl, const char * ipv6){
+    unsigned char ipv6_parsed[16] = {0x00};
+    int res = parse_IPv6(&ipv6, ipv6_parsed);
+    if (res == 0){
+        return SDNS_ERROR_INVALID_IPv6_FOUND;
+    }
+    if (name == NULL)
+        return SDNS_ERROR_BUFFER_IS_NULL;
+    char * section_name = name == NULL?NULL:strdup(name);
+    sdns_rr_AAAA * aaaa = sdns_init_rr_AAAA((char*) mem_copy((char*)ipv6_parsed, 16));
+    
+    sdns_rr * rr = sdns_init_rr(section_name, sdns_rr_type_AAAA, sdns_q_class_IN, ttl, 0, 1, (void*)aaaa);
+    res = sdns_add_answer_section(dns, rr);
+    if (res != 0){
+        free(rr->name);
+        free(rr);
+        sdns_free_rr_AAAA(aaaa);
+        return res;
+    }
+    return 0;   // success
+}
+
+int sdns_add_rr_authority_AAAA(sdns_context * dns, char * name, uint32_t ttl, const char * ipv6){
+    unsigned char ipv6_parsed[16] = {0x00};
+    int res = parse_IPv6(&ipv6, ipv6_parsed);
+    if (res == 0){
+        return SDNS_ERROR_INVALID_IPv6_FOUND;
+    }
+    if (name == NULL)
+        return SDNS_ERROR_BUFFER_IS_NULL;
+    char * section_name = name == NULL?NULL:strdup(name);
+    sdns_rr_AAAA * aaaa = sdns_init_rr_AAAA((char*) mem_copy((char*)ipv6_parsed, 16));
+    sdns_rr * rr = sdns_init_rr(section_name, sdns_rr_type_AAAA, sdns_q_class_IN, ttl, 0, 1, (void*)aaaa);
+    res = sdns_add_authority_section(dns, rr);
+    if (res != 0){
+        free(rr->name);
+        free(rr);
+        sdns_free_rr_AAAA(aaaa);
+        return res;
+    }
+    return 0;   // success
+}
+
+int sdns_add_rr_additional_AAAA(sdns_context * dns, char * name, uint32_t ttl, const char * ipv6){
+    unsigned char ipv6_parsed[16] = {0x00};
+    int res = parse_IPv6(&ipv6, ipv6_parsed);
+    if (res == 0){
+        return SDNS_ERROR_INVALID_IPv6_FOUND;
+    }
+    if (name == NULL)
+        return SDNS_ERROR_BUFFER_IS_NULL;
+    char * section_name = name == NULL?NULL:strdup(name);
+    sdns_rr_AAAA * aaaa = sdns_init_rr_AAAA((char*) mem_copy((char*)ipv6_parsed, 16));
+    sdns_rr * rr = sdns_init_rr(section_name, sdns_rr_type_AAAA, sdns_q_class_IN, ttl, 0, 1, (void*)aaaa);
+    res = sdns_add_additional_section(dns, rr);
+    if (res != 0){
+        free(rr->name);
+        free(rr);
+        sdns_free_rr_AAAA(aaaa);
+        return res;
+    }
+    return 0;   // success
 }
 
 
@@ -1203,7 +1087,49 @@ char * sdns_get_value_cookie_client(sdns_context * dns, int * err){
         break;
     }while(tmp);
     return result;
-
 }
 
 
+sdns_rr * sdns_get_answer(sdns_context * dns, int * err, uint16_t num){
+    if (dns == NULL){
+        *err = SDNS_ERROR_BUFFER_IS_NULL;
+        return NULL;
+    }
+    if (num + 1 > dns->msg->header.ancount || dns->msg->answer == NULL){
+        *err = SDNS_ERROR_NO_ANSWER_FOUND;
+        return NULL;
+    }
+    sdns_rr * tmp = NULL;
+    sdns_rr * answer = dns->msg->answer;
+    uint16_t cnt = 0;
+    while(answer){
+        tmp = answer;
+        if (cnt >= num)
+            break;
+        cnt++;
+        answer = answer->next;
+    }
+    if (tmp == NULL){  // there is no answer numero 'num+1'
+        *err = SDNS_ERROR_NO_ANSWER_FOUND;
+        return NULL;
+    }
+    // tmp points the the right answer
+    char * name = safe_strdup(tmp->name);
+    sdns_rr * result = sdns_init_rr(name, tmp->type, tmp->class, tmp->ttl, tmp->rdlength, 1, NULL);
+    void * rdata = NULL;
+    if (tmp->decoded){
+        rdata = sdns_copy_rr_section(dns, tmp);
+    }else{
+        rdata = sdns_decode_rr_section(dns, tmp);
+    }
+    if (rdata == NULL){
+        // we can not decode it
+        free(result->name);
+        free(result);
+        *err = SDNS_ERROR_CAN_NOT_READ_SECTION;
+        return NULL;
+    }
+    result->psdns_rr = rdata;
+    *err = sdns_rcode_NoError;
+    return result;
+}

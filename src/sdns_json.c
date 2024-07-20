@@ -457,7 +457,10 @@ json_t * sdns_json_rr_AAAA(sdns_context * ctx, sdns_rr *rr){
     else
         aaaa = sdns_decode_rr_AAAA(ctx, rr);
     if (NULL == aaaa){return NULL;}
-    json_t * addr = json_string(aaaa->address);
+    if (NULL == aaaa->address){return NULL;}
+    char * ip_str = ipv6_mem_to_str(aaaa->address);
+    json_t * addr = json_string(ip_str);
+    free(ip_str);
     if (rr->decoded == 0)
         sdns_free_rr_AAAA(aaaa);
     json_t * obj = json_object();
@@ -730,8 +733,14 @@ json_t * sdns_json_rr_TXT(sdns_context * ctx, sdns_rr *rr){
         return NULL;
     
     sdns_rr_TXT * tmp = txt;
-    char * txt_mem = (char*) malloc(rr->rdlength);
+    size_t to_allocate = 1;
+    while(tmp){
+        to_allocate += tmp->character_string.len;
+        tmp = tmp->next;
+    }
+    char * txt_mem = (char*) malloc_or_abort(to_allocate > rr->rdlength?to_allocate:rr->rdlength);
     int cnt = 0;
+    tmp = txt;  // reset tmp
     while (tmp){
         for (int i=0; i<tmp->character_string.len; ++i){
             txt_mem[cnt] = tmp->character_string.content[i];

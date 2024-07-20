@@ -34,8 +34,9 @@
 #define SDNS_ERROR_NSID_NOT_FOUND        -18           ///< There is no NSID in the DNS packet.
 #define SDNS_ERROR_CLIENT_COOKIE_NOT_FOUND   -19       ///< There is no client cookie in the DNS packet.
 #define SDNS_ERROR_CHARACTER_STRING_TOO_LONG -20       ///< Maximum size of character string is 255 character
-
-
+#define SDNS_ERROR_NO_ANSWER_FOUND           -21       ///< This error shows that the DNS context has no answer section
+#define SDNS_ERROR_CAN_NOT_READ_SECTION      -22       ///< For any reason, it's not possible to decode or copy the rdata of the section
+#define SDNS_ERROR_INVALID_IPv6_FOUND        -23       ///< The code only accepts IPv6 in a format of ":" separated hex values
 // define the section types
 #define DNS_SECTION_ANSWER 1
 #define DNS_SECTION_AUTHORITY 2
@@ -480,7 +481,7 @@ typedef struct {
 
 /** Structure to hold the data of RR type AAAA */
 typedef struct {
-    char * address;             ///< IPv6 address but we keep it as a sequence of bytes
+    char * address;             ///< IPv6 address but we keep it as a sequence of bytes (exactly 16 bytes)
 } sdns_rr_AAAA;
 
 /**
@@ -953,8 +954,8 @@ sdns_opt_rdata * sdns_create_edns0_nsid(char * nsid, uint16_t nsid_len);
 int sdns_ends0_option_code_to_text(sdns_edns0_option_code oc, char * buffer);
 
 
-
-void * decode_rr_section(sdns_context *, sdns_rr *);
+void * sdns_copy_rr_section(sdns_context *, sdns_rr*);
+void * sdns_decode_rr_section(sdns_context *, sdns_rr *);
 sdns_rr_A * sdns_decode_rr_A(sdns_context *, sdns_rr *);
 sdns_rr_AAAA * sdns_decode_rr_AAAA(sdns_context *, sdns_rr *);
 sdns_rr_TXT * sdns_decode_rr_TXT(sdns_context *, sdns_rr *);
@@ -1373,6 +1374,8 @@ int sdns_convert_type_to_int(char * type);
 int sdns_convert_class_to_int(char * cls);
 
 
+
+void sdns_free_section(sdns_rr * rr);
 
 
 

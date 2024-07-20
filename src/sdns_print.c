@@ -6,6 +6,23 @@
 #include <sdns.h>
 #include <sdns_print.h>
 
+static inline int human_readible(int c){
+    // return the character itself if it's printable else return '.'
+    return (c >= 32 && c<= 126)?c:'.';
+}
+
+/*
+static char * make_human_readible(char * data, size_t len){
+    // returns a new memory address that has the human readable version of 'data'
+    char * mem = malloc_or_abort(len);
+    for (int i=0; i<len; ++i){
+        mem[i] = human_readible(data[i]);
+    }
+    return mem;
+}
+*/
+
+
 void sdns_neat_print_dns(sdns_context * ctx){
     if (NULL == ctx || NULL == ctx->msg)
         return;
@@ -138,13 +155,13 @@ void sdns_neat_print_rr_HINFO(sdns_context * ctx, sdns_rr * rr){
            rr->name, rr->ttl, buff_class, buff_type);
     fprintf(stdout, "\"");
     for (int i=0; i<hinfo->cpu_len; ++i){
-        fprintf(stdout, "%c", hinfo->cpu[i]);
+        fprintf(stdout, "%c", human_readible(hinfo->cpu[i]));
     }
     fprintf(stdout, "\"");
     fprintf(stdout, " ");
     fprintf(stdout, "\"");
     for (int i=0; i<hinfo->os_len; ++i){
-        fprintf(stdout, "%c", hinfo->os[i]);
+        fprintf(stdout, "%c", human_readible(hinfo->os[i]));
     }
     fprintf(stdout, "\"\n");
     if (rr->decoded == 0)
@@ -203,7 +220,7 @@ void sdns_neat_print_rr_URI(sdns_context * ctx, sdns_rr * rr){
     if (uri->target_len > 0){
         fprintf(stdout, "\"");
         for (int i=0; i<uri->target_len; ++i){
-            fprintf(stdout, "%c", uri->Target[i]);
+            fprintf(stdout, "%c", human_readible(uri->Target[i]));
         }
         fprintf(stdout, "\"\n");
     }else{
@@ -232,11 +249,12 @@ void sdns_neat_print_rr_AAAA(sdns_context * ctx, sdns_rr * rr){
     char buff_class[20] = {0x00};
     sdns_rr_type_to_string(rr->type, buff_type);
     sdns_class_to_string(rr->class, buff_class);
+    char * ip_str = ipv6_mem_to_str(aaaa->address);
     fprintf(stdout, "\t%s\t%u\t%s\t%s\t%s\n",
-           rr->name, rr->ttl, buff_class, buff_type, aaaa->address);
+           rr->name, rr->ttl, buff_class, buff_type, ip_str);
     if (rr->decoded == 0)
         sdns_free_rr_AAAA(aaaa);
-    
+    free(ip_str);
 }
 
 
@@ -389,7 +407,7 @@ void sdns_neat_print_rr_TXT(sdns_context * ctx, sdns_rr * rr){
             if (tmp->character_string.content[i] == '"')
                 fprintf(stdout, "\\%c", tmp->character_string.content[i]);
             else
-                fprintf(stdout, "%c", tmp->character_string.content[i]);
+                fprintf(stdout, "%c", human_readible(tmp->character_string.content[i]));
         }
         fprintf(stdout, "\" ");
         tmp = tmp->next;
@@ -443,11 +461,21 @@ void sdns_neat_print_rr_NID(sdns_context * ctx, sdns_rr * rr){
     char buff_class[20] = {0x00};
     sdns_rr_type_to_string(rr->type, buff_type);
     sdns_class_to_string(rr->class, buff_class);
-    char * tmp = mem2hex(nid->NodeId, 8);
+    char tmp[20] = {0x00};
+    int j = 1;
+    int l = 0;
+    for (int i=0; i< 8; ++i, j++){
+        sprintf(tmp + l, "%02x", (uint8_t)*(nid->NodeId + i));
+        l += 2;
+        if (j == 2 && i != 8 -1){
+            sprintf(tmp + l, "%c", ':');
+            l++;
+            j=0;
+        }
+    }
     fprintf(stdout, "\t%s\t%u\t%s\t%s\t %d %s\n",
            rr->name, rr->ttl, buff_class, buff_type,
            nid->Preference, tmp);
-    free(tmp);
     if (rr->decoded == 0)
         sdns_free_rr_NID(nid);
 }

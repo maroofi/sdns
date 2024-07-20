@@ -5,6 +5,8 @@
 #define DNS_UTILS_H
 
 ///////////////////////declaration/////////////////////////////////
+void * malloc_or_abort(size_t n);
+char * ipv6_mem_to_str(char * mem);
 
 int parse_IPv6 ( const char** ppszText, unsigned char* abyAddr);
 char * safe_strdup(const char * s);

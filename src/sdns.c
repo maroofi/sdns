@@ -265,7 +265,6 @@ static int decode_rr_from_buffer(sdns_context * ctx, sdns_rr ** result_section, 
     }
     sdns_rr * tmp_rr_section = NULL;
     sdns_rr *rr_section = sdns_init_rr(NULL, 0, 0, 0, 0, 0, NULL);
-    if (rr_section == NULL){return SDNS_ERROR_MEMORY_ALLOC_FAILD;}   // this and prev line must be a macro
     tmp_rr_section = rr_section;
     sdns_rr *tmp_sdns_rr = NULL;
     int an_res;
@@ -273,11 +272,6 @@ static int decode_rr_from_buffer(sdns_context * ctx, sdns_rr ** result_section, 
     for (int i=0; i< num_entries; ++i){
         if (tmp_rr_section == NULL){
             tmp_rr_section = sdns_init_rr(NULL, 0, 0, 0, 0, 0, NULL);
-            if (tmp_rr_section == NULL){
-                ERROR("we hit _free_unknown_rr");
-                _free_unknown_rr(rr_section);
-                return SDNS_ERROR_MEMORY_ALLOC_FAILD;
-            }
             tmp_sdns_rr = rr_section;
             while (tmp_sdns_rr->next)
                 tmp_sdns_rr = tmp_sdns_rr->next;
@@ -705,6 +699,21 @@ static int _encode_write_rr_HINFO(sdns_context * ctx, dyn_buffer* db, sdns_rr* t
     return sdns_rcode_NoError;
 }
 
+static int _encode_write_rr_AAAA(sdns_context * ctx, dyn_buffer * db, sdns_rr* tmprr){
+    uint16_t rdlength = 16;     // length of IPv6
+    sdns_rr_AAAA * aaaa = (sdns_rr_AAAA *) tmprr->psdns_rr;
+    char tmp_bytes[10] = {0x00};
+    tmp_bytes[0] = (uint8_t) ((rdlength >> 8) & 0xFF);
+    tmp_bytes[1] = (uint8_t)(rdlength & 0xFF);
+    if (aaaa->address == NULL){
+        ctx->err = SDNS_ERROR_INVALID_IPv6_FOUND;
+        return ctx->err;
+    }
+    dyn_buffer_append(db, tmp_bytes, 2);    // rdlength
+    dyn_buffer_append(db, aaaa->address, 16);
+    return sdns_rcode_NoError;
+}
+
 static int _encode_write_rr_SOA(sdns_context * ctx, dyn_buffer* db, sdns_rr* tmprr){
     int res_mname = -1;
     int res_rname = -1;
@@ -760,8 +769,71 @@ static int _encode_write_rr_SOA(sdns_context * ctx, dyn_buffer* db, sdns_rr* tmp
     return sdns_rcode_NoError;
 }
 
+static int _encode_write_rr_NID(sdns_context * ctx, dyn_buffer * db, sdns_rr* tmprr){
+    char tmp_bytes[10] = {0x00};
+    uint16_t rdlength = 10;     // it's always 10 (preference + nodeID)
+    sdns_rr_NID * nid = (sdns_rr_NID*) tmprr->psdns_rr;
+    if (nid->NodeId == NULL){
+        return SDNS_ERROR_BUFFER_IS_NULL;
+    }
+    tmp_bytes[0] = (uint8_t) ((rdlength >> 8) & 0xFF);
+    tmp_bytes[1] = (uint8_t)(rdlength & 0xFF);
+    dyn_buffer_append(db, tmp_bytes, 2);    // rdlength
+    // preference
+    tmp_bytes[0] = (uint8_t) ((nid->Preference >> 8) & 0xFF);
+    tmp_bytes[1] = (uint8_t) (nid->Preference & 0xFF);
+    dyn_buffer_append(db, tmp_bytes, 2);
+    // nodeid
+    dyn_buffer_append(db, nid->NodeId, 8);
+    return sdns_rcode_NoError;
+}
+
+static int _encode_write_rr_L32(sdns_context * ctx, dyn_buffer * db, sdns_rr* tmprr){
+    //TODO: need to be tested
+    char tmp_bytes[10] = {0x00};
+    uint16_t rdlength = 48;     // it's always 10 (preference + locator32)
+    sdns_rr_L32 * l32 = (sdns_rr_L32*) tmprr->psdns_rr;
+    // rdlength
+    tmp_bytes[0] = (uint8_t) ((rdlength >> 8) & 0xFF);
+    tmp_bytes[1] = (uint8_t)(rdlength & 0xFF);
+    dyn_buffer_append(db, tmp_bytes, 2);    // rdlength
+    // preference
+    tmp_bytes[0] = (uint8_t) ((l32->Preference >> 8) & 0xFF);
+    tmp_bytes[1] = (uint8_t) (l32->Preference & 0xFF);
+    dyn_buffer_append(db, tmp_bytes, 2);
+    // locator 32 bit
+    tmp_bytes[0] = (uint8_t)((l32->Locator32 >> 24) & 0xFF);
+    tmp_bytes[1] = (uint8_t)((l32->Locator32 >> 16) & 0xFF);
+    tmp_bytes[2] = (uint8_t)((l32->Locator32 >> 8) & 0xFF);
+    tmp_bytes[3] = (uint8_t)(l32->Locator32 & 0xFF);
+    dyn_buffer_append(db, tmp_bytes, 4);
+    return sdns_rcode_NoError;
+}
+
+static int _encode_write_rr_L64(sdns_context * ctx, dyn_buffer * db, sdns_rr* tmprr){
+    //TODO: need to be tested
+    char tmp_bytes[10] = {0x00};
+    uint16_t rdlength = 16 + 64;     // it's always 10 (preference + locator64)
+    sdns_rr_L64 * l64 = (sdns_rr_L64*) tmprr->psdns_rr;
+    if (l64->Locator64 == NULL){
+        ctx->err = SDNS_ERROR_BUFFER_IS_NULL;
+        return ctx->err;
+    }
+    // rdlength
+    tmp_bytes[0] = (uint8_t) ((rdlength >> 8) & 0xFF);
+    tmp_bytes[1] = (uint8_t)(rdlength & 0xFF);
+    dyn_buffer_append(db, tmp_bytes, 2);    // rdlength
+    // preference
+    tmp_bytes[0] = (uint8_t) ((l64->Preference >> 8) & 0xFF);
+    tmp_bytes[1] = (uint8_t) (l64->Preference & 0xFF);
+    dyn_buffer_append(db, tmp_bytes, 2);
+    // locator 64
+    dyn_buffer_append(db, l64->Locator64, 8);
+    return sdns_rcode_NoError;
+}
+
 static int _encode_write_rr(sdns_context * ctx, dyn_buffer* db, sdns_rr* tmprr){
-    //TODO: implement AAAA, L32, L64, URI, NID, LP
+    //TODO: implement URI, LP
     // different strategies based on the typeof RR
     if (tmprr->type == sdns_rr_type_A)
         return _encode_write_rr_A(ctx, db, tmprr);
@@ -785,6 +857,14 @@ static int _encode_write_rr(sdns_context * ctx, dyn_buffer* db, sdns_rr* tmprr){
         return _encode_write_rr_SRV(ctx, db, tmprr);
     if (tmprr->type == sdns_rr_type_HINFO)
         return _encode_write_rr_HINFO(ctx, db, tmprr);
+    if (tmprr->type == sdns_rr_type_AAAA)
+        return _encode_write_rr_AAAA(ctx, db, tmprr);
+    if (tmprr->type == sdns_rr_type_NID)
+        return _encode_write_rr_NID(ctx, db, tmprr);
+    if (tmprr->type == sdns_rr_type_L32)
+        return _encode_write_rr_L32(ctx, db, tmprr);
+    if (tmprr->type == sdns_rr_type_L64)
+        return _encode_write_rr_L64(ctx, db, tmprr);
     ERROR("We have not implemented DNS RR of type: %d", tmprr->type);
     return sdns_rcode_NotImp;
 }
@@ -947,9 +1027,7 @@ int sdns_ends0_option_code_to_text(sdns_edns0_option_code oc, char * buffer){
 }
 
 sdns_rr_HINFO * sdns_init_rr_HINFO(uint8_t cpu_len, char * cpu, uint8_t os_len, char * os){
-    sdns_rr_HINFO * hinfo = (sdns_rr_HINFO*) malloc(sizeof(sdns_rr_HINFO));
-    if (NULL == hinfo)
-        return NULL;
+    sdns_rr_HINFO * hinfo = (sdns_rr_HINFO*) malloc_or_abort(sizeof(sdns_rr_HINFO));
     hinfo->cpu_len = cpu_len;
     hinfo->os_len = os_len;
     hinfo->cpu = cpu;
@@ -994,27 +1072,21 @@ void sdns_free_rr_LP(sdns_rr_LP * lp){
 }
 
 sdns_rr_NID * sdns_init_rr_NID(uint16_t preference, char * nodeid){
-    sdns_rr_NID * nid = (sdns_rr_NID *) malloc(sizeof(sdns_rr_NID));
-    if (NULL == nid)
-        return NULL;
+    sdns_rr_NID * nid = (sdns_rr_NID *) malloc_or_abort(sizeof(sdns_rr_NID));
     nid->Preference = preference;
     nid->NodeId = nodeid;
     return nid;
 }
 
 sdns_rr_L32 * sdns_init_rr_L32(uint16_t preference, uint32_t locator32){
-    sdns_rr_L32 * l32 = (sdns_rr_L32 *) malloc(sizeof(sdns_rr_L32));
-    if (NULL == l32)
-        return NULL;
+    sdns_rr_L32 * l32 = (sdns_rr_L32 *) malloc_or_abort(sizeof(sdns_rr_L32));
     l32->Preference = preference;
     l32->Locator32 = locator32;
     return l32;
 }
 
 sdns_rr_L64 * sdns_init_rr_L64(uint16_t preference, char* locator64){
-    sdns_rr_L64 * l64 = (sdns_rr_L64 *) malloc(sizeof(sdns_rr_L64));
-    if (NULL == l64)
-        return NULL;
+    sdns_rr_L64 * l64 = (sdns_rr_L64 *) malloc_or_abort(sizeof(sdns_rr_L64));
     l64->Preference = preference;
     l64->Locator64 = locator64;
     return l64;
@@ -1022,19 +1094,16 @@ sdns_rr_L64 * sdns_init_rr_L64(uint16_t preference, char* locator64){
 
 
 sdns_rr_LP * sdns_init_rr_LP(uint16_t preference, char* fqdn){
-    sdns_rr_LP * lp = (sdns_rr_LP *) malloc(sizeof(sdns_rr_LP));
-    if (NULL == lp)
-        return NULL;
+    sdns_rr_LP * lp = (sdns_rr_LP *) malloc_or_abort(sizeof(sdns_rr_LP));
     lp->Preference = preference;
     lp->FQDN = fqdn;
     return lp;
 }
 
 //initialize a TXT record structure
+//it's either successfull or abort the code
 sdns_rr_TXT * sdns_init_rr_TXT(char * data, uint16_t data_len){
-    sdns_rr_TXT * txt = (sdns_rr_TXT*) malloc(sizeof(sdns_rr_TXT));
-    if (NULL == txt)
-        return NULL;
+    sdns_rr_TXT * txt = (sdns_rr_TXT*) malloc_or_abort(sizeof(sdns_rr_TXT));
     txt->next = NULL;
     // we don't need to fragment it
     if (NULL == data || data_len == 0){
@@ -1055,11 +1124,7 @@ sdns_rr_TXT * sdns_init_rr_TXT(char * data, uint16_t data_len){
     while (2){  // why 2?
         data_len -= 255;
         data_tmp += 255;
-        sdns_rr_TXT * txt_tmp = (sdns_rr_TXT*) malloc(sizeof(sdns_rr_TXT));
-        if (txt_tmp == NULL){
-            sdns_free_rr_TXT(txt);
-            return  NULL;
-        }
+        sdns_rr_TXT * txt_tmp = (sdns_rr_TXT*) malloc_or_abort(sizeof(sdns_rr_TXT));
         txt_tmp->next = NULL;
         txt_tmp->character_string.content = data_tmp;
         txt_tmp->character_string.len = data_len < 255?data_len:255;
@@ -1073,9 +1138,7 @@ sdns_rr_TXT * sdns_init_rr_TXT(char * data, uint16_t data_len){
 
 // initialize NS structure
 sdns_rr_NS * sdns_init_rr_NS(char * nsdname){
-    sdns_rr_NS * ns = (sdns_rr_NS*) malloc(sizeof(sdns_rr_NS));
-    if (NULL == ns)
-        return NULL;
+    sdns_rr_NS * ns = (sdns_rr_NS*) malloc_or_abort(sizeof(sdns_rr_NS));
     ns->NSDNAME = nsdname;
     return ns;
 }
@@ -1083,27 +1146,22 @@ sdns_rr_NS * sdns_init_rr_NS(char * nsdname){
 
 // initialize PTR structure
 sdns_rr_PTR * sdns_init_rr_PTR(char * ptrdname){
-    sdns_rr_PTR * ptr = (sdns_rr_PTR*) malloc(sizeof(sdns_rr_PTR));
-    if (NULL == ptr)
-        return NULL;
+    sdns_rr_PTR * ptr = (sdns_rr_PTR*) malloc_or_abort(sizeof(sdns_rr_PTR));
     ptr->PTRDNAME = ptrdname;
     return ptr;
 }
 
 // initialize CNAME structure
 sdns_rr_CNAME * sdns_init_rr_CNAME(char * name){
-    sdns_rr_CNAME * cname = (sdns_rr_CNAME*) malloc(sizeof(sdns_rr_CNAME));
-    if (NULL == cname)
-        return NULL;
+    sdns_rr_CNAME * cname = (sdns_rr_CNAME*) malloc_or_abort(sizeof(sdns_rr_CNAME));
     cname->CNAME = name;
     return cname;
 }
 
+// either sucessful or abort the code
 sdns_rr_SOA * sdns_init_rr_SOA(char * mname, char * rname, uint32_t expire, uint32_t minimum,
                                uint32_t refresh, uint32_t retry, uint32_t serial){
-    sdns_rr_SOA * soa = (sdns_rr_SOA*) malloc(sizeof(sdns_rr_SOA));
-    if (NULL == soa)
-        return NULL;
+    sdns_rr_SOA * soa = (sdns_rr_SOA*) malloc_or_abort(sizeof(sdns_rr_SOA));
     soa->mname = mname;
     soa->rname = rname;
     soa->expire = expire;
@@ -1124,9 +1182,7 @@ sdns_rr_RRSIG * sdns_init_rr_RRSIG(uint16_t type_covered, uint8_t algorithm, uin
                                    uint32_t signature_inception, uint8_t key_tag, char * signers_name,
                                    char * signature, uint16_t signature_len){
 
-    sdns_rr_RRSIG * rrsig = (sdns_rr_RRSIG*) malloc(sizeof(sdns_rr_RRSIG));
-    if (NULL == rrsig)
-        return NULL;
+    sdns_rr_RRSIG * rrsig = (sdns_rr_RRSIG*) malloc_or_abort(sizeof(sdns_rr_RRSIG));
     rrsig->type_covered = type_covered;
     rrsig->algorithm = algorithm;
     rrsig->labels = labels;
@@ -1141,9 +1197,7 @@ sdns_rr_RRSIG * sdns_init_rr_RRSIG(uint16_t type_covered, uint8_t algorithm, uin
 }
 
 sdns_rr_SRV * sdns_init_rr_SRV(uint16_t Priority, uint16_t Weight, uint16_t Port, char * target){
-    sdns_rr_SRV * srv = (sdns_rr_SRV*) malloc(sizeof(sdns_rr_SRV));
-    if (NULL == srv)
-        return NULL;
+    sdns_rr_SRV * srv = (sdns_rr_SRV*) malloc_or_abort(sizeof(sdns_rr_SRV));
     srv->Priority = Priority;
     srv->Weight = Weight;
     srv->Port = Port;
@@ -1152,9 +1206,7 @@ sdns_rr_SRV * sdns_init_rr_SRV(uint16_t Priority, uint16_t Weight, uint16_t Port
 }
 
 sdns_rr_URI * sdns_init_rr_URI(uint16_t Priority, uint16_t Weight, char * Target, uint16_t target_len){
-    sdns_rr_URI * uri = (sdns_rr_URI*) malloc(sizeof(sdns_rr_URI));
-    if (NULL == uri)
-        return NULL;
+    sdns_rr_URI * uri = (sdns_rr_URI*) malloc_or_abort(sizeof(sdns_rr_URI));
     uri->Priority = Priority;
     uri->Weight = Weight;
     uri->target_len = target_len;
@@ -1206,10 +1258,9 @@ void sdns_free_rr_CNAME(sdns_rr_CNAME* cname){
 }
 
 //initialize an A record structure
+// this function either returns successfully or abort() the whole code
 sdns_rr_A * sdns_init_rr_A(uint32_t ipaddress){
-    sdns_rr_A * a = (sdns_rr_A*) malloc(sizeof(sdns_rr_A));
-    if (NULL == a)
-        return NULL;
+    sdns_rr_A * a = (sdns_rr_A*) malloc_or_abort(sizeof(sdns_rr_A));
     a->address = ipaddress;
     return a;
 }
@@ -1244,9 +1295,7 @@ sdns_rr_A * sdns_decode_rr_A(sdns_context * ctx, sdns_rr * rr){
         ctx->err = SDNS_ERROR_RR_SECTION_MALFORMED;
         return NULL;
     }
-    sdns_rr_A * A = (sdns_rr_A*) malloc(sizeof(sdns_rr_A));
-    if (NULL == A)
-        return NULL;
+    sdns_rr_A * A = (sdns_rr_A*) malloc_or_abort(sizeof(sdns_rr_A));
     A->address = (((uint8_t)rr->rdata[0] & 0xFF) << 24) | ((uint8_t)rr->rdata[1] << 16);
     A->address += ((uint8_t)rr->rdata[2] << 8) | ((uint8_t)rr->rdata[3]);
     ctx->err = 0;   // success
@@ -1258,33 +1307,12 @@ sdns_rr_AAAA * sdns_decode_rr_AAAA(sdns_context * ctx, sdns_rr * rr){
         ctx->err = SDNS_ERROR_BUFFER_TOO_SHORT;
         return NULL;
     }
-    if (ctx->raw_len - (rr->rdata - ctx->raw < 16)){
+    if (ctx->raw_len - (rr->rdata - ctx->raw) < 16){
         ctx->err = SDNS_ERROR_RR_SECTION_MALFORMED;
         return NULL;
     }
-    sdns_rr_AAAA * aaaa = (sdns_rr_AAAA*) malloc(sizeof(sdns_rr_AAAA));
-    if (NULL == aaaa){
-        ctx->err = SDNS_ERROR_RR_SECTION_MALFORMED;
-        return NULL;
-    }
-    aaaa->address = (char*) malloc(40); // max possible length of AAAA(no double dot)
-    if (NULL == aaaa->address){
-        ctx->err = SDNS_ERROR_MEMORY_ALLOC_FAILD;
-        free(aaaa);
-        return NULL;
-    }
-    aaaa->address[39] = '\0';
-    int j = 1;
-    int l = 0;
-    for (int i=0; i< rr->rdlength; ++i, j++){
-        sprintf(aaaa->address + l, "%02x", (uint8_t)*(rr->rdata + i));
-        l += 2;
-        if (j == 2 && i != rr->rdlength -1){
-            sprintf(aaaa->address + l, "%c", ':');
-            l++;
-            j=0;
-        }
-    }
+    sdns_rr_AAAA * aaaa = sdns_init_rr_AAAA(NULL);
+    aaaa->address = mem_copy(rr->rdata, 16);
     ctx->err = 0;   //success
     return aaaa;
 }
@@ -1293,10 +1321,6 @@ sdns_rr_L32 * sdns_decode_rr_L32(sdns_context * ctx, sdns_rr * rr){
     if (rr == NULL || ctx == NULL)
         return NULL;        // we should never hit this!
     sdns_rr_L32 * l32 = sdns_init_rr_L32(0, 0);
-    if (NULL == l32){
-        ctx->err = SDNS_ERROR_MEMORY_ALLOC_FAILD;
-        return NULL;
-    }
     uint16_t rr_len = rr->rdlength;
     char * tmp = rr->rdata;
     uint16_t cnt = 0;
@@ -1321,10 +1345,6 @@ sdns_rr_L64 * sdns_decode_rr_L64(sdns_context * ctx, sdns_rr * rr){
     if (rr == NULL || ctx == NULL)
         return NULL;        // we should never hit this!
     sdns_rr_L64 * l64 = sdns_init_rr_L64(0, NULL);
-    if (NULL == l64){
-        ctx->err = SDNS_ERROR_MEMORY_ALLOC_FAILD;
-        return NULL;
-    }
     uint16_t rr_len = rr->rdlength;
     char * tmp = rr->rdata;
     uint16_t cnt = 0;
@@ -1375,10 +1395,6 @@ sdns_rr_NID * sdns_decode_rr_NID(sdns_context * ctx, sdns_rr * rr){
     if (rr == NULL || ctx == NULL)
         return NULL;        // we should never hit this!
     sdns_rr_NID * nid = sdns_init_rr_NID(0, NULL);
-    if (NULL == nid){
-        ctx->err = SDNS_ERROR_MEMORY_ALLOC_FAILD;
-        return NULL;
-    }
     uint16_t rr_len = rr->rdlength;
     char * tmp = rr->rdata;
     uint16_t cnt = 0;
@@ -1396,10 +1412,9 @@ sdns_rr_NID * sdns_decode_rr_NID(sdns_context * ctx, sdns_rr * rr){
     return nid;
 }
 
+// either is successful or abort the code
 sdns_rr_AAAA* sdns_init_rr_AAAA(char * addr){
-    sdns_rr_AAAA * aaaa = (sdns_rr_AAAA*) malloc(sizeof(sdns_rr_AAAA));
-    if (NULL == aaaa)
-        return NULL;
+    sdns_rr_AAAA * aaaa = (sdns_rr_AAAA*) malloc_or_abort(sizeof(sdns_rr_AAAA));
     aaaa->address = addr;
     return aaaa;
 }
@@ -1414,8 +1429,6 @@ void sdns_free_rr_AAAA(sdns_rr_AAAA * aaaa){
 
 sdns_rr_SRV * sdns_decode_rr_SRV(sdns_context * ctx, sdns_rr * rr){
     sdns_rr_SRV * srv = sdns_init_rr_SRV(0, 0, 0, NULL);
-    if (NULL == srv)
-        return NULL;
     uint16_t rr_len = rr->rdlength;
     if (rr_len < 6){  // priority + weight + port
         sdns_free_rr_SRV(srv);
@@ -1444,8 +1457,6 @@ sdns_rr_SRV * sdns_decode_rr_SRV(sdns_context * ctx, sdns_rr * rr){
 
 sdns_rr_URI * sdns_decode_rr_URI(sdns_context * ctx, sdns_rr* rr){
     sdns_rr_URI * uri = sdns_init_rr_URI(0, 0, NULL, 0);
-    if (NULL == uri)
-        return NULL;
     uint16_t rr_len = rr->rdlength;
     if (rr_len < 4){
         sdns_free_rr_URI(uri);
@@ -1463,12 +1474,7 @@ sdns_rr_URI * sdns_decode_rr_URI(sdns_context * ctx, sdns_rr* rr){
         return uri;
     }
     uri->target_len = rr_len - cnt;
-    char * target = (char*) malloc(uri->target_len);
-    if (NULL == target){
-        sdns_free_rr_URI(uri);
-        ctx->err = SDNS_ERROR_MEMORY_ALLOC_FAILD;
-        return NULL;
-    }
+    char * target = (char*) malloc_or_abort(uri->target_len);
     memcpy(target, tmp+cnt, uri->target_len);
     uri->Target = target;
     ctx->err = 0;   // success
@@ -1477,10 +1483,6 @@ sdns_rr_URI * sdns_decode_rr_URI(sdns_context * ctx, sdns_rr* rr){
 
 sdns_rr_RRSIG * sdns_decode_rr_RRSIG(sdns_context * ctx, sdns_rr * rr){
     sdns_rr_RRSIG * rrsig = sdns_init_rr_RRSIG(0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0);
-    if (NULL == rrsig){
-        ctx->err = SDNS_ERROR_MEMORY_ALLOC_FAILD;
-        return NULL;
-    }
     uint16_t cnt = 0;
     uint16_t rr_len = rr->rdlength;
     if (rr_len < 18){
@@ -1520,12 +1522,7 @@ sdns_rr_RRSIG * sdns_decode_rr_RRSIG(sdns_context * ctx, sdns_rr * rr){
     cnt += strlen(buffer_label) + 1;
     // the remaining len from rr->rdlength is for 'Signature'
     rrsig->signature_len = rr_len - cnt;
-    rrsig->signature = (char*) malloc(rrsig->signature_len);
-    if (NULL == rrsig->signature){
-        sdns_free_rr_RRSIG(rrsig);
-        ctx->err = SDNS_ERROR_MEMORY_ALLOC_FAILD;
-        return NULL;
-    }
+    rrsig->signature = (char*) malloc_or_abort(rrsig->signature_len);
     memcpy(rrsig->signature, tmp + cnt, rrsig->signature_len);
     ctx->err = 0;       // success
     return rrsig;
@@ -1540,33 +1537,16 @@ sdns_rr_TXT * sdns_decode_rr_TXT(sdns_context * ctx, sdns_rr * rr){
     }
     uint16_t rdlen = rr->rdlength;
     sdns_rr_TXT * txt = sdns_init_rr_TXT(NULL, 0);
-    if (NULL == txt){
-        ctx->err = SDNS_ERROR_MEMORY_ALLOC_FAILD;
-        return NULL;
-    }
     sdns_rr_TXT * original = txt;
     uint8_t to_copy = 0;
     uint16_t cnt = 0;
     sdns_rr_TXT * last = original;
-    char * buffer = (char*)malloc(rr->rdlength);
-    if (NULL == buffer){
-        sdns_free_rr_TXT(txt);
-        ctx->err = SDNS_ERROR_MEMORY_ALLOC_FAILD;
-        return NULL;
-    }
+    char * buffer = (char*)malloc_or_abort(rr->rdlength);
     dyn_buffer * db = dyn_buffer_init(buffer, rr->rdlength, 0);
     char * offset = NULL;
     while (cnt < rr->rdlength){
         if (NULL == txt){
             txt = sdns_init_rr_TXT(NULL, 0);
-            if (NULL == txt){
-                if (original->character_string.content == NULL){    // the first one is NULL
-                    dyn_buffer_free(db);
-                }
-                sdns_free_rr_TXT(original);
-                ctx->err = SDNS_ERROR_MEMORY_ALLOC_FAILD;
-                return NULL;
-            }
         }
         offset = db->buffer + db->cursor;
         if (ctx->raw_len - ((rr->rdata + cnt) - ctx->raw) < 1){
@@ -1643,10 +1623,6 @@ sdns_rr_NS * sdns_decode_rr_NS(sdns_context * ctx, sdns_rr * rr){
         return NULL;
     }
     sdns_rr_NS * ns = sdns_init_rr_NS(NULL);
-    if (NULL == ns){
-        ctx->err = SDNS_ERROR_MEMORY_ALLOC_FAILD;
-        return NULL;
-    }
     char * name = NULL;
     ctx->cursor = rr->rdata;
     int res = decode_name(ctx, &name);
@@ -1666,10 +1642,6 @@ sdns_rr_PTR * sdns_decode_rr_PTR(sdns_context * ctx, sdns_rr * rr){
     if (ctx == NULL || rr == NULL)
         return NULL;
     sdns_rr_PTR * ptr = sdns_init_rr_PTR(NULL);
-    if (NULL == ptr){
-        ctx->err = SDNS_ERROR_MEMORY_ALLOC_FAILD;
-        return NULL;
-    }
     char * name = NULL;
     ctx->cursor = rr->rdata;
     int res = decode_name(ctx, &name);
@@ -1687,10 +1659,6 @@ sdns_rr_CNAME * sdns_decode_rr_CNAME(sdns_context * ctx, sdns_rr * rr){
     if (ctx == NULL || rr == NULL)
         return NULL;
     sdns_rr_CNAME * cname = sdns_init_rr_CNAME(NULL);
-    if (NULL == cname){
-        ctx->err = SDNS_ERROR_MEMORY_ALLOC_FAILD;
-        return NULL;
-    }
     char * name = NULL;
     ctx->cursor = rr->rdata;
     int res = decode_name(ctx, &name);
@@ -1709,10 +1677,6 @@ sdns_rr_SOA * sdns_decode_rr_SOA(sdns_context * ctx, sdns_rr * rr){
     if (ctx == NULL || rr == NULL)
         return NULL;
     sdns_rr_SOA * soa = sdns_init_rr_SOA(NULL, NULL, 0, 0, 0, 0, 0);
-    if (NULL == soa){
-        ctx->err = SDNS_ERROR_MEMORY_ALLOC_FAILD;
-        return NULL;
-    }
     // we assume that we have enough data in the `rr` as we have already parsed it as an rr
     char * name = NULL;
     ctx->cursor = rr->rdata;
@@ -2258,9 +2222,7 @@ void sdns_rr_type_to_string(uint16_t t, char * buff){
 
 void sdns_error_string(int err, char ** err_buffer){
     if (*err_buffer == NULL){
-        *err_buffer = (char*) malloc(256);
-        if (NULL == *err_buffer)
-            return;
+        *err_buffer = (char*) malloc_or_abort(256);
         memset(*err_buffer, 0x00, 256);
     }
     if (err == SDNS_ERROR_MEMORY_ALLOC_FAILD)
@@ -2295,6 +2257,8 @@ void sdns_error_string(int err, char ** err_buffer){
         strcpy(*err_buffer, "There is no client cookie in the DNS packet");
     else if (err == SDNS_ERROR_CHARACTER_STRING_TOO_LONG)
         strcpy(*err_buffer, "Maximum size of a <character-string> is 255 bytes");
+    else if (err == SDNS_ERROR_NO_ANSWER_FOUND)
+        strcpy(*err_buffer, "There is no answer section in the DNS context");
     else if (err == sdns_rcode_FormErr)
         strcpy(*err_buffer, "FormErr");
     else if (err == sdns_rcode_NoError)
@@ -2410,7 +2374,7 @@ int sdns_make_query(sdns_context * ctx, sdns_rr_type qtype,
  *
  * @return a pointer to the structure of the decoded section.
  */
-void * decode_rr_section(sdns_context* ctx, sdns_rr * rr_section){
+void * sdns_decode_rr_section(sdns_context* ctx, sdns_rr * rr_section){
     if (NULL == rr_section)
         return NULL;
     uint16_t rr_type = rr_section->type;
@@ -2421,6 +2385,198 @@ void * decode_rr_section(sdns_context* ctx, sdns_rr * rr_section){
             return (void*) sdns_decode_rr_TXT(ctx, rr_section);
         case sdns_rr_type_SOA:
             return (void*) sdns_decode_rr_SOA(ctx, rr_section);
+        case sdns_rr_type_AAAA:
+            return (void*) sdns_decode_rr_AAAA(ctx, rr_section);
+        case sdns_rr_type_MX:
+            return (void*) sdns_decode_rr_MX(ctx, rr_section);
+        case sdns_rr_type_RRSIG:
+            return (void*) sdns_decode_rr_RRSIG(ctx, rr_section);
+        case sdns_rr_type_LP:
+            return (void*) sdns_decode_rr_LP(ctx, rr_section);
+        case sdns_rr_type_L32:
+            return (void*) sdns_decode_rr_L32(ctx, rr_section);
+        case sdns_rr_type_L64:
+            return (void*) sdns_decode_rr_L64(ctx, rr_section);
+        case sdns_rr_type_NS:
+            return (void*) sdns_decode_rr_NS(ctx, rr_section);
+        case sdns_rr_type_NID:
+            return (void*) sdns_decode_rr_NID(ctx, rr_section);
+        case sdns_rr_type_CNAME:
+            return (void*) sdns_decode_rr_CNAME(ctx, rr_section);
+        case sdns_rr_type_PTR:
+            return (void*) sdns_decode_rr_PTR(ctx, rr_section);
+        case sdns_rr_type_SRV:
+            return (void*) sdns_decode_rr_SRV(ctx, rr_section);
+        case sdns_rr_type_HINFO:
+            return (void*) sdns_decode_rr_HINFO(ctx, rr_section);
+        case sdns_rr_type_URI:
+            return (void*) sdns_decode_rr_URI(ctx, rr_section);
+        default:
+            // eventually replace this default by other RRs
+            return NULL;
+    }
+    return NULL;
+}
+
+sdns_rr_A * sdns_copy_rr_A(sdns_context * ctx, sdns_rr * rr){
+    // assuming rr is sdns_rr_A structure, deep copy the structure
+    sdns_rr_A* copy = sdns_init_rr_A(0);
+    copy->address = ((sdns_rr_A*)(rr->psdns_rr))->address;
+    return (void*)copy;
+}
+
+sdns_rr_TXT* sdns_copy_rr_TXT(sdns_context * ctx, sdns_rr * rr){
+   sdns_rr_TXT * copy = sdns_init_rr_TXT(NULL, 0);
+   sdns_rr_TXT * tmp = ((sdns_rr_TXT*)(rr->psdns_rr));
+   dyn_buffer * db = dyn_buffer_init(NULL, 0, 0);
+   if (NULL == db){
+        free(copy);
+        return NULL;
+   }
+   sdns_rr_TXT * copy_pointer = copy;
+   while(tmp){
+        copy_pointer->character_string.content = db->buffer + db->cursor;
+        copy_pointer->character_string.len = tmp->character_string.len;
+        dyn_buffer_append(db, tmp->character_string.content, tmp->character_string.len);
+        if (tmp->next){
+            copy_pointer->next = sdns_init_rr_TXT(NULL, 0);
+            copy_pointer = copy_pointer->next;
+            tmp = tmp->next;
+            continue;
+        }else{
+            break;
+        }
+   }
+   free(db);
+   return copy;
+}
+
+sdns_rr_SOA * sdns_copy_rr_SOA(sdns_context * ctx, sdns_rr * rr){
+    //TODO: WE DON'T HAVE TEST FOR THIS FUNCTION
+    sdns_rr_SOA * copy = sdns_init_rr_SOA(NULL, NULL, 0, 0, 0, 0, 0);
+    sdns_rr_SOA * soa = (sdns_rr_SOA*)(rr->psdns_rr);
+    copy->mname = safe_strdup(soa->mname);
+    copy->rname = safe_strdup(soa->rname);
+    copy->expire = soa->expire;
+    copy->minimum = soa->minimum;
+    copy->retry = soa->retry;
+    copy->refresh = soa->refresh;
+    copy->serial = soa->serial;
+    return copy;
+}
+
+
+sdns_rr_MX * sdns_copy_rr_MX(sdns_context * ctx, sdns_rr * rr){
+    sdns_rr_MX * copy = sdns_init_rr_MX(0, NULL);
+    sdns_rr_MX * mx = (sdns_rr_MX*)rr->psdns_rr;
+    copy->preference = mx->preference;
+    copy->exchange = safe_strdup(mx->exchange);
+    return copy;
+}
+
+sdns_rr_CNAME * sdns_copy_rr_CNAME(sdns_context * ctx, sdns_rr * rr){
+    //TODO: WE DON'T HAVE TEST FOR THIS FUNCTION
+    sdns_rr_CNAME * copy = sdns_init_rr_CNAME(NULL);
+    copy->CNAME = safe_strdup(((sdns_rr_CNAME*)rr->psdns_rr)->CNAME);
+    return copy;
+}
+
+sdns_rr_PTR * sdns_copy_rr_PTR(sdns_context * ctx, sdns_rr * rr){
+    //TODO: WE DON'T HAVE TEST FOR THIS FUNCTION
+    sdns_rr_PTR * copy = sdns_init_rr_PTR(NULL);
+    copy->PTRDNAME = safe_strdup(((sdns_rr_PTR*)rr->psdns_rr)->PTRDNAME);
+    return copy;
+}
+
+sdns_rr_NID * sdns_copy_rr_NID(sdns_context * ctx, sdns_rr * rr){
+    //TODO: WE DONT HAVE TEST FOR THIS FUNCTION
+    sdns_rr_NID * copy = sdns_init_rr_NID(0, NULL);
+    copy->Preference = ((sdns_rr_NID*)rr->psdns_rr)->Preference;
+    if (((sdns_rr_NID*)rr->psdns_rr)->NodeId != NULL)
+        copy->NodeId = mem_copy(((sdns_rr_NID*)rr->psdns_rr)->NodeId, 8);
+    return copy;
+}
+
+sdns_rr_HINFO * sdns_copy_rr_HINFO(sdns_context * ctx, sdns_rr * rr){
+    //TODO: WE DONT HAVE TEST FOR THIS FUNCTION
+    sdns_rr_HINFO * copy = sdns_init_rr_HINFO(0, NULL, 0, NULL);
+    sdns_rr_HINFO * tmp = (sdns_rr_HINFO *)rr->psdns_rr;
+    if (tmp->cpu)
+        copy->cpu = mem_copy(tmp->cpu, tmp->cpu_len);
+    if (tmp->os)
+        copy->os = mem_copy(tmp->os, tmp->os_len);
+    copy->cpu_len = tmp->cpu_len;
+    copy->os_len = tmp->os_len;
+    return copy;
+}
+
+sdns_rr_URI * sdns_copy_rr_URI(sdns_context * ctx, sdns_rr * rr){
+    //TODO: WE DONT HAVE TEST FOR THIS FUNCTION
+    sdns_rr_URI * copy = sdns_init_rr_URI(0, 0, NULL, 0);
+    sdns_rr_URI * tmp = (sdns_rr_URI*)rr->psdns_rr;
+    copy->target_len = tmp->target_len;
+    copy->Priority = tmp->Priority;
+    copy->Weight = tmp->Weight;
+    if (tmp->Target)
+        copy->Target = mem_copy(tmp->Target, tmp->target_len);
+    return copy;
+}
+
+sdns_rr_NS * sdns_copy_rr_NS(sdns_context * ctx, sdns_rr * rr){
+    sdns_rr_NS * copy = sdns_init_rr_NS(NULL);
+    sdns_rr_NS * tmp = (sdns_rr_NS*)rr->psdns_rr;
+    copy->NSDNAME = safe_strdup(tmp->NSDNAME);
+    return copy;
+}
+
+sdns_rr_SRV * sdns_copy_rr_SRV(sdns_context * ctx, sdns_rr * rr){
+    sdns_rr_SRV * copy = sdns_init_rr_SRV(0, 0, 0, NULL);
+    sdns_rr_SRV * tmp = (sdns_rr_SRV*)rr->psdns_rr;
+    copy->Weight = tmp->Weight;
+    copy->Port = tmp->Port;
+    copy->Priority = tmp->Priority;
+    copy->Target = safe_strdup(tmp->Target);
+    return copy;
+}
+
+void * sdns_copy_rr_section(sdns_context * ctx, sdns_rr* rr_section){
+    //TODO: implement the code
+    if (NULL == rr_section)
+        return NULL;
+    uint16_t rr_type = rr_section->type;
+    switch (rr_type){
+        case sdns_rr_type_A:
+            return (void*) sdns_copy_rr_A(ctx, rr_section);
+        case sdns_rr_type_TXT:
+            return (void*) sdns_copy_rr_TXT(ctx, rr_section);
+        case sdns_rr_type_SOA:
+            return (void*) sdns_copy_rr_SOA(ctx, rr_section);
+//        case sdns_rr_type_AAAA:
+//            return (void*) sdns_copy_rr_AAAA(ctx, rr_section);
+        case sdns_rr_type_MX:
+            return (void*) sdns_copy_rr_MX(ctx, rr_section);
+//        case sdns_rr_type_RRSIG:
+//            return (void*) sdns_copy_rr_RRSIG(ctx, rr_section);
+//        case sdns_rr_type_LP:
+//            return (void*) sdns_copy_rr_LP(ctx, rr_section);
+//        case sdns_rr_type_L32:
+//            return (void*) sdns_copy_rr_L32(ctx, rr_section);
+//        case sdns_rr_type_L64:
+//            return (void*) sdns_copy_rr_L64(ctx, rr_section);
+        case sdns_rr_type_NS:
+            return (void*) sdns_copy_rr_NS(ctx, rr_section);
+        case sdns_rr_type_NID:
+            return (void*) sdns_copy_rr_NID(ctx, rr_section);
+          case sdns_rr_type_CNAME:
+            return (void*) sdns_copy_rr_CNAME(ctx, rr_section);
+        case sdns_rr_type_PTR:
+            return (void*) sdns_copy_rr_PTR(ctx, rr_section);
+        case sdns_rr_type_SRV:
+            return (void*) sdns_copy_rr_SRV(ctx, rr_section);
+        case sdns_rr_type_HINFO:
+            return (void*) sdns_copy_rr_HINFO(ctx, rr_section);
+        case sdns_rr_type_URI:
+            return (void*) sdns_copy_rr_URI(ctx, rr_section);
         default:
             // eventually replace this default by other RRs
             return NULL;
@@ -2429,10 +2585,9 @@ void * decode_rr_section(sdns_context* ctx, sdns_rr * rr_section){
 }
 
 
+
 sdns_rr_MX * sdns_init_rr_MX(uint16_t preference, char * exchange){
-    sdns_rr_MX * mx = (sdns_rr_MX*) malloc(sizeof(sdns_rr_MX));
-    if (NULL == mx)
-        return NULL;
+    sdns_rr_MX * mx = (sdns_rr_MX*) malloc_or_abort(sizeof(sdns_rr_MX));
     mx->preference = preference;
     mx->exchange = exchange;
     return mx;
@@ -2449,8 +2604,6 @@ sdns_rr_MX * sdns_decode_rr_MX(sdns_context * ctx, sdns_rr * rr){
     if (NULL == ctx || NULL == rr)
         return NULL;
     sdns_rr_MX * mx = sdns_init_rr_MX(0, NULL);
-    if (NULL == mx)
-        return NULL;
     ctx->cursor = rr->rdata;
     char * qname = NULL;
     if (rr->rdlength < 2){      // we must have preference
@@ -2480,8 +2633,6 @@ sdns_rr_HINFO * sdns_decode_rr_HINFO(sdns_context * ctx, sdns_rr * rr){
     if (ctx == NULL || rr == NULL)
         return NULL;
     sdns_rr_HINFO * hinfo = sdns_init_rr_HINFO(0, NULL, 0, NULL);
-    if (NULL == hinfo)
-        return NULL;
     uint16_t rd_len = rr->rdlength;
     if (rd_len < 2){  // the minimum length of hinfo record is 2
         sdns_free_rr_HINFO(hinfo);
@@ -2498,11 +2649,7 @@ sdns_rr_HINFO * sdns_decode_rr_HINFO(sdns_context * ctx, sdns_rr * rr){
     if (hinfo->cpu_len == 0){
         hinfo->cpu = NULL;
     }else{
-        hinfo->cpu = (char*) malloc(hinfo->cpu_len);
-        if (hinfo->cpu == NULL){
-            sdns_free_rr_HINFO(hinfo);
-            return NULL;
-        }
+        hinfo->cpu = (char*) malloc_or_abort(hinfo->cpu_len);
         // copy bytes
         memcpy(hinfo->cpu, tmp + cnt, hinfo->cpu_len);
     }
@@ -2521,11 +2668,7 @@ sdns_rr_HINFO * sdns_decode_rr_HINFO(sdns_context * ctx, sdns_rr * rr){
     if (hinfo->os_len == 0){
         hinfo->os = NULL;
     }else{
-        hinfo->os = (char*) malloc(hinfo->os_len);
-        if (hinfo->os == NULL){
-            sdns_free_rr_HINFO(hinfo);
-            return NULL;
-        }
+        hinfo->os = (char*) malloc_or_abort(hinfo->os_len);
         // copy bytes
         memcpy(hinfo->os, tmp + cnt, hinfo->os_len);
     }
@@ -2533,9 +2676,7 @@ sdns_rr_HINFO * sdns_decode_rr_HINFO(sdns_context * ctx, sdns_rr * rr){
 }
 
 sdns_message * sdns_init_message(void){
-    sdns_message * msg = (sdns_message*) malloc(sizeof(sdns_message));
-    if (NULL == msg)
-        return NULL;
+    sdns_message * msg = (sdns_message*) malloc_or_abort(sizeof(sdns_message));
     msg->question.qname = NULL;
     msg->answer = NULL;
     msg->additional = NULL;
@@ -2590,6 +2731,23 @@ void sdns_free_rr(sdns_rr * rr){
             free(opt);
             opt = tmp;
         }
+    }
+}
+
+void sdns_free_section(sdns_rr * rr){
+    sdns_rr * sec = rr;
+    sdns_rr * tmp = sec;
+    while(sec){
+        free(sec->name);
+        if (sec->decoded){
+            // we have to free per structure
+            sdns_free_rr(sec);
+        }else{
+            // just free the pointer
+        }
+        tmp = sec->next;
+        free(sec);
+        sec = tmp;
     }
 }
 
@@ -2654,9 +2812,7 @@ static void sdns_free_message(sdns_message * msg){
 
 sdns_rr * sdns_init_rr(char * name, uint16_t type, uint16_t class, uint32_t ttl,
                        uint16_t rdlength, uint8_t decoded, void * rdata){
-    sdns_rr * rr = (sdns_rr*)malloc(sizeof(sdns_rr));
-    if (NULL == rr)
-        return NULL;
+    sdns_rr * rr = (sdns_rr*)malloc_or_abort(sizeof(sdns_rr));
     rr->name = name;
     rr->type = type;
     rr->class = class;
@@ -2881,13 +3037,7 @@ int sdns_convert_class_to_int(char * cls){
 
 sdns_context * sdns_init_context(void){
     sdns_message * msg = sdns_init_message();
-    if (NULL == msg)
-        return NULL;
-    sdns_context * ctx = (sdns_context*) malloc(sizeof(sdns_context));
-    if (NULL == ctx){
-        sdns_free_message(msg);
-        return NULL;
-    }
+    sdns_context * ctx = (sdns_context*) malloc_or_abort(sizeof(sdns_context));
     ctx->msg = msg;
     ctx->raw_len = 0;
     ctx->raw = NULL;
@@ -2974,9 +3124,7 @@ int sdns_add_additional_section(sdns_context * ctx, sdns_rr * rr){
 int sdns_create_edns_option(uint16_t opt_code, uint16_t opt_length, char * opt_data, sdns_opt_rdata** buffer){
     if (*buffer == NULL){
         // we have to allocate it
-        *buffer = (sdns_opt_rdata*)malloc(sizeof(sdns_opt_rdata));
-        if (NULL == *buffer)
-            return SDNS_ERROR_MEMORY_ALLOC_FAILD;
+        *buffer = (sdns_opt_rdata*)malloc_or_abort(sizeof(sdns_opt_rdata));
     }
     (*buffer)->next = NULL;
     (*buffer)->option_code = opt_code;
@@ -3067,17 +3215,11 @@ int sdns_add_edns(sdns_context * ctx, sdns_opt_rdata * opt){
 //return null on failure, a pointer to sdns_rr_OPT_EDE on success
 //the function creates a copy of the data, so user is responsible to free the extra_text if it's necessary
 sdns_opt_rdata * sdns_create_edns0_ede(uint16_t info_code, char * extra_text, uint16_t extra_text_len){
-    sdns_opt_rdata * opt = (sdns_opt_rdata *) malloc(sizeof(sdns_opt_rdata));
-    if (NULL == opt)
-        return NULL;
+    sdns_opt_rdata * opt = (sdns_opt_rdata *) malloc_or_abort(sizeof(sdns_opt_rdata));
     opt->option_code = sdns_edns0_option_code_Extended_DNS_Error;
     opt->next = NULL;
     opt->option_length = extra_text_len + 2;
-    opt->option_data = (char*) malloc(opt->option_length);
-    if (NULL == opt->option_data){
-        free(opt);
-        return NULL;
-    }
+    opt->option_data = (char*) malloc_or_abort(opt->option_length);
     opt->option_data[0] = (uint8_t)((info_code >> 8) & 0xFF);
     opt->option_data[1] = (uint8_t)(info_code & 0xFF);
     if (extra_text != NULL)
@@ -3088,9 +3230,7 @@ sdns_opt_rdata * sdns_create_edns0_ede(uint16_t info_code, char * extra_text, ui
 // this function will add NSID to the packet in edns0 part
 // nsid structure is empty but its option_code is 3
 sdns_opt_rdata * sdns_create_edns0_nsid(char * nsid, uint16_t nsid_len){
-    sdns_opt_rdata * opt = (sdns_opt_rdata *) malloc(sizeof(sdns_opt_rdata));
-    if (NULL == opt)
-        return NULL;
+    sdns_opt_rdata * opt = (sdns_opt_rdata *) malloc_or_abort(sizeof(sdns_opt_rdata));
     if (nsid == NULL && nsid_len != 0){
         sdns_free_opt_rdata(opt);
         return NULL;    // can not have NULL with length > 0
@@ -3114,12 +3254,10 @@ sdns_opt_rdata * sdns_create_edns0_cookie(char * client_cookie, char * server_co
     if (client_cookie == NULL)
         return NULL;
     // len(client_cookie) = 8
-    sdns_opt_rdata * cookie = (sdns_opt_rdata*)malloc(sizeof(sdns_opt_rdata));
-    if (NULL == cookie)
-        return NULL;
+    sdns_opt_rdata * cookie = (sdns_opt_rdata*)malloc_or_abort(sizeof(sdns_opt_rdata));
     cookie->next = NULL;
     cookie->option_code = sdns_edns0_option_code_COOKIE;
-    cookie->option_data = (char*)malloc(server_cookie_len + 8);
+    cookie->option_data = (char*)malloc_or_abort(server_cookie_len + 8);
     cookie->option_length = server_cookie_len + 8;
     memcpy(cookie->option_data, client_cookie, 8);
     if (server_cookie_len > 0)
@@ -3128,10 +3266,7 @@ sdns_opt_rdata * sdns_create_edns0_cookie(char * client_cookie, char * server_co
 }
 
 sdns_opt_rdata * sdns_init_opt_rdata(void){
-    sdns_opt_rdata * opt = (sdns_opt_rdata*)malloc(sizeof(sdns_opt_rdata));
-    if (NULL == opt){
-        return NULL;
-    }
+    sdns_opt_rdata * opt = (sdns_opt_rdata*)malloc_or_abort(sizeof(sdns_opt_rdata));
     opt->next = NULL;
     opt->option_code = 0;
     opt->option_data = NULL;
