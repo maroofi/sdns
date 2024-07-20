@@ -175,7 +175,8 @@ var searchData=
   ['sdns_5frr_5ftype_5fuinfo_172',['sdns_rr_type_UINFO',['../sdns_8h.html#abc5aca5cb71471685dd6f7f66aae28e3a242efbcc8a89800ecc7b03e2d6cdb385',1,'sdns.h']]],
   ['sdns_5frr_5ftype_5funspec_173',['sdns_rr_type_UNSPEC',['../sdns_8h.html#abc5aca5cb71471685dd6f7f66aae28e3ac197ac34b1b6610c22757c423f5123bf',1,'sdns.h']]],
   ['sdns_5frr_5ftype_5furi_174',['sdns_rr_type_URI',['../sdns_8h.html#abc5aca5cb71471685dd6f7f66aae28e3aa6c5cca581e37c968a34f28135de9962',1,'sdns.h']]],
-  ['sdns_5frr_5ftype_5fwks_175',['sdns_rr_type_WKS',['../sdns_8h.html#abc5aca5cb71471685dd6f7f66aae28e3a41ae84b27519217fc9a4eb84d2f6eec6',1,'sdns.h']]],
-  ['sdns_5frr_5ftype_5fx25_176',['sdns_rr_type_X25',['../sdns_8h.html#abc5aca5cb71471685dd6f7f66aae28e3a8a1fdcf4ca2ac3b4c5278add86cc0c74',1,'sdns.h']]],
-  ['sdns_5frr_5ftype_5fzonemd_177',['sdns_rr_type_ZONEMD',['../sdns_8h.html#abc5aca5cb71471685dd6f7f66aae28e3a8e2861fe1f48d3dd3d4cb3aa8354ebb8',1,'sdns.h']]]
+  ['sdns_5frr_5ftype_5fwallet_175',['sdns_rr_type_WALLET',['../sdns_8h.html#abc5aca5cb71471685dd6f7f66aae28e3ab4dd62c543cd6ab6593e88dda1c42c8d',1,'sdns.h']]],
+  ['sdns_5frr_5ftype_5fwks_176',['sdns_rr_type_WKS',['../sdns_8h.html#abc5aca5cb71471685dd6f7f66aae28e3a41ae84b27519217fc9a4eb84d2f6eec6',1,'sdns.h']]],
+  ['sdns_5frr_5ftype_5fx25_177',['sdns_rr_type_X25',['../sdns_8h.html#abc5aca5cb71471685dd6f7f66aae28e3a8a1fdcf4ca2ac3b4c5278add86cc0c74',1,'sdns.h']]],
+  ['sdns_5frr_5ftype_5fzonemd_178',['sdns_rr_type_ZONEMD',['../sdns_8h.html#abc5aca5cb71471685dd6f7f66aae28e3a8e2861fe1f48d3dd3d4cb3aa8354ebb8',1,'sdns.h']]]
 ];

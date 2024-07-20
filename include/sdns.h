@@ -40,10 +40,10 @@
 #define SDNS_ERROR_NO_AUTHORITY_FOUND        -24       ///< This error shows that the DNS context has no authority section
 #define SDNS_ERROR_NO_ADDITIONAL_FOUND       -25       ///< This error shows that the DNS context has no additional section
 // define the section types
-#define DNS_SECTION_ANSWER 1
-#define DNS_SECTION_AUTHORITY 2
-#define DNS_SECTION_ADDITIONAL 3
-#define DNS_SECTION_QUESTION 4
+#define DNS_SECTION_ANSWER 1                           ///< Macro defining the answer section
+#define DNS_SECTION_AUTHORITY 2                        ///< Macro defining the authority section
+#define DNS_SECTION_ADDITIONAL 3                       ///< Macro defining the additional section
+#define DNS_SECTION_QUESTION 4                         ///< Macro defining the question section
 
 
 /** The list of opcodes can be found at:
@@ -1368,7 +1368,7 @@ int sdns_convert_type_to_int(char * type);
 
 /**
  * @brief Converts text class to its numerical value
- * @param type a pointer to the class string (e.g., "IN" or "ch")
+ * @param cls a pointer to the class string (e.g., "IN" or "ch")
  *
  *
  * @return A positive integer on success showing the DNS class or negative value in case of unknown class
@@ -1376,7 +1376,12 @@ int sdns_convert_type_to_int(char * type);
 int sdns_convert_class_to_int(char * cls);
 
 
-
+/**
+ * @brief free a DNS resource record no matter of the type
+ * @param rr a pointer to the memory of ::sdns_rr which holds the resource record section to be freed
+ *
+ * @return nothing
+ */
 void sdns_free_section(sdns_rr * rr);
 
 

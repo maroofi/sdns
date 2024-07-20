@@ -43,7 +43,7 @@ char * sdns_to_network(sdns_context * dns, int * err, uint16_t * buff_len);
  * @param dns A pointer to the dns context created by sdns_init_context()
  * @param name the domain name we want to assign an A record to.
  * @param ttl the time to live of the A record
- * param ip the string representation of the IPv4 (e.g., 1.2.3.4)
+ * @param ip the string representation of the IPv4 (e.g., 1.2.3.4)
  *
  * This function is just a wrapper for several functions to make it easy to create an A record.
  *
@@ -75,7 +75,7 @@ int sdns_add_rr_authority_A(sdns_context * dns, char * name, uint32_t ttl, char 
  * @param dns A pointer to the dns context created by sdns_init_context()
  * @param name the domain name we want to assign the NS record to.
  * @param ttl the time to live of the NS record
- * param nsname the string representation of the nameserver (e.g., ns1.google.com))
+ * @param nsname the string representation of the nameserver (e.g., ns1.google.com))
  *
  * This function is just a wrapper for several functions to make it easy to create an A record.
  *
@@ -346,8 +346,9 @@ int sdns_add_rr_additional_HINFO(sdns_context * dns, char * name, uint32_t ttl,
 
 /**
  * @brief Adds cookie to DNS packet. 
+ * @param dns pointer to ::sdns_context
  * @param client_cookie (mandatory, not NULL) - nul-terminated hex representation of the client cookie
- * @param server_cooke (optional, can be NULL) - nul-terminated hex representation of the server cookie or NULL
+ * @param server_cookie (optional, can be NULL) - nul-terminated hex representation of the server cookie or NULL
  *
  * Client cookie must be present and a C-string in a form of hex. It's exactly 8 bytes and its hex representation will be 16 bytes.
  * 
@@ -369,6 +370,7 @@ int sdns_add_cookie(sdns_context * dns, char * client_cookie, char * server_cook
 
 /**
  * @brief Adds NSID to the DNS packet.
+ * @param dns ::sdns_context 
  * @param nsid a pointer to the hex repsentation of the NSID value or NULL
  *
  * if 'nsid' param is NULL, then the packet will have and empty NSID in ends0. This makes it suitable for 
@@ -384,7 +386,7 @@ int sdns_add_cookie(sdns_context * dns, char * client_cookie, char * server_cook
  *
  * 2. Creating a packet to send to client with a NSID.
  *
- * <pre>int res = sdns_add_nsid(dns, "AABBCCDD");
+ * <pre>int res = sdns_add_nsid(dns, "AABBCCDD");</pre>
  *
  * @return 0 on success, other values on fail
  */
@@ -424,9 +426,9 @@ int sdns_set_do(sdns_context * dns, uint8_t do_bit);
 /**
  * @brief Sets or resets the truncation bit of the DNS header
  * @param dns sdns context
- * @prarm tc_bit can be 0 or 1 to set or reset the TC bit.
+ * @param tc_bit can be 0 or 1 to set or reset the TC bit.
  *
- * @param always returns 0
+ * @return always returns 0
  */
 int sdns_set_tc(sdns_context * dns, uint8_t tc_bit);
 
@@ -444,9 +446,9 @@ int sdns_set_id(sdns_context * dns, uint16_t dns_id);
 /**
  * @brief Sets or resets the _recursion desired_ bit of the DNS header
  * @param dns sdns context
- * @prarm rd_bit can be 0 or 1 to set or reset the RD bit.
+ * @param rd_bit can be 0 or 1 to set or reset the RD bit.
  *
- * @param always returns 0
+ * @return always returns 0
  */
 int sdns_set_rd(sdns_context * dns, uint8_t rd_bit);
 
@@ -454,9 +456,9 @@ int sdns_set_rd(sdns_context * dns, uint8_t rd_bit);
 /**
  * @brief Sets or resets the _recursion available_ bit of the DNS header
  * @param dns sdns context
- * @prarm ra_bit can be 0 or 1 to set or reset the RA bit.
+ * @param ra_bit can be 0 or 1 to set or reset the RA bit.
  *
- * @param always returns 0
+ * @return always returns 0
  */
 int sdns_set_ra(sdns_context * dns, uint8_t ra_bit);
 
@@ -465,9 +467,9 @@ int sdns_set_ra(sdns_context * dns, uint8_t ra_bit);
 /**
  * @brief Sets or resets the _athoritative answer_ bit of the DNS header
  * @param dns sdns context
- * @prarm aa_bit can be 0 or 1 to set or reset the AA bit.
+ * @param aa_bit can be 0 or 1 to set or reset the AA bit.
  *
- * @param always returns 0
+ * @return always returns 0
  */
 int sdns_set_aa(sdns_context * dns, uint8_t aa_bit);
 
@@ -475,9 +477,9 @@ int sdns_set_aa(sdns_context * dns, uint8_t aa_bit);
 /**
  * @brief Sets or resets the _check disabled_ bit of the DNS header
  * @param dns sdns context
- * @prarm cd_bit can be 0 or 1 to set or reset the CD bit.
+ * @param cd_bit can be 0 or 1 to set or reset the CD bit.
  *
- * @param always returns 0
+ * @return always returns 0
  */
 int sdns_set_cd(sdns_context * dns, uint8_t cd_bit);
 
@@ -507,7 +509,7 @@ char * sdns_get_value_nsid(sdns_context * dns, int * err, uint16_t *nsid_len);
 /**
  * @brief Returns the client cookie of the packet (if there is any)
  * @param dns pointer to ::sdns_context
- * @param Pointer to the memory address that receives the error code
+ * @param err Pointer to the memory address that receives the error code
  *
  * The retured result is a pointer to the client cookie which must be freed by the caller.
  * In case the packet does not contain any cookie, the returned value is NULL and err contains
@@ -603,9 +605,36 @@ int sdns_add_rr_additional_AAAA(sdns_context * dns, char * name, uint32_t ttl, c
 
 
 
-// the length of the nodeid memory is always 8 bytes so we don't need to pass it
+/**
+ * @brief Adds NID record to the asnwer section of the DNS context.
+ * @param dns a pointer to the DNS context
+ * @param name name of the section
+ * @param ttl TTL value of the seciton
+ * @param preference the 16bit preference value of NID record
+ * @param nodeid A pointer to a memory where it has the NID data.
+ *
+ * The NID pointer must point to a memory which has 8 bytes. The function 
+ * exactly copy 8 bytes from this address to its internal memory. The user can free the memory
+ * allocated for 'nodeid' (if it's necessary) after calling this function
+ *
+ * @return 0 on success, other values on failure.
+ */
 int sdns_add_rr_answer_NID(sdns_context * dns, char * name, uint32_t ttl, uint16_t preference, char * nodeid);
+
+
+/**
+ * @brief Adds NID record to the asnwer section of the DNS context.
+ *
+ * Check the documentation of the sdns_add_rr_answer_NID() for more info.
+ */
 int sdns_add_rr_authority_NID(sdns_context * dns, char * name, uint32_t ttl, uint16_t preference, char * nodeid);
+
+
+/**
+ * @brief Adds NID record to the asnwer section of the DNS context.
+ *
+ * Check the documentation of the sdns_add_rr_answer_NID() for more info.
+ */
 int sdns_add_rr_additional_NID(sdns_context * dns, char * name, uint32_t ttl, uint16_t preference, char * nodeid);
 
 

@@ -100,11 +100,13 @@ This graph shows which files directly or indirectly include this file:</div>
 <div class="dyncontent">
 <div class="center"><img src="sdns_8h__dep__incl.png" border="0" usemap="#ainclude_2sdns_8hdep" alt=""/></div>
 <map name="ainclude_2sdns_8hdep" id="ainclude_2sdns_8hdep">
-<area shape="rect" title=" " alt="" coords="109,5,224,31"/>
-<area shape="rect" href="sdns__json_8h_source.html" title=" " alt="" coords="5,79,155,104"/>
-<area shape="poly" title=" " alt="" coords="144,41,96,81,92,76,141,37"/>
-<area shape="rect" href="sdns__print_8h.html" title=" " alt="" coords="179,79,331,104"/>
-<area shape="poly" title=" " alt="" coords="193,37,242,76,239,81,190,41"/>
+<area shape="rect" title=" " alt="" coords="190,5,305,31"/>
+<area shape="rect" href="sdns__api_8h.html" title=" " alt="" coords="5,79,148,104"/>
+<area shape="poly" title=" " alt="" coords="208,38,106,81,104,76,206,33"/>
+<area shape="rect" href="sdns__json_8h_source.html" title=" " alt="" coords="173,79,322,104"/>
+<area shape="poly" title=" " alt="" coords="250,44,250,79,245,79,245,44"/>
+<area shape="rect" href="sdns__print_8h.html" title=" " alt="" coords="346,79,498,104"/>
+<area shape="poly" title=" " alt="" coords="289,33,394,76,392,81,287,38"/>
 </map>
 </div>
 </div>
@@ -235,6 +237,62 @@ Macros</h2></td></tr>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>SDNS_ERROR_RR_SECTION_MALFORMED</b>&#160;&#160;&#160;-15</td></tr>
 <tr class="memdesc:a715d27212107f64914cd3976510cfb47"><td class="mdescLeft">&#160;</td><td class="mdescRight">Resource Record section is malformed (not enough or wrong data) <br /></td></tr>
 <tr class="separator:a715d27212107f64914cd3976510cfb47"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7bbb480a2389074c926ee7df73138cde" id="r_a7bbb480a2389074c926ee7df73138cde"><td class="memItemLeft" align="right" valign="top"><a id="a7bbb480a2389074c926ee7df73138cde" name="a7bbb480a2389074c926ee7df73138cde"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SDNS_ERROR_INVALID_HEX_VALUE</b>&#160;&#160;&#160;-16</td></tr>
+<tr class="memdesc:a7bbb480a2389074c926ee7df73138cde"><td class="mdescLeft">&#160;</td><td class="mdescRight">User entered a hex string that is not valid. <br /></td></tr>
+<tr class="separator:a7bbb480a2389074c926ee7df73138cde"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adef8ced1e446bc385d9e6a14a4248e63" id="r_adef8ced1e446bc385d9e6a14a4248e63"><td class="memItemLeft" align="right" valign="top"><a id="adef8ced1e446bc385d9e6a14a4248e63" name="adef8ced1e446bc385d9e6a14a4248e63"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SDNS_ERROR_WRONG_INPUT_PARAMETER</b>&#160;&#160;&#160;-17</td></tr>
+<tr class="memdesc:adef8ced1e446bc385d9e6a14a4248e63"><td class="mdescLeft">&#160;</td><td class="mdescRight">The input parameter is not valid. <br /></td></tr>
+<tr class="separator:adef8ced1e446bc385d9e6a14a4248e63"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9697d0cc7e6831fc414d560be0943170" id="r_a9697d0cc7e6831fc414d560be0943170"><td class="memItemLeft" align="right" valign="top"><a id="a9697d0cc7e6831fc414d560be0943170" name="a9697d0cc7e6831fc414d560be0943170"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SDNS_ERROR_NSID_NOT_FOUND</b>&#160;&#160;&#160;-18</td></tr>
+<tr class="memdesc:a9697d0cc7e6831fc414d560be0943170"><td class="mdescLeft">&#160;</td><td class="mdescRight">There is no NSID in the DNS packet. <br /></td></tr>
+<tr class="separator:a9697d0cc7e6831fc414d560be0943170"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5beafcbafde2c4408293f5472a0c0bf3" id="r_a5beafcbafde2c4408293f5472a0c0bf3"><td class="memItemLeft" align="right" valign="top"><a id="a5beafcbafde2c4408293f5472a0c0bf3" name="a5beafcbafde2c4408293f5472a0c0bf3"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SDNS_ERROR_CLIENT_COOKIE_NOT_FOUND</b>&#160;&#160;&#160;-19</td></tr>
+<tr class="memdesc:a5beafcbafde2c4408293f5472a0c0bf3"><td class="mdescLeft">&#160;</td><td class="mdescRight">There is no client cookie in the DNS packet. <br /></td></tr>
+<tr class="separator:a5beafcbafde2c4408293f5472a0c0bf3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abbbcf46e3cf900dafd4940de598adf22" id="r_abbbcf46e3cf900dafd4940de598adf22"><td class="memItemLeft" align="right" valign="top"><a id="abbbcf46e3cf900dafd4940de598adf22" name="abbbcf46e3cf900dafd4940de598adf22"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SDNS_ERROR_CHARACTER_STRING_TOO_LONG</b>&#160;&#160;&#160;-20</td></tr>
+<tr class="memdesc:abbbcf46e3cf900dafd4940de598adf22"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum size of character string is 255 character. <br /></td></tr>
+<tr class="separator:abbbcf46e3cf900dafd4940de598adf22"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6d36f02700d0014781e25b74b96a1fcf" id="r_a6d36f02700d0014781e25b74b96a1fcf"><td class="memItemLeft" align="right" valign="top"><a id="a6d36f02700d0014781e25b74b96a1fcf" name="a6d36f02700d0014781e25b74b96a1fcf"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SDNS_ERROR_NO_ANSWER_FOUND</b>&#160;&#160;&#160;-21</td></tr>
+<tr class="memdesc:a6d36f02700d0014781e25b74b96a1fcf"><td class="mdescLeft">&#160;</td><td class="mdescRight">This error shows that the DNS context has no answer section. <br /></td></tr>
+<tr class="separator:a6d36f02700d0014781e25b74b96a1fcf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad2a332a9dc8d952bc24cf30f3dc422a5" id="r_ad2a332a9dc8d952bc24cf30f3dc422a5"><td class="memItemLeft" align="right" valign="top"><a id="ad2a332a9dc8d952bc24cf30f3dc422a5" name="ad2a332a9dc8d952bc24cf30f3dc422a5"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SDNS_ERROR_CAN_NOT_READ_SECTION</b>&#160;&#160;&#160;-22</td></tr>
+<tr class="memdesc:ad2a332a9dc8d952bc24cf30f3dc422a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">For any reason, it's not possible to decode or copy the rdata of the section. <br /></td></tr>
+<tr class="separator:ad2a332a9dc8d952bc24cf30f3dc422a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a56f618ff2b68b997ea496be56bd49f9d" id="r_a56f618ff2b68b997ea496be56bd49f9d"><td class="memItemLeft" align="right" valign="top"><a id="a56f618ff2b68b997ea496be56bd49f9d" name="a56f618ff2b68b997ea496be56bd49f9d"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SDNS_ERROR_INVALID_IPv6_FOUND</b>&#160;&#160;&#160;-23</td></tr>
+<tr class="memdesc:a56f618ff2b68b997ea496be56bd49f9d"><td class="mdescLeft">&#160;</td><td class="mdescRight">The code only accepts IPv6 in a format of ":" separated hex values. <br /></td></tr>
+<tr class="separator:a56f618ff2b68b997ea496be56bd49f9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a69167ccd65920f718845775434c8a23d" id="r_a69167ccd65920f718845775434c8a23d"><td class="memItemLeft" align="right" valign="top"><a id="a69167ccd65920f718845775434c8a23d" name="a69167ccd65920f718845775434c8a23d"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SDNS_ERROR_NO_AUTHORITY_FOUND</b>&#160;&#160;&#160;-24</td></tr>
+<tr class="memdesc:a69167ccd65920f718845775434c8a23d"><td class="mdescLeft">&#160;</td><td class="mdescRight">This error shows that the DNS context has no authority section. <br /></td></tr>
+<tr class="separator:a69167ccd65920f718845775434c8a23d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6bc699c183e0eb89f3c7073b542ea4c5" id="r_a6bc699c183e0eb89f3c7073b542ea4c5"><td class="memItemLeft" align="right" valign="top"><a id="a6bc699c183e0eb89f3c7073b542ea4c5" name="a6bc699c183e0eb89f3c7073b542ea4c5"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SDNS_ERROR_NO_ADDITIONAL_FOUND</b>&#160;&#160;&#160;-25</td></tr>
+<tr class="memdesc:a6bc699c183e0eb89f3c7073b542ea4c5"><td class="mdescLeft">&#160;</td><td class="mdescRight">This error shows that the DNS context has no additional section. <br /></td></tr>
+<tr class="separator:a6bc699c183e0eb89f3c7073b542ea4c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a73c14a3ef059a00b01ec0074db0bc775" id="r_a73c14a3ef059a00b01ec0074db0bc775"><td class="memItemLeft" align="right" valign="top"><a id="a73c14a3ef059a00b01ec0074db0bc775" name="a73c14a3ef059a00b01ec0074db0bc775"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>DNS_SECTION_ANSWER</b>&#160;&#160;&#160;1</td></tr>
+<tr class="memdesc:a73c14a3ef059a00b01ec0074db0bc775"><td class="mdescLeft">&#160;</td><td class="mdescRight">Macro defining the answer section. <br /></td></tr>
+<tr class="separator:a73c14a3ef059a00b01ec0074db0bc775"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3dd6cb0cacbc807e947a327bcf951278" id="r_a3dd6cb0cacbc807e947a327bcf951278"><td class="memItemLeft" align="right" valign="top"><a id="a3dd6cb0cacbc807e947a327bcf951278" name="a3dd6cb0cacbc807e947a327bcf951278"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>DNS_SECTION_AUTHORITY</b>&#160;&#160;&#160;2</td></tr>
+<tr class="memdesc:a3dd6cb0cacbc807e947a327bcf951278"><td class="mdescLeft">&#160;</td><td class="mdescRight">Macro defining the authority section. <br /></td></tr>
+<tr class="separator:a3dd6cb0cacbc807e947a327bcf951278"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abfcab5015d1b187b0a9f43fa3e7abd1b" id="r_abfcab5015d1b187b0a9f43fa3e7abd1b"><td class="memItemLeft" align="right" valign="top"><a id="abfcab5015d1b187b0a9f43fa3e7abd1b" name="abfcab5015d1b187b0a9f43fa3e7abd1b"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>DNS_SECTION_ADDITIONAL</b>&#160;&#160;&#160;3</td></tr>
+<tr class="memdesc:abfcab5015d1b187b0a9f43fa3e7abd1b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Macro defining the additional section. <br /></td></tr>
+<tr class="separator:abfcab5015d1b187b0a9f43fa3e7abd1b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a89434039b2644eaa6d50f0ff92032f52" id="r_a89434039b2644eaa6d50f0ff92032f52"><td class="memItemLeft" align="right" valign="top"><a id="a89434039b2644eaa6d50f0ff92032f52" name="a89434039b2644eaa6d50f0ff92032f52"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>DNS_SECTION_QUESTION</b>&#160;&#160;&#160;4</td></tr>
+<tr class="memdesc:a89434039b2644eaa6d50f0ff92032f52"><td class="mdescLeft">&#160;</td><td class="mdescRight">Macro defining the question section. <br /></td></tr>
+<tr class="separator:a89434039b2644eaa6d50f0ff92032f52"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
 Typedefs</h2></td></tr>
@@ -402,7 +460,8 @@ Enumerations</h2></td></tr>
 , <a class="el" href="sdns_8h.html#abc5aca5cb71471685dd6f7f66aae28e3a6277df3004a684bbe64b654f60ae2d83">sdns_rr_type_AMTRELAY</a> =260
 , <a class="el" href="sdns_8h.html#abc5aca5cb71471685dd6f7f66aae28e3aab0d4599a0c23d1c439bda281571b697">sdns_rr_type_RESINFO</a> =261
 , <br />
-&#160;&#160;<a class="el" href="sdns_8h.html#abc5aca5cb71471685dd6f7f66aae28e3a7ffe1826bb7779958edaac7d90e85b33">sdns_rr_type_TA</a> =32768
+&#160;&#160;<a class="el" href="sdns_8h.html#abc5aca5cb71471685dd6f7f66aae28e3ab4dd62c543cd6ab6593e88dda1c42c8d">sdns_rr_type_WALLET</a> =262
+, <a class="el" href="sdns_8h.html#abc5aca5cb71471685dd6f7f66aae28e3a7ffe1826bb7779958edaac7d90e85b33">sdns_rr_type_TA</a> =32768
 , <a class="el" href="sdns_8h.html#abc5aca5cb71471685dd6f7f66aae28e3a4fc2cf388d0cf1bd38906291b689d830">sdns_rr_type_DLV</a> =32769
 <br />
  }</td></tr>
@@ -551,12 +610,18 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>sdns_add_edns</b> (<a 
 <tr class="memitem:ae26008f0fd782199425cabfdc7294e38" id="r_ae26008f0fd782199425cabfdc7294e38"><td class="memItemLeft" align="right" valign="top"><a class="el" href="sdns_8h.html#a3fd2a26da7af90278e33998a30285aca">sdns_opt_rdata</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sdns_8h.html#ae26008f0fd782199425cabfdc7294e38">sdns_create_edns0_ede</a> (uint16_t info_code, char *extra_text, uint16_t extra_text_len)</td></tr>
 <tr class="memdesc:ae26008f0fd782199425cabfdc7294e38"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates EDNS0 extended DNS error option.  <br /></td></tr>
 <tr class="separator:ae26008f0fd782199425cabfdc7294e38"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ace7f124e15f1f7b87515d846c4c448e6" id="r_ace7f124e15f1f7b87515d846c4c448e6"><td class="memItemLeft" align="right" valign="top"><a id="ace7f124e15f1f7b87515d846c4c448e6" name="ace7f124e15f1f7b87515d846c4c448e6"></a>
+<a class="el" href="sdns_8h.html#a3fd2a26da7af90278e33998a30285aca">sdns_opt_rdata</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>sdns_create_edns0_nsid</b> (char *nsid, uint16_t nsid_len)</td></tr>
+<tr class="separator:ace7f124e15f1f7b87515d846c4c448e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a280577bae05ac945598f520bb17a358c" id="r_a280577bae05ac945598f520bb17a358c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sdns_8h.html#a280577bae05ac945598f520bb17a358c">sdns_ends0_option_code_to_text</a> (<a class="el" href="sdns_8h.html#ad656d840aa1d0e09a0870559afebc78e">sdns_edns0_option_code</a> oc, char *buffer)</td></tr>
 <tr class="memdesc:a280577bae05ac945598f520bb17a358c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copies the text description of the EDNS0 option code to the buffer.  <br /></td></tr>
 <tr class="separator:a280577bae05ac945598f520bb17a358c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a06b2c91f0810c3b60de71605eea41cb7" id="r_a06b2c91f0810c3b60de71605eea41cb7"><td class="memItemLeft" align="right" valign="top"><a id="a06b2c91f0810c3b60de71605eea41cb7" name="a06b2c91f0810c3b60de71605eea41cb7"></a>
-void *&#160;</td><td class="memItemRight" valign="bottom"><b>decode_rr_section</b> (<a class="el" href="structsdns__context.html">sdns_context</a> *, <a class="el" href="sdns_8h.html#a3f8852c310bc58390ff28b35ce807244">sdns_rr</a> *)</td></tr>
-<tr class="separator:a06b2c91f0810c3b60de71605eea41cb7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a683042e283f04c3e92576fe019ecb8c9" id="r_a683042e283f04c3e92576fe019ecb8c9"><td class="memItemLeft" align="right" valign="top"><a id="a683042e283f04c3e92576fe019ecb8c9" name="a683042e283f04c3e92576fe019ecb8c9"></a>
+void *&#160;</td><td class="memItemRight" valign="bottom"><b>sdns_copy_rr_section</b> (<a class="el" href="structsdns__context.html">sdns_context</a> *, <a class="el" href="sdns_8h.html#a3f8852c310bc58390ff28b35ce807244">sdns_rr</a> *)</td></tr>
+<tr class="separator:a683042e283f04c3e92576fe019ecb8c9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af0352e1873e7bbf396d4161c5763a19b" id="r_af0352e1873e7bbf396d4161c5763a19b"><td class="memItemLeft" align="right" valign="top"><a id="af0352e1873e7bbf396d4161c5763a19b" name="af0352e1873e7bbf396d4161c5763a19b"></a>
+void *&#160;</td><td class="memItemRight" valign="bottom"><b>sdns_decode_rr_section</b> (<a class="el" href="structsdns__context.html">sdns_context</a> *, <a class="el" href="sdns_8h.html#a3f8852c310bc58390ff28b35ce807244">sdns_rr</a> *)</td></tr>
+<tr class="separator:af0352e1873e7bbf396d4161c5763a19b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad66606eda4797d598b19dc5043fc721f" id="r_ad66606eda4797d598b19dc5043fc721f"><td class="memItemLeft" align="right" valign="top"><a id="ad66606eda4797d598b19dc5043fc721f" name="ad66606eda4797d598b19dc5043fc721f"></a>
 <a class="el" href="structsdns__rr__A.html">sdns_rr_A</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>sdns_decode_rr_A</b> (<a class="el" href="structsdns__context.html">sdns_context</a> *, <a class="el" href="sdns_8h.html#a3f8852c310bc58390ff28b35ce807244">sdns_rr</a> *)</td></tr>
 <tr class="separator:ad66606eda4797d598b19dc5043fc721f"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -605,6 +670,9 @@ void *&#160;</td><td class="memItemRight" valign="bottom"><b>decode_rr_section</
 <tr class="memitem:a2de6a062a994766079b20d4c7dd5694e" id="r_a2de6a062a994766079b20d4c7dd5694e"><td class="memItemLeft" align="right" valign="top"><a id="a2de6a062a994766079b20d4c7dd5694e" name="a2de6a062a994766079b20d4c7dd5694e"></a>
 <a class="el" href="structsdns__rr__LP.html">sdns_rr_LP</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>sdns_decode_rr_LP</b> (<a class="el" href="structsdns__context.html">sdns_context</a> *ctx, <a class="el" href="sdns_8h.html#a3f8852c310bc58390ff28b35ce807244">sdns_rr</a> *rr)</td></tr>
 <tr class="separator:a2de6a062a994766079b20d4c7dd5694e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a45e88fe2446246ac1e0d6d1914a71d19" id="r_a45e88fe2446246ac1e0d6d1914a71d19"><td class="memItemLeft" align="right" valign="top"><a id="a45e88fe2446246ac1e0d6d1914a71d19" name="a45e88fe2446246ac1e0d6d1914a71d19"></a>
+<a class="el" href="sdns_8h.html#a3fd2a26da7af90278e33998a30285aca">sdns_opt_rdata</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>sdns_decode_rr_OPT</b> (<a class="el" href="structsdns__context.html">sdns_context</a> *ctx, <a class="el" href="sdns_8h.html#a3f8852c310bc58390ff28b35ce807244">sdns_rr</a> *rr)</td></tr>
+<tr class="separator:a45e88fe2446246ac1e0d6d1914a71d19"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a197910efd1a97ab44f932df74223746e" id="r_a197910efd1a97ab44f932df74223746e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structsdns__rr__A.html">sdns_rr_A</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sdns_8h.html#a197910efd1a97ab44f932df74223746e">sdns_init_rr_A</a> (uint32_t ipaddress)</td></tr>
 <tr class="memdesc:a197910efd1a97ab44f932df74223746e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize a structure of <a class="el" href="structsdns__rr__A.html">sdns_rr_A</a>.  <br /></td></tr>
 <tr class="separator:a197910efd1a97ab44f932df74223746e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -614,6 +682,9 @@ void *&#160;</td><td class="memItemRight" valign="bottom"><b>decode_rr_section</
 <tr class="memitem:a3708801af71f71c64d71ad4210c28831" id="r_a3708801af71f71c64d71ad4210c28831"><td class="memItemLeft" align="right" valign="top"><a class="el" href="sdns_8h.html#a30893bd7194dfae2ec898f3704566762">sdns_rr_TXT</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sdns_8h.html#a3708801af71f71c64d71ad4210c28831">sdns_init_rr_TXT</a> (char *data, uint16_t data_len)</td></tr>
 <tr class="memdesc:a3708801af71f71c64d71ad4210c28831"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize a structure of <a class="el" href="sdns_8h.html#a30893bd7194dfae2ec898f3704566762">sdns_rr_TXT</a>.  <br /></td></tr>
 <tr class="separator:a3708801af71f71c64d71ad4210c28831"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaee0c7159e0c81d43aa5a72d30e25251" id="r_aaee0c7159e0c81d43aa5a72d30e25251"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structsdns__rr__SRV.html">sdns_rr_SRV</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sdns_8h.html#aaee0c7159e0c81d43aa5a72d30e25251">sdns_init_rr_SRV</a> (uint16_t Priority, uint16_t Weight, uint16_t Port, char *target)</td></tr>
+<tr class="memdesc:aaee0c7159e0c81d43aa5a72d30e25251"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize a structure of <a class="el" href="structsdns__rr__SRV.html">sdns_rr_SRV</a>.  <br /></td></tr>
+<tr class="separator:aaee0c7159e0c81d43aa5a72d30e25251"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9cf1a62e210eb8adcc93e18886306cf7" id="r_a9cf1a62e210eb8adcc93e18886306cf7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structsdns__rr__MX.html">sdns_rr_MX</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sdns_8h.html#a9cf1a62e210eb8adcc93e18886306cf7">sdns_init_rr_MX</a> (uint16_t preference, char *exchange)</td></tr>
 <tr class="memdesc:a9cf1a62e210eb8adcc93e18886306cf7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize a structure of <a class="el" href="structsdns__rr__MX.html">sdns_rr_MX</a>.  <br /></td></tr>
 <tr class="separator:a9cf1a62e210eb8adcc93e18886306cf7"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -638,6 +709,12 @@ void *&#160;</td><td class="memItemRight" valign="bottom"><b>decode_rr_section</
 <tr class="memitem:a55b616d8249711baddc094b8a51afeb1" id="r_a55b616d8249711baddc094b8a51afeb1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structsdns__rr__LP.html">sdns_rr_LP</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sdns_8h.html#a55b616d8249711baddc094b8a51afeb1">sdns_init_rr_LP</a> (uint16_t preference, char *fqdn)</td></tr>
 <tr class="memdesc:a55b616d8249711baddc094b8a51afeb1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize a structure of <a class="el" href="structsdns__rr__LP.html">sdns_rr_LP</a>.  <br /></td></tr>
 <tr class="separator:a55b616d8249711baddc094b8a51afeb1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab84ef30d704b7291523068cdd84b88b9" id="r_ab84ef30d704b7291523068cdd84b88b9"><td class="memItemLeft" align="right" valign="top"><a id="ab84ef30d704b7291523068cdd84b88b9" name="ab84ef30d704b7291523068cdd84b88b9"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>sdns_free_opt_rdata</b> (<a class="el" href="sdns_8h.html#a3fd2a26da7af90278e33998a30285aca">sdns_opt_rdata</a> *opt)</td></tr>
+<tr class="separator:ab84ef30d704b7291523068cdd84b88b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a701978b023f1f903ba2c0437a38c81e8" id="r_a701978b023f1f903ba2c0437a38c81e8"><td class="memItemLeft" align="right" valign="top"><a id="a701978b023f1f903ba2c0437a38c81e8" name="a701978b023f1f903ba2c0437a38c81e8"></a>
+<a class="el" href="sdns_8h.html#a3fd2a26da7af90278e33998a30285aca">sdns_opt_rdata</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>sdns_init_opt_rdata</b> (void)</td></tr>
+<tr class="separator:a701978b023f1f903ba2c0437a38c81e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9b4c59c66ad5c633cdaada9661d74df1" id="r_a9b4c59c66ad5c633cdaada9661d74df1"><td class="memItemLeft" align="right" valign="top"><a id="a9b4c59c66ad5c633cdaada9661d74df1" name="a9b4c59c66ad5c633cdaada9661d74df1"></a>
 <a class="el" href="structsdns__rr__SRV.html">sdns_rr_SRV</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>sdns_init_SRV</b> (uint16_t, uint16_t, uint16_t, char *)</td></tr>
 <tr class="separator:a9b4c59c66ad5c633cdaada9661d74df1"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -710,6 +787,15 @@ void *&#160;</td><td class="memItemRight" valign="bottom"><b>decode_rr_section</
 <tr class="memitem:abc7b3d95a9ddeb36fd7e829184d352ad" id="r_abc7b3d95a9ddeb36fd7e829184d352ad"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sdns_8h.html#abc7b3d95a9ddeb36fd7e829184d352ad">sdns_class_to_string</a> (uint16_t cls, char *buff)</td></tr>
 <tr class="memdesc:abc7b3d95a9ddeb36fd7e829184d352ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the string represantation of the <b>CLASS</b> cls in to <em>buffer</em>  <br /></td></tr>
 <tr class="separator:abc7b3d95a9ddeb36fd7e829184d352ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a42d5fc0b7838a39ed59427a8a0bede77" id="r_a42d5fc0b7838a39ed59427a8a0bede77"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sdns_8h.html#a42d5fc0b7838a39ed59427a8a0bede77">sdns_convert_type_to_int</a> (char *type)</td></tr>
+<tr class="memdesc:a42d5fc0b7838a39ed59427a8a0bede77"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts text type to its numerical value.  <br /></td></tr>
+<tr class="separator:a42d5fc0b7838a39ed59427a8a0bede77"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab851558cdb729aa0bfedcd68465a6da7" id="r_ab851558cdb729aa0bfedcd68465a6da7"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sdns_8h.html#ab851558cdb729aa0bfedcd68465a6da7">sdns_convert_class_to_int</a> (char *cls)</td></tr>
+<tr class="memdesc:ab851558cdb729aa0bfedcd68465a6da7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts text class to its numerical value.  <br /></td></tr>
+<tr class="separator:ab851558cdb729aa0bfedcd68465a6da7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a13505d4f201429a34db28c7747b53f08" id="r_a13505d4f201429a34db28c7747b53f08"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sdns_8h.html#a13505d4f201429a34db28c7747b53f08">sdns_free_section</a> (<a class="el" href="sdns_8h.html#a3f8852c310bc58390ff28b35ce807244">sdns_rr</a> *rr)</td></tr>
+<tr class="memdesc:a13505d4f201429a34db28c7747b53f08"><td class="mdescLeft">&#160;</td><td class="mdescRight">free a DNS resource record no matter of the type  <br /></td></tr>
+<tr class="separator:a13505d4f201429a34db28c7747b53f08"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Macro Definition Documentation</h2>
 <a id="ab3255f4d14d8cfd5c068debe01884740" name="ab3255f4d14d8cfd5c068debe01884740"></a>
@@ -1248,6 +1334,8 @@ void *&#160;</td><td class="memItemRight" valign="bottom"><b>decode_rr_section</
 </td></tr>
 <tr><td class="fieldname"><a id="abc5aca5cb71471685dd6f7f66aae28e3aab0d4599a0c23d1c439bda281571b697" name="abc5aca5cb71471685dd6f7f66aae28e3aab0d4599a0c23d1c439bda281571b697"></a>sdns_rr_type_RESINFO&#160;</td><td class="fielddoc"><p>Resolver Information as Key/Value Pairs. </p>
 </td></tr>
+<tr><td class="fieldname"><a id="abc5aca5cb71471685dd6f7f66aae28e3ab4dd62c543cd6ab6593e88dda1c42c8d" name="abc5aca5cb71471685dd6f7f66aae28e3ab4dd62c543cd6ab6593e88dda1c42c8d"></a>sdns_rr_type_WALLET&#160;</td><td class="fielddoc"><p>Public wallet address. </p>
+</td></tr>
 <tr><td class="fieldname"><a id="abc5aca5cb71471685dd6f7f66aae28e3a7ffe1826bb7779958edaac7d90e85b33" name="abc5aca5cb71471685dd6f7f66aae28e3a7ffe1826bb7779958edaac7d90e85b33"></a>sdns_rr_type_TA&#160;</td><td class="fielddoc"><p>DNSSEC Trust Authorities. </p>
 </td></tr>
 <tr><td class="fieldname"><a id="abc5aca5cb71471685dd6f7f66aae28e3a4fc2cf388d0cf1bd38906291b689d830" name="abc5aca5cb71471685dd6f7f66aae28e3a4fc2cf388d0cf1bd38906291b689d830"></a>sdns_rr_type_DLV&#160;</td><td class="fielddoc"><p>DNSSEC Lookaside Validation (OBSOLETE) </p>
@@ -1468,19 +1556,19 @@ void *&#160;</td><td class="memItemRight" valign="bottom"><b>decode_rr_section</
 <div class="line"><span class="comment">// let&#39;s print the final packet to see if works.</span></div>
 <div class="line"><a class="code hl_function" href="sdns__print_8h.html#ad61c15f1479df914af9613b1051ebbed">sdns_neat_print_dns</a>(dns_ct <span class="keywordtype">void</span> <a class="code hl_function" href="sdns_8h.html#a2d394cf61dcbd6b62aea1e8ecee1e514">sdns_free_context</a>(<a class="code hl_struct" href="structsdns__context.html">sdns_context</a> *ctx)                                                           </div>
 <div class="line"><a class="code hl_function" href="sdns_8h.html#a2d394cf61dcbd6b62aea1e8ecee1e514">sdns_free_context</a>(dns_ctx);</div>
-<div class="ttc" id="asdns_8h_html_a234b54d3d209541e1abe627bd485161da5cbe3170cb87b36e22649a80c55675c4"><div class="ttname"><a href="sdns_8h.html#a234b54d3d209541e1abe627bd485161da5cbe3170cb87b36e22649a80c55675c4">sdns_q_class_IN</a></div><div class="ttdeci">@ sdns_q_class_IN</div><div class="ttdoc">RFC1035 - the Internet.</div><div class="ttdef"><b>Definition</b> sdns.h:365</div></div>
+<div class="ttc" id="asdns_8h_html_a234b54d3d209541e1abe627bd485161da5cbe3170cb87b36e22649a80c55675c4"><div class="ttname"><a href="sdns_8h.html#a234b54d3d209541e1abe627bd485161da5cbe3170cb87b36e22649a80c55675c4">sdns_q_class_IN</a></div><div class="ttdeci">@ sdns_q_class_IN</div><div class="ttdoc">RFC1035 - the Internet.</div><div class="ttdef"><b>Definition</b> sdns.h:381</div></div>
 <div class="ttc" id="asdns_8h_html_a2d394cf61dcbd6b62aea1e8ecee1e514"><div class="ttname"><a href="sdns_8h.html#a2d394cf61dcbd6b62aea1e8ecee1e514">sdns_free_context</a></div><div class="ttdeci">void sdns_free_context(sdns_context *ctx)</div><div class="ttdoc">Frees the context allocated by sdns_init_context().</div></div>
 <div class="ttc" id="asdns_8h_html_a3708801af71f71c64d71ad4210c28831"><div class="ttname"><a href="sdns_8h.html#a3708801af71f71c64d71ad4210c28831">sdns_init_rr_TXT</a></div><div class="ttdeci">sdns_rr_TXT * sdns_init_rr_TXT(char *data, uint16_t data_len)</div><div class="ttdoc">Initialize a structure of sdns_rr_TXT.</div></div>
 <div class="ttc" id="asdns_8h_html_a63ba43dba7d2bfd1323f46be04d026da"><div class="ttname"><a href="sdns_8h.html#a63ba43dba7d2bfd1323f46be04d026da">sdns_add_answer_section</a></div><div class="ttdeci">int sdns_add_answer_section(sdns_context *ctx, sdns_rr *rr)</div><div class="ttdoc">Creates an answer section for the DNS packet.</div></div>
 <div class="ttc" id="asdns_8h_html_a7d89c4af9c34829f4503a21804cd0917"><div class="ttname"><a href="sdns_8h.html#a7d89c4af9c34829f4503a21804cd0917">sdns_make_query</a></div><div class="ttdeci">int sdns_make_query(sdns_context *ctx, sdns_rr_type qtype, sdns_q_class cls, char *qname, int enable_edns0)</div><div class="ttdoc">Creates a DNS question query.</div></div>
-<div class="ttc" id="asdns_8h_html_a913e60cb93fbf5d82a7c28f52b346948ac199c19464c923ae5662d2fd5c18956f"><div class="ttname"><a href="sdns_8h.html#a913e60cb93fbf5d82a7c28f52b346948ac199c19464c923ae5662d2fd5c18956f">sdns_rr_class_IN</a></div><div class="ttdeci">@ sdns_rr_class_IN</div><div class="ttdoc">RFC1035 - the Internet.</div><div class="ttdef"><b>Definition</b> sdns.h:354</div></div>
+<div class="ttc" id="asdns_8h_html_a913e60cb93fbf5d82a7c28f52b346948ac199c19464c923ae5662d2fd5c18956f"><div class="ttname"><a href="sdns_8h.html#a913e60cb93fbf5d82a7c28f52b346948ac199c19464c923ae5662d2fd5c18956f">sdns_rr_class_IN</a></div><div class="ttdeci">@ sdns_rr_class_IN</div><div class="ttdoc">RFC1035 - the Internet.</div><div class="ttdef"><b>Definition</b> sdns.h:370</div></div>
 <div class="ttc" id="asdns_8h_html_a9a4ce8ee39d593289f8fbacb74eb6456"><div class="ttname"><a href="sdns_8h.html#a9a4ce8ee39d593289f8fbacb74eb6456">sdns_init_context</a></div><div class="ttdeci">sdns_context * sdns_init_context(void)</div><div class="ttdoc">Initialize and create a new DNS context.</div></div>
-<div class="ttc" id="asdns_8h_html_abc5aca5cb71471685dd6f7f66aae28e3a24ae80cad9c4bcd631e82967e8604862"><div class="ttname"><a href="sdns_8h.html#abc5aca5cb71471685dd6f7f66aae28e3a24ae80cad9c4bcd631e82967e8604862">sdns_rr_type_TXT</a></div><div class="ttdeci">@ sdns_rr_type_TXT</div><div class="ttdoc">RFC1035 - text strings.</div><div class="ttdef"><b>Definition</b> sdns.h:244</div></div>
+<div class="ttc" id="asdns_8h_html_abc5aca5cb71471685dd6f7f66aae28e3a24ae80cad9c4bcd631e82967e8604862"><div class="ttname"><a href="sdns_8h.html#abc5aca5cb71471685dd6f7f66aae28e3a24ae80cad9c4bcd631e82967e8604862">sdns_rr_type_TXT</a></div><div class="ttdeci">@ sdns_rr_type_TXT</div><div class="ttdoc">RFC1035 - text strings.</div><div class="ttdef"><b>Definition</b> sdns.h:259</div></div>
 <div class="ttc" id="asdns_8h_html_aebcf1947152ef482a16d1f57b9c7bfd5"><div class="ttname"><a href="sdns_8h.html#aebcf1947152ef482a16d1f57b9c7bfd5">sdns_init_rr</a></div><div class="ttdeci">sdns_rr * sdns_init_rr(char *name, uint16_t type, uint16_t class, uint32_t ttl, uint16_t rdlength, uint8_t decoded, void *rdata)</div><div class="ttdoc">Initialize an RR data structure.</div></div>
 <div class="ttc" id="asdns__print_8h_html_ad61c15f1479df914af9613b1051ebbed"><div class="ttname"><a href="sdns__print_8h.html#ad61c15f1479df914af9613b1051ebbed">sdns_neat_print_dns</a></div><div class="ttdeci">void sdns_neat_print_dns(sdns_context *ctx)</div><div class="ttdoc">Prints a DNS packet in a human-readable format (like Dig)</div></div>
-<div class="ttc" id="astruct__sdns__rr__TXT_html"><div class="ttname"><a href="struct__sdns__rr__TXT.html">_sdns_rr_TXT</a></div><div class="ttdef"><b>Definition</b> sdns.h:486</div></div>
-<div class="ttc" id="astruct__sdns__rr_html"><div class="ttname"><a href="struct__sdns__rr.html">_sdns_rr</a></div><div class="ttdef"><b>Definition</b> sdns.h:200</div></div>
-<div class="ttc" id="astructsdns__context_html"><div class="ttname"><a href="structsdns__context.html">sdns_context</a></div><div class="ttdef"><b>Definition</b> sdns.h:645</div></div>
+<div class="ttc" id="astruct__sdns__rr__TXT_html"><div class="ttname"><a href="struct__sdns__rr__TXT.html">_sdns_rr_TXT</a></div><div class="ttdef"><b>Definition</b> sdns.h:502</div></div>
+<div class="ttc" id="astruct__sdns__rr_html"><div class="ttname"><a href="struct__sdns__rr.html">_sdns_rr</a></div><div class="ttdef"><b>Definition</b> sdns.h:215</div></div>
+<div class="ttc" id="astructsdns__context_html"><div class="ttname"><a href="structsdns__context.html">sdns_context</a></div><div class="ttdef"><b>Definition</b> sdns.h:661</div></div>
 </div><!-- fragment --> 
 </div>
 </div>
@@ -1563,6 +1651,60 @@ void *&#160;</td><td class="memItemRight" valign="bottom"><b>decode_rr_section</
 
 </div>
 </div>
+<a id="ab851558cdb729aa0bfedcd68465a6da7" name="ab851558cdb729aa0bfedcd68465a6da7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab851558cdb729aa0bfedcd68465a6da7">&#9670;&#160;</a></span>sdns_convert_class_to_int()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int sdns_convert_class_to_int </td>
+          <td>(</td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>cls</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Converts text class to its numerical value. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cls</td><td>a pointer to the class string (e.g., "IN" or "ch")</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>A positive integer on success showing the DNS class or negative value in case of unknown class </dd></dl>
+
+</div>
+</div>
+<a id="a42d5fc0b7838a39ed59427a8a0bede77" name="a42d5fc0b7838a39ed59427a8a0bede77"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a42d5fc0b7838a39ed59427a8a0bede77">&#9670;&#160;</a></span>sdns_convert_type_to_int()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int sdns_convert_type_to_int </td>
+          <td>(</td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>type</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Converts text type to its numerical value. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">type</td><td>a pointer to the type string (e.g., "AAAA")</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>A positive integer on success showing the type or negative value in case of unknown type </dd></dl>
+
+</div>
+</div>
 <a id="ad2f4f81e28a241d0e8ad9af74c10cef7" name="ad2f4f81e28a241d0e8ad9af74c10cef7"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ad2f4f81e28a241d0e8ad9af74c10cef7">&#9670;&#160;</a></span>sdns_create_edns0_cookie()</h2>
 
@@ -1598,12 +1740,13 @@ void *&#160;</td><td class="memItemRight" valign="bottom"><b>decode_rr_section</
 <p>Creates and adds a cookie in the DNS packet. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">client_cookie</td><td>This parameter can not be NULL. It must be provided and the length is exactly 8 characters. </td></tr>
+    <tr><td class="paramname">client_cookie</td><td>This parameter can not be NULL. It must be provided and the length is exactly 8 bytes. </td></tr>
     <tr><td class="paramname">server_cookie</td><td>this is an optional parameter which can be NULL or a pointer to a memory which stores the cookie </td></tr>
     <tr><td class="paramname">server_cookie_len</td><td>The length of the server cookie which can be between 8 and 32 (both valued included).</td></tr>
   </table>
   </dd>
 </dl>
+<p>the caller can free() the memory of 'client_cookie' and 'server_cookie' params after calling the method. The library creates an internal copy of the data.</p>
 <dl class="section return"><dt>Returns</dt><dd>a pointer to an instance of type <a class="el" href="sdns_8h.html#a3fd2a26da7af90278e33998a30285aca" title="see _sdns_opt_rdata for more info">sdns_opt_rdata</a> on success, NULL on failure.</dd></dl>
 <p>On success, you can add the returned structure to the DNS packet by calling sdns_create_edns_option() function. </p>
 
@@ -2179,6 +2322,33 @@ void *&#160;</td><td class="memItemRight" valign="bottom"><b>decode_rr_section</
 
 </div>
 </div>
+<a id="a13505d4f201429a34db28c7747b53f08" name="a13505d4f201429a34db28c7747b53f08"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a13505d4f201429a34db28c7747b53f08">&#9670;&#160;</a></span>sdns_free_section()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void sdns_free_section </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="sdns_8h.html#a3f8852c310bc58390ff28b35ce807244">sdns_rr</a> *&#160;</td>
+          <td class="paramname"><em>rr</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>free a DNS resource record no matter of the type </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">rr</td><td>a pointer to the memory of <a class="el" href="sdns_8h.html#a3f8852c310bc58390ff28b35ce807244" title="See _sdns_rr for more info.">sdns_rr</a> which holds the resource record section to be freed</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>nothing </dd></dl>
+
+</div>
+</div>
 <a id="af49cd2767c9b38bd2f8f15ac0a9ced60" name="af49cd2767c9b38bd2f8f15ac0a9ced60"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af49cd2767c9b38bd2f8f15ac0a9ced60">&#9670;&#160;</a></span>sdns_from_wire()</h2>
 
@@ -2675,6 +2845,59 @@ void *&#160;</td><td class="memItemRight" valign="bottom"><b>decode_rr_section</
 
 </div>
 </div>
+<a id="aaee0c7159e0c81d43aa5a72d30e25251" name="aaee0c7159e0c81d43aa5a72d30e25251"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaee0c7159e0c81d43aa5a72d30e25251">&#9670;&#160;</a></span>sdns_init_rr_SRV()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structsdns__rr__SRV.html">sdns_rr_SRV</a> * sdns_init_rr_SRV </td>
+          <td>(</td>
+          <td class="paramtype">uint16_t&#160;</td>
+          <td class="paramname"><em>Priority</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint16_t&#160;</td>
+          <td class="paramname"><em>Weight</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint16_t&#160;</td>
+          <td class="paramname"><em>Port</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>target</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Initialize a structure of <a class="el" href="structsdns__rr__SRV.html">sdns_rr_SRV</a>. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">Priority</td><td>16-bit unsigned value for the priority of the SRV record </td></tr>
+    <tr><td class="paramname">Weight</td><td>16-bit unsigned value for the weight of the SRV record </td></tr>
+    <tr><td class="paramname">Port</td><td>16-bit unsigned value for the port of the SRV record </td></tr>
+    <tr><td class="paramname">target</td><td>A pointer to the target value of the SRV record</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>NOTE: do not free the 'target' pointer after calling this method. This function does not copy the memory but use the pointer. Make sure it's a heap-allocated memory to avoid memory leak.</p>
+<dl class="section return"><dt>Returns</dt><dd>a pointer to <a class="el" href="structsdns__rr__SRV.html">sdns_rr_SRV</a> structure on success and NULL on fail </dd></dl>
+
+</div>
+</div>
 <a id="a3708801af71f71c64d71ad4210c28831" name="a3708801af71f71c64d71ad4210c28831"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a3708801af71f71c64d71ad4210c28831">&#9670;&#160;</a></span>sdns_init_rr_TXT()</h2>
 
@@ -2801,8 +3024,8 @@ void *&#160;</td><td class="memItemRight" valign="bottom"><b>decode_rr_section</
 <div class="line"><span class="comment">// after we are done, we need to free the context.</span></div>
 <div class="line"><a class="code hl_function" href="sdns_8h.html#a2d394cf61dcbd6b62aea1e8ecee1e514">sdns_free_context</a>(ctx);</div>
 <div class="ttc" id="asdns_8h_html_a0bbda400d5feff806b4ae1f9f2031a0b"><div class="ttname"><a href="sdns_8h.html#a0bbda400d5feff806b4ae1f9f2031a0b">sdns_to_wire</a></div><div class="ttdeci">int sdns_to_wire(sdns_context *ctx)</div><div class="ttdoc">Coverts a DNS context to binary format.</div></div>
-<div class="ttc" id="asdns_8h_html_aae4399bfff07e176cd7bea2f4f9529eca7ef0c4faa69498fd05c146ba4d9bc75d"><div class="ttname"><a href="sdns_8h.html#aae4399bfff07e176cd7bea2f4f9529eca7ef0c4faa69498fd05c146ba4d9bc75d">sdns_rcode_NoError</a></div><div class="ttdeci">@ sdns_rcode_NoError</div><div class="ttdoc">RFC1035.</div><div class="ttdef"><b>Definition</b> sdns.h:53</div></div>
-<div class="ttc" id="asdns_8h_html_abc5aca5cb71471685dd6f7f66aae28e3ab7bff52804c24a581f5518e304207ee0"><div class="ttname"><a href="sdns_8h.html#abc5aca5cb71471685dd6f7f66aae28e3ab7bff52804c24a581f5518e304207ee0">sdns_rr_type_A</a></div><div class="ttdeci">@ sdns_rr_type_A</div><div class="ttdoc">RFC1035 - A record.</div><div class="ttdef"><b>Definition</b> sdns.h:229</div></div>
+<div class="ttc" id="asdns_8h_html_aae4399bfff07e176cd7bea2f4f9529eca7ef0c4faa69498fd05c146ba4d9bc75d"><div class="ttname"><a href="sdns_8h.html#aae4399bfff07e176cd7bea2f4f9529eca7ef0c4faa69498fd05c146ba4d9bc75d">sdns_rcode_NoError</a></div><div class="ttdeci">@ sdns_rcode_NoError</div><div class="ttdoc">RFC1035.</div><div class="ttdef"><b>Definition</b> sdns.h:68</div></div>
+<div class="ttc" id="asdns_8h_html_abc5aca5cb71471685dd6f7f66aae28e3ab7bff52804c24a581f5518e304207ee0"><div class="ttname"><a href="sdns_8h.html#abc5aca5cb71471685dd6f7f66aae28e3ab7bff52804c24a581f5518e304207ee0">sdns_rr_type_A</a></div><div class="ttdeci">@ sdns_rr_type_A</div><div class="ttdoc">RFC1035 - A record.</div><div class="ttdef"><b>Definition</b> sdns.h:244</div></div>
 <div class="ttc" id="asdns_8h_html_af1904f3b99e921966cad992011ed68b6"><div class="ttname"><a href="sdns_8h.html#af1904f3b99e921966cad992011ed68b6">sdns_error_string</a></div><div class="ttdeci">void sdns_error_string(int err, char **err_buff)</div><div class="ttdoc">Coverts error codes to a string.</div></div>
 </div><!-- fragment --> 
 </div>
