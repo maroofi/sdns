@@ -88,6 +88,7 @@ static int l_sdns_from_network(lua_State * L){
         lua_pushstring(L, "Can not decode the buffer to DNS packet");
         return 2;
     }
+    
     // we also setmetatable here
     luaL_getmetatable(L, "metasdnslib");
     lua_setmetatable(L, -2);
@@ -1424,6 +1425,31 @@ static int l_sdns_set_tc(lua_State * L){
     return 1;
 }
 
+
+static int l_sdns_set_qr(lua_State * L){
+    int qr_bit = luaL_checkinteger(L, -1);
+    if (qr_bit != 0 && qr_bit != 1){
+        lua_pushnil(L);
+        lua_pushstring(L, "QR bit must be eihter zero or one");
+        return 2;
+    }
+    sdns_context ** dns = (sdns_context **)luaL_checkudata(L, -2, "metasdnslib");
+    if (*dns == NULL){
+        lua_pushnil(L);
+        lua_pushstring(L, "DNS context is NULL");
+        return 2;
+    }
+    int res = sdns_set_qr(*dns, qr_bit);
+    if (res == 0){
+        lua_pushinteger(L, 0);
+    }else{
+        lua_pushnil(L);
+        lua_pushstring(L, "sdns context is not valid");
+        return 2;
+    }
+    return 1;
+}
+
 static int l_sdns_set_rd(lua_State * L){
     int rd_bit = luaL_checkinteger(L, -1);
     if (rd_bit != 0 && rd_bit != 1){
@@ -1830,6 +1856,65 @@ static int l_sdns_get_authority(lua_State * L){
     return 2;
 }
 
+
+static int l_sdns_get_question(lua_State * L){
+    sdns_context ** dns = (sdns_context **)luaL_checkudata(L, -1, "metasdnslib");
+    if (*dns == NULL){
+        lua_pushnil(L);
+        lua_pushstring(L, "DNS context is NULL");
+        return 2;
+    }
+    sdns_question * q = sdns_get_question(*dns);
+    if (q == NULL){
+        lua_pushnil(L);
+        lua_pushstring(L, "Question section is NULL");
+        return 2;
+    }
+    lua_createtable(L, 0, 0);    // this is top to the stack
+    // name
+    lua_pushstring(L, "qname");
+    lua_pushstring(L, q->qname);
+    lua_settable(L, -3);
+    char type_rr_class[20] = {0x00};
+    // class
+    lua_pushstring(L, "qclass");
+    sdns_class_to_string(q->qclass, type_rr_class);
+    lua_pushstring(L, type_rr_class);
+    lua_settable(L, -3);
+    // type
+    memset(type_rr_class, 0, 20);
+    lua_pushstring(L, "qtype");
+    sdns_rr_type_to_string(q->qtype, type_rr_class);
+    lua_pushstring(L, type_rr_class);
+    lua_settable(L, -3);
+    free(q->qname);
+    free(q);
+    return 1;
+}
+
+static int l_sdns_create_response_from_query(lua_State * L){
+    sdns_context ** query = (sdns_context **)luaL_checkudata(L, -1, "metasdnslib");
+    if (*query == NULL){
+        lua_pushnil(L);
+        lua_pushstring(L, "DNS context is NULL");
+        return 2;
+    }
+    sdns_context ** dns;
+    dns = lua_newuserdata(L, sizeof(sdns_context *));
+    *dns = sdns_create_response_from_query(*query);
+
+    if (*dns == NULL){
+        lua_pushnil(L);
+        lua_pushstring(L, "Can not create the response for a given query");
+        return 2;
+    }
+    // we also setmetatable here
+    luaL_getmetatable(L, "metasdnslib");
+    lua_setmetatable(L, -2);
+    return 1;
+}
+
+
 static const struct luaL_Reg sdns_lib_expose[] = {
     {"create_query", l_sdns_create_query},
     {"print_dns", l_sdns_print_dns},
@@ -1852,6 +1937,7 @@ static const struct luaL_Reg sdns_lib_expose[] = {
     {"remove_edns", l_sdns_remove_edns},
     {"set_do", l_sdns_set_do},
     {"set_tc", l_sdns_set_tc},
+    {"set_qr", l_sdns_set_qr},
     {"set_id", l_sdns_set_id},
     {"set_rd", l_sdns_set_rd},
     {"set_ra", l_sdns_set_ra},
@@ -1859,6 +1945,8 @@ static const struct luaL_Reg sdns_lib_expose[] = {
     {"set_cd", l_sdns_set_cd},
     {"get_answer", l_sdns_get_answer},
     {"get_authority", l_sdns_get_authority},
+    {"get_question", l_sdns_get_question},
+    {"create_response_from_query", l_sdns_create_response_from_query},
     // TODO: ADD more function here
     {NULL, NULL}
 };

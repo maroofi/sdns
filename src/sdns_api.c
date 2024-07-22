@@ -19,6 +19,8 @@ sdns_context * sdns_from_network(char * buff, uint16_t buff_len){
     dns->raw_len = buff_len;
     int res = sdns_from_wire(dns);
     if (res != 0){
+        dns->raw = NULL;
+        dns->raw_len = 0;
         sdns_free_context(dns);
         return NULL;
     }
@@ -920,6 +922,14 @@ int sdns_set_tc(sdns_context * dns, uint8_t tc_bit){
     return 0;   //success
 }
 
+
+int sdns_set_qr(sdns_context * dns, uint8_t qr_bit){
+    if (NULL == dns || dns->msg == NULL)
+        return SDNS_ERROR_BUFFER_IS_NULL;
+    dns->msg->header.qr = qr_bit == 0?0:1;
+    return 0;   //success
+}
+
 int sdns_set_id(sdns_context * dns, uint16_t dns_id){
     if (NULL == dns || dns->msg == NULL)
         return SDNS_ERROR_BUFFER_IS_NULL;
@@ -1221,4 +1231,46 @@ sdns_rr * sdns_get_additional(sdns_context * dns, int * err, uint16_t num){
     *err = sdns_rcode_NoError;
     return result;
 }
+
+sdns_question * sdns_get_question(sdns_context * dns){
+    if (NULL == dns)
+        return NULL;
+    if (dns->msg->question.qname == NULL)
+        return NULL;
+    sdns_question * q = (sdns_question*) malloc_or_abort(sizeof(sdns_question));
+    q->qname = safe_strdup(dns->msg->question.qname);
+    q->qclass = dns->msg->question.qclass;
+    q->qtype = dns->msg->question.qtype;
+    return q;
+}
+
+sdns_context * sdns_create_response_from_query(sdns_context * query){
+    if (NULL == query)
+        return NULL;
+    int with_edns0 = 0;
+    sdns_rr * tmp = query->msg->additional;
+    if (tmp == NULL){
+        with_edns0 = 0;
+    }else{
+        while(tmp){
+            if (tmp->type == sdns_rr_type_OPT){
+                with_edns0 = 1;
+                break;
+            }
+            tmp = tmp->next;
+        }
+    }
+    sdns_context * dns = sdns_init_context();
+
+    int res = sdns_make_query(dns, query->msg->question.qtype, query->msg->question.qclass,
+                              safe_strdup(query->msg->question.qname), with_edns0);
+    if (res != 0){
+        sdns_free_context(dns);
+        return NULL;
+    }
+    dns->msg->header.qr = 1;
+    dns->msg->header.id = query->msg->header.id;
+    return dns;
+}
+
 

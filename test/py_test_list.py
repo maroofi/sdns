@@ -162,3 +162,12 @@ def func_test_apiget_answer_txt(data):
     return 0
 # end def
 
+def func_test_api_getquestion(data):
+    assert(data.strip() == "success");
+    return 0;
+# end def
+
+def func_test_create_response_from_query(data):
+    assert(data.strip() == "success");
+    return 0;
+# end def

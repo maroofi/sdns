@@ -424,6 +424,15 @@ int sdns_set_do(sdns_context * dns, uint8_t do_bit);
 
 
 /**
+ * @brief Sets or resets the _query-response_ bit of the DNS header
+ * @param dns sdns context
+ * @param qr_bit can be 0 or 1 to set or reset the QR bit.
+ *
+ * @return always returns 0
+ */
+int sdns_set_qr(sdns_context * dns, uint8_t qr_bit);
+
+/**
  * @brief Sets or resets the truncation bit of the DNS header
  * @param dns sdns context
  * @param tc_bit can be 0 or 1 to set or reset the TC bit.
@@ -636,6 +645,35 @@ int sdns_add_rr_authority_NID(sdns_context * dns, char * name, uint32_t ttl, uin
  * Check the documentation of the sdns_add_rr_answer_NID() for more info.
  */
 int sdns_add_rr_additional_NID(sdns_context * dns, char * name, uint32_t ttl, uint16_t preference, char * nodeid);
+
+/**
+ * @brief Returns a copy of the question section of the DNS context
+ * @param dns an instance of ::sdns_context
+ *
+ * Caller is responsible to free the returned memory address.
+ *
+ * @return a pointer to a memory address which stores the structure of ::sdns_question or NULL on failure
+ */
+sdns_question * sdns_get_question(sdns_context * dns);
+
+/**
+ * @brief Creates a response DNS context from the query packet.
+ * @param the query packet which is an instance of ::sdns_context
+ *
+ * This function is effectively a combination of other functions to create
+ * a new context to send as a response to the received query.
+ *
+ * It will create a new packet by calling sdns_create_query() and copy the question
+ * section of the 'query' context to the new packet. Then calls sdns_set_qr() and sdns_set_id()
+ * to make the packet of type response. if the 'query' context is edns0-aware, the response will be 
+ * also edns0-aware. Other sections are all empty.
+ *
+ *
+ * @return a new ::sdns_context on success or NULL on failure
+ */
+sdns_context * sdns_create_response_from_query(sdns_context * query);
+
+
 
 
 #endif
