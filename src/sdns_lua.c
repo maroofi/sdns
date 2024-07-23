@@ -1498,6 +1498,30 @@ static int l_sdns_set_ra(lua_State * L){
     return 1;
 }
 
+static int l_sdns_set_rcode(lua_State * L){
+    int rcode = luaL_checkinteger(L, -1);
+    if (rcode < 0 || rcode > 15){
+        lua_pushnil(L);
+        lua_pushstring(L, "rcode must be between 0 and 16 (excluded)");
+        return 2;
+    }
+    sdns_context ** dns = (sdns_context **)luaL_checkudata(L, -2, "metasdnslib");
+    if (*dns == NULL){
+        lua_pushnil(L);
+        lua_pushstring(L, "DNS context is NULL");
+        return 2;
+    }
+    int res = sdns_set_rcode(*dns, rcode);
+    if (res == 0){
+        lua_pushinteger(L, 0);
+    }else{
+        lua_pushnil(L);
+        lua_pushstring(L, "sdns context is not valid");
+        return 2;
+    }
+    return 1;
+}
+
 static int l_sdns_set_aa(lua_State * L){
     int aa_bit = luaL_checkinteger(L, -1);
     if (aa_bit != 0 && aa_bit != 1){
@@ -1943,6 +1967,7 @@ static const struct luaL_Reg sdns_lib_expose[] = {
     {"set_ra", l_sdns_set_ra},
     {"set_aa", l_sdns_set_aa},
     {"set_cd", l_sdns_set_cd},
+    {"set_rcode", l_sdns_set_rcode},
     {"get_answer", l_sdns_get_answer},
     {"get_authority", l_sdns_get_authority},
     {"get_question", l_sdns_get_question},

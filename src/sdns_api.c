@@ -965,6 +965,15 @@ int sdns_set_cd(sdns_context * dns, uint8_t cd_bit){
     return 0;   //success
 }
 
+int sdns_set_rcode(sdns_context * dns, uint8_t rcode){
+    if (NULL == dns || dns->msg == NULL)
+        return SDNS_ERROR_BUFFER_IS_NULL;
+    if (rcode > 15)
+        return SDNS_ERROR_WRONG_INPUT_PARAMETER;
+    dns->msg->header.rcode = rcode;
+    return 0;   // success
+}
+
 
 int sdns_add_ede(sdns_context * dns, uint16_t ede_code, char * ede_text){
     if (NULL == dns)

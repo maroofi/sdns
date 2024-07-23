@@ -9,7 +9,44 @@ To use the Lua binding, you can make the package using **luarocks** or compile t
 
 Here is the description of the provided functions in Lua:
 
-* __create_query__(query_name, query_type, query_class)
+* List of functions
+    * [create_query() - Creates a new DNS packet](#create_queryquery_name-query_type-query_class)
+    * [print_dns() - Print a DNS packet](#print_dnssdns_context)
+    * [from_network() - Converts binary network data to a DNS packet](#from_networkdata)
+    * [to_network() - Converts a DNS packet to network binary data](#to_networksdns_context)
+    * [add_rr_A() - Adds A RR to a DNS packet](#add_rr_asdns_context-table-data)
+    * [add_rr_NS() - Adds NS RR to a DNS packet](#add_rr_nssdns_context-table-data)
+    * [add_rr_SOA() - Adds SOA RR to a DNS packet](#add_rr_soasdns_context-table-data)
+    * [add_rr_MX() - Adds MX RR to a DNS packet](#add_rr_mxsdns_context-table-data)
+    * [add_rr_PTR() - Adds PTR RR to a DNS packet](#add_rr_ptrsdns_context-table-data)
+    * [add_rr_SRV() - Adds SRV RR to a DNS packet](#add_rr_srvsdns_context-table-data)
+    * [add_rr_HINFO() - Adds HINFO RR to a DNS packet](#add_rr_hinfosdns_context-table-data)
+    * [add_rr_TXT() - Adds TXT RR to a DNS packet](#add_rr_txtsdns_context-table-data)
+    * [add_nsid() - Adds NSID to EDNS0 section of the DNS packet](#add_nsidsdns_context-nsid)
+    * [get_nsid() - Gets NSID value from a DNS packet](#get_nsidsdns_context)
+    * [get_header() - Returns header of a DNS packet](#get_headersdns_context)
+    * [set_do() - Sets or resets DO bit of a DNS packet](#set_dosdns_context-do_bit)
+    * [set_tc() - Sets or resets TC bit of a DNS packet](#set_tcsdns_context-tc_bit)
+    * [set_rd() - Sets or resets RD bit of a DNS packet](#set_rdsdns_context-rd_bit)
+    * [set_ra() - Sets or resets RA bit of a DNS packet](#set_rasdns_context-ra_bit)
+    * [set_aa() - Sets or resets AA bit of a DNS packet](#set_aasdns_context-aa_bit)
+    * [set_cd() - Sets or resets CD bit of the EDNS0 in a DNS packet](#set_cdsdns_context-cd_bit)
+    * [set_id() - Sets the ID of a DNS packet](#set_idsdns_context-id_num)
+    * [remove_ends() - Removes EDNS0 from a DNS packet](#remove_endssdns_context)
+    * [get_answer() - Gets answer records of a DNS packet](#get_answersdns_context-num)
+    * [get_authority() - Gets authority records of a DNS packet](#get_authoritysdns_context-num)
+    * [set_rcode() - Sets the rcode value of a DNS packet](#set_rcodesdns_context-rcode)
+    * [get_question() - Returns the question section of the DNS packet](#get_questionsdns_context)
+    * [create_response_from_query() - Create a response DNS packet based on the given DNS packet](#create_response_from_querysdns_context)
+
+
+-------------------------------------------------------------------
+
+#### __create_query__(query_name, query_type, query_class)
+
+This function creates a DNS query packet ready to ask a question from a server. On a successful call, the function returns a DNS context which can be passed to other functions of the library. This method (by default), makes an EDNS0-aware DNS packet.
+This means the packet has an empty edns0 in the additional section. If you want to remove the ENDS0 option from the packet (You can not have NSID, cookie, EDE, etc anymore!), you can use the function __remove_ends()__ to remove it from the DNS context.
+
     - returns:
         - (sdns_context, nil) on success
         - (nil, error-message) on failure
@@ -18,17 +55,17 @@ Here is the description of the provided functions in Lua:
         - query_type (string - mandatory): The type of the query, e.g, `A`, `AAAA`, `HINFO`, `MX`, `SOA`, `NS`, `PTR`, and `SRV`
         - query_class (string - mandatory): The class of the query. e.g., `IN`, `CH`
 
-This function creates a DNS query packet ready to ask a question from a server. On a successful call, the function returns a DNS context which can be passed to other functions of the library. This method (by default), makes an EDNS0-aware DNS packet.
-This means the packet has an empty edns0 in the additional section. If you want to remove the ENDS0 option from the packet (You can not have NSID, cookie, EDE, etc anymore!), you can use the function __remove_ends()__ to remove it from the DNS context.
+------------------------------------------------------------------
 
-* __print_dns__(sdns_context)
+#### __print_dns__(sdns_context)
     - returns: Nothing. This function just print the DNS packet neatly to the standard output.
     - params:
         - sdns_context: the context returned by __create_query()__ function.
 
 This function is useful for mostly debugging purpose when you want to see the DNS packet you received or you created.
 
-* __from_network__(data)
+------------------------------------------------------------------
+#### __from_network__(data)
     - returns:
         - (sdns_context, nil) on success
         - (nil, error-message) on failure
@@ -37,7 +74,8 @@ This function is useful for mostly debugging purpose when you want to see the DN
 
 This function receives the binary data and try to convert it to a DNS packet (if it's a valid DNS binary data). When we receive data from socket, we pass it to this function and on a successful call, we will receive the decoded DNS packet in a form of a sdns_context data. Checkout the examples to see how it is used.
 
-* __to_network__(sdns_context)
+------------------------------------------------------------------
+#### __to_network__(sdns_context)
     - returns:
         - (byte-stream string, nil) on success
         - (nil, error-message-string) on failure
@@ -46,7 +84,8 @@ This function receives the binary data and try to convert it to a DNS packet (if
 
 After creating our DNS packet, we need to convert it to binary data in order to send it over the network. This function converts DNS context to binary data ready to be sent.
 
-* __add_rr_A__(sdns_context, table-data)
+------------------------------------------------------------------
+#### __add_rr_A__(sdns_context, table-data)
     - returns:
         - (0, nil) on success
         - (non-zero, error-msg) on failure
@@ -90,8 +129,9 @@ Here is an example of calling this function.
     -- now you can send 'bindata' over the socket
 
 ```
+------------------------------------------------------------------
 
-* __add_rr_NS__(sdns_context, table-data)
+#### __add_rr_NS__(sdns_context, table-data)
     - returns:
         - (0, nil) on success
         - (non-zero, err-msg-string) on failure
@@ -114,8 +154,9 @@ example of calling this method:
     assert(res == 0)
     assert (msg == nil)
 ```
+------------------------------------------------------------------
 
-* __add_rr_SOA__(sdns_context, table-data)
+#### __add_rr_SOA__(sdns_context, table-data)
     - returns:
         - (0, nil) on success
         - (non-zero, err-msg-string) on failure
@@ -154,8 +195,9 @@ For the description of each field of the 'rdata', you can read RFC1035 (SOA data
     assert(res == 0)
     assert (msg == nil)
 ```
+------------------------------------------------------------------
 
-* __add_rr_MX__(sdns_context, table-data)
+#### __add_rr_MX__(sdns_context, table-data)
     - returns:
         - (0, nil) on success
         - (non-zero, err-msg-string) on failure
@@ -186,8 +228,9 @@ For the description of each field of the 'rdata', you can read RFC1035 (MX data 
     assert(res == 0)
     assert (msg == nil)
 ```
+------------------------------------------------------------------
 
-* __add_rr_PTR__(sdns_context, table-data)
+#### __add_rr_PTR__(sdns_context, table-data)
     - returns:
         - (0, nil) on success
         - (non-zero, err-msg-string) on failure
@@ -216,8 +259,9 @@ For the description of each field of the 'rdata', you can read RFC1035 (PTR data
     assert(res == 0)
     assert (msg == nil)
 ```
+------------------------------------------------------------------
 
-* __add_rr_SRV__(sdns_context, table-data)
+#### __add_rr_SRV__(sdns_context, table-data)
     - returns:
         - (0, nil) on success
         - (non-zero, err-msg-string) on failure
@@ -250,8 +294,9 @@ For the description of each field of the 'rdata', you can read RFC 2782 (SRV dat
     assert(res == 0)
     assert (msg == nil)
 ```
+------------------------------------------------------------------
 
-* __add_rr_HINFO__(sdns_context, table-data)
+#### __add_rr_HINFO__(sdns_context, table-data)
     - returns:
         - (0, nil) on success
         - (non-zero, err-msg-string) on failure
@@ -280,8 +325,9 @@ For the description of each field of the 'rdata', you can read RFC 1035 (HINFO d
     assert(res == 0)
     assert (msg == nil)
 ```
+------------------------------------------------------------------
 
-* __add_rr_TXT__(sdns_context, table-data)
+#### __add_rr_TXT__(sdns_context, table-data)
     - return:
         - (0, nil) on success
         - (non-zero, err-msg-string) on failure
@@ -306,8 +352,9 @@ Here is an example of using this function:
     assert(msg == nil)
 
 ```
+------------------------------------------------------------------
 
-* __add_nsid__(sdns_context, nsid)
+#### __add_nsid__(sdns_context, nsid)
     - returns:
         - (0, nil) on success
         - (non-zero, err-msg) on failure
@@ -337,8 +384,9 @@ Here is the example of create a NSID-aware packet to send it to google 8.8.8.8
 
     -- now you can send the packet to 8.8.8.8
 ```
+------------------------------------------------------------------
 
-* __get_nsid__(sdns_context)
+#### __get_nsid__(sdns_context)
     - returns:
         - (nsid-string, nil) on success
         - (nil, err-msg-string) on failure
@@ -381,7 +429,8 @@ This function returns the NSID string of the DNS packet if there exists any. If 
         print("ERROR in NSID data: ", msg)
     end
 ```
-* __get_header__(sdns_context)
+------------------------------------------------------------------
+#### __get_header__(sdns_context)
     - returns:
         - (header-table, nil) on success
         - (nil, msg-err-string) on failure
@@ -419,7 +468,8 @@ This function returns the header of the DNS packet as a Lua table. All the keys 
     --]]
 ```
 
-* __set_do__(sdns_context, do_bit)
+------------------------------------------------------------------
+#### __set_do__(sdns_context, do_bit)
     - returns:
         - (0, nil) on success
         - (non-zero, msg-err-string) on failure
@@ -427,7 +477,8 @@ This function returns the header of the DNS packet as a Lua table. All the keys 
         - sdns_context: the DNS context created by __create_query()__ or __from_network()__ function.
         - do_bit: 0 or 1 to set or unset DO bit.
 
-* __set_tc__(sdns_context, tc_bit)
+------------------------------------------------------------------
+#### __set_tc__(sdns_context, tc_bit)
     - returns:
         - (0, nil) on success
         - (non-zero, msg-err-string) on failure
@@ -435,7 +486,8 @@ This function returns the header of the DNS packet as a Lua table. All the keys 
         - sdns_context: the DNS context created by __create_query()__ or __from_network()__ function.
         - tc_bit: 0 or 1 to set or unset TC bit.
 
-* __set_rd__(sdns_context, rd_bit)
+------------------------------------------------------------------
+#### __set_rd__(sdns_context, rd_bit)
     - returns:
         - (0, nil) on success
         - (non-zero, msg-err-string) on failure
@@ -443,7 +495,8 @@ This function returns the header of the DNS packet as a Lua table. All the keys 
         - sdns_context: the DNS context created by __create_query()__ or __from_network()__ function.
         - rd_bit: 0 or 1 to set or unset RD bit.
 
-* __set_ra__(sdns_context, ra_bit)
+------------------------------------------------------------------
+#### __set_ra__(sdns_context, ra_bit)
     - returns:
         - (0, nil) on success
         - (non-zero, msg-err-string) on failure
@@ -451,7 +504,8 @@ This function returns the header of the DNS packet as a Lua table. All the keys 
         - sdns_context: the DNS context created by __create_query()__ or __from_network()__ function.
         - ra_bit: 0 or 1 to set or unset RA bit.
 
-* __set_aa__(sdns_context, aa_bit)
+------------------------------------------------------------------
+#### __set_aa__(sdns_context, aa_bit)
     - returns:
         - (0, nil) on success
         - (non-zero, msg-err-string) on failure
@@ -459,7 +513,8 @@ This function returns the header of the DNS packet as a Lua table. All the keys 
         - sdns_context: the DNS context created by __create_query()__ or __from_network()__ function.
         - aa_bit: 0 or 1 to set or unset AA bit.
 
-* __set_cd__(sdns_context, cd_bit)
+------------------------------------------------------------------
+#### __set_cd__(sdns_context, cd_bit)
     - returns:
         - (0, nil) on success
         - (non-zero, msg-err-string) on failure
@@ -468,7 +523,8 @@ This function returns the header of the DNS packet as a Lua table. All the keys 
         - cd_bit: 0 or 1 to set or unset CD bit.
 
 
-* __set_id__(sdns_context, id_num)
+------------------------------------------------------------------
+#### __set_id__(sdns_context, id_num)
     - returns:
         - (0, nil) on success
         - (non-zero, msg-err-string) on failure
@@ -476,7 +532,8 @@ This function returns the header of the DNS packet as a Lua table. All the keys 
         - sdns_context: the DNS context created by __create_query()__ or __from_network()__ function.
         - id_num: a 16-bit unsigned integer number used as the ID of the DNS packet.
 
-* __remove_ends__(sdns_context)
+------------------------------------------------------------------
+#### __remove_ends__(sdns_context)
     - returns:
         - (0, nil) on success
         - (non-zero, msg-err-string) on failure
@@ -501,7 +558,8 @@ don't want it (which is somehow weired!), you can use this function to safely re
 
 ```
 
-* __get_answer__(sdns_context, num)
+------------------------------------------------------------------
+#### __get_answer__(sdns_context, num)
     - returns: 
         - (answer-table, nil) on success
         - (nil, err-msg-string) on failure
@@ -617,12 +675,13 @@ end
 --]]
 ```
 
-* __get_authority__(sdns_context, num)
+------------------------------------------------------------------
+#### __get_authority__(sdns_context, num)
     - returns: 
         - (answer-table, nil) on success
         - (nil, err-msg-string) on failure
     - params:
-        - sdns_context: the DNS context created by __create_query()__ or __from_network()__ function.
+        - sdns_context: the DNS context created by __create\_query()__ or __from_network()__ function.
         - num: The number of the authority RR to be retrieved from the authority section of the DNS context (starting from one).
 
 This function exactly works like __get_answer__() function. The only difference is that it will be applied on the _authority_ section of the DNS context
@@ -671,4 +730,63 @@ for i=1, header.nscount do
 end
 
 ```
+------------------------------------------------------------------------
+#### __set_rcode__(sdns_context, rcode)
+    - returns: 
+        - (0, nil) on success
+        - (nil, err-msg-string) on failure
+    - params:
+        - sdns_context: the DNS context created by __create_query()__ or __from_network()__ function.
+        - rcode: The rcode specified in RFC 1035. This can be a value between 0 to 16 (excluded) as the rcode is only 4 bits.
 
+This function is useful when you want to create a packet with different rcode values like NXDomain.
+
+------------------------------------------------------------------------
+#### __get_question__(sdns_context)
+    - returns:
+        - (table, nil) on success
+        - (nil, err-msg-str) on failure
+    - params:
+        - sdns_context: the DNS context created by __create_query()__ or __from_network()__ function.
+
+This function returns the question section of a DNS packet as a table. In a successful call, the returned table
+is like this:
+
+```lua
+-- this is what you receive from get_question()
+local dns = sdns.create_query("google.com", "A", "IN")
+assert(dns)
+local qtbl, msg = sdns.get_question(dns)
+
+-- the 'qtbl' variable is like:
+--[[
+    {
+        qname="google.com",
+        qtype="A",
+        qclass="IN"
+    }
+--]]
+```
+
+------------------------------------------------------------------------
+#### __create_response_from_query__(sdns_context)
+    - returns:
+        - (sdns_context, nil) on success
+        - (nil, err-msg) on fail
+    - params:
+        - sdns_context: the DNS context created by __create_query()__ or __from_network()__ function.
+
+Assuming that you received a query from network, usually here is the things you should do to create a response packet:
+
+1. create a new DNS packet
+2. change the ID of the new packet to the query you received
+3. set the qr bit of the new packet to 1
+4. check if the query packet supports EDNS0 or not and based on that, add or remove EDNS0 to/from the new packet.
+5. copy the question section of the query packet to the response packet.
+6. add appropriate answers, authorities or additional data as you wish.
+7. convert the DNS packet to network data
+8. send it back to the client.
+
+This function performs the first 5 steps for you!
+
+------------------------------------------------------------------------

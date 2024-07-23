@@ -424,6 +424,20 @@ int sdns_set_do(sdns_context * dns, uint8_t do_bit);
 
 
 /**
+ * @brief Sets the rcode of the DNS context.
+ * @param dns DNS context
+ * @param rcode the value to set in the DNS context header as the 'rcode'
+ *
+ * 'rcode' can be between 0 (included) and 16 (excluded).
+ * Any value that is not in this range will result in returning ::SDNS_ERROR_WRONG_INPUT_PARAMETER
+ *
+ * @return 0 on success, other values on fail
+ */
+int sdns_set_rcode(sdns_context * dns, uint8_t rcode);
+
+
+
+/**
  * @brief Sets or resets the _query-response_ bit of the DNS header
  * @param dns sdns context
  * @param qr_bit can be 0 or 1 to set or reset the QR bit.
