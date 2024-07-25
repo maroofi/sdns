@@ -33,8 +33,6 @@ char * ipv6_mem_to_str(char * mem){
 }
 
 
-
-
 int safe_strcase_equal(const char * a, const char * b){
     if (NULL == a || b == NULL)
         return a==NULL && b==NULL?0:1;

@@ -1,47 +1,43 @@
 CC := gcc
-CFLAGS := -I./include -Wall
+CFLAGS := -I./include -Wall -Werror
 CLIBS := -ljansson
 SHELL = /bin/bash
-
-
-OUTDIR = bin
-DEPS = $(wildcard ./src/*.c)
-HDEPS = $(wildcard ./include/*.h)
-OBJS_wj = sdns.o sdns_print.o sdns_json.o sdns_dynamic_buffer.o sdns_utils.o sdns_api.o
-LIBOBJS_wj = sdns.o sdns_print.o sdns_json.o sdns_dynamic_buffer.o sdns_utils.o sdns_api.o
-OBJSTEST = sdns.o sdns_print.o sdns_json.o sdns_dynamic_buffer.o sdns_utils.o test1.o sdns_api.o
+LUALIB=lua
+LUAINCDIR=/usr/include
+LUAMLIB=-lm
 LIBNAME = libsdns.so
-OBJS = sdns.o sdns_print.o sdns_dynamic_buffer.o sdns_utils.o sdns_api.o
-LIBOBJS = sdns.o sdns_print.o sdns_dynamic_buffer.o sdns_utils.o sdns_api.o
+ONLY_SDNS_CFILE=sdns.c sdns_api.c sdns_dynamic_buffer.c sdns_utils.c sdns_print.c
+SDNS_JSON_CFILE=sdns_json.c
+SDNS_LUA_CFILE=sdns_lua.c
+ONLY_SDNS_HFILE="sdns.h sdns_api.h sdns_dynamic_buffer.h sdns_utils.h sdns_print.h"
+SDNS_JSON_HFILE="sdns_json.h"
 
 
-sdns: dummy $(OBJS) $(HDEPS)
-	@$(CC) -shared $(CFLAGS) $(addprefix bin/, $(LIBOBJS)) -Wl,-soname,$(LIBNAME) $ -o bin/$(LIBNAME)
+sdns: dummy
+	$(CC) -c $(CFLAGS) -fPIC  $(addprefix ./src/, $(ONLY_SDNS_CFILE))
+	$(CC) $(CFLAGS) -o $(LIBNAME) -shared *.o
+	@rm -f *.o
+	@mv $(LIBNAME) bin/$(LIBNAME)
 
-with-json: dummy $(OBJS_wj) $(HDEPS)
-	@$(CC) -shared $(CFLAGS) $(addprefix bin/, $(LIBOBJS_wj)) -Wl,-soname,$(LIBNAME) $ -o bin/$(LIBNAME)
+with-json: dummy
+	$(CC) -shared -c $(CFLAGS) -fPIC $(addprefix ./src/, $(ONLY_SDNS_CFILE)) $(addprefix ./src/, $(SDNS_JSON_CFILE))
+	$(CC) $(CFLAGS) -o $(LIBNAME) -fPIC -shared *.o $(CLIBS)
+	@rm -f *.o
+	@mv $(LIBNAME) bin/$(LIBNAME)
 
-test: dummy $(OBJSTEST) $(HDEPS) test.o
-	echo "Executing test rules...."
-	@$(CC) $(CFLAGS) $(addprefix bin/, $(OBJSTEST)) -o bin/test $(CLIBS)
+with-lua: dummy 
+	$(CC) -shared -c $(CFLAGS) -fPIC $(addprefix ./src/, $(ONLY_SDNS_CFILE)) $(addprefix ./src/, $(SDNS_LUA_CFILE)) -I$(LUAINCDIR)
+	$(CC) $(CFLAGS) -fPIC -o $(LIBNAME) -shared -l$(LUALIB) $(LUAMLIB) *.o 
+	@rm -f *.o
+	@mv $(LIBNAME) bin/$(LIBNAME)
 
-sdns.o: src/sdns.c include/sdns.h
-	@$(CC) $(CFLAGS) -fPIC -c $< -o bin/$@
+all: dummy
+	$(CC) -c $(CFLAGS) -shared -fPIC -Wl,-E $(addprefix ./src/, $(ONLY_SDNS_CFILE)) $(addprefix ./src/, $(SDNS_JSON_CFILE)) $(addprefix ./src/, $(SDNS_LUA_CFILE)) -I$(LUAINCDIR)
+	$(CC) $(CFLAGS) -o $(LIBNAME) -fPIC -shared  *.o   $(CLIBS) 
+	@rm -f *.o
+	@mv $(LIBNAME) bin/$(LIBNAME)
 
-sdns_print.o: src/sdns_print.c include/sdns_print.h
-	@$(CC) $(CFLAGS) -fPIC -c $< -o bin/$@
-
-sdns_api.o: src/sdns_api.c include/sdns_api.h
-	@$(CC) $(CFLAGS) -fPIC -c $< -o bin/$@
-
-sdns_json.o: src/sdns_json.c include/sdns_json.h
-	@$(CC) $(CFLAGS) -fPIC -c $< -o bin/$@
-
-sdns_dynamic_buffer.o: src/sdns_dynamic_buffer.c include/sdns_dynamic_buffer.h
-	@$(CC) $(CFLAGS) -fPIC -c $< -o bin/$@
-
-sdns_utils.o: src/sdns_utils.c include/sdns_utils.h
-	@$(CC) $(CFLAGS) -fPIC -c $< -o bin/$@
+#-l$(LUALIB) $(LUAMLIB)
 
 dummy:
 	@mkdir -p bin
@@ -49,5 +45,7 @@ dummy:
 
 .PHONY: clean
 clean:
-	@rm -f bin/*.o
+	@rm -f *.o
+	@rm -f bin/*.so
+	@rm -f $(LIBNAME)
 

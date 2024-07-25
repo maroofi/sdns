@@ -1976,7 +1976,7 @@ static const struct luaL_Reg sdns_lib_expose[] = {
     {NULL, NULL}
 };
 
-int luaopen_sdnslib(lua_State * L){
+int luaopen_libsdns(lua_State * L){
     // initialize the metatable
     srand(time(NULL));
     luaL_newmetatable(L, "metasdnslib");

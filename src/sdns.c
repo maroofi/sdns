@@ -2263,6 +2263,8 @@ void sdns_error_string(int err, char ** err_buffer){
         strcpy(*err_buffer, "There is no authority section in the DNS context");
     else if (err == SDNS_ERROR_NO_ADDITIONAL_FOUND)
         strcpy(*err_buffer, "There is no additional section in the DNS context");
+    else if (err == SDNS_ERROR_ADDDITIONAL_RR_OPT)
+        strcpy(*err_buffer, "Additional section is OPT RR. Use other functions to fetch it");
     else if (err == sdns_rcode_FormErr)
         strcpy(*err_buffer, "FormErr");
     else if (err == sdns_rcode_NoError)

@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -e
 with_valgrind=$1
 valgrind=0
 if [ "$with_valgrind" =  "with-valgrind" ] 
@@ -12,6 +12,12 @@ echo "testing with valgrind...."
 script_dir=$(dirname "$(realpath $0)")
 echo "Current directory is: $script_dir"
 
+
+
+cd $script_dir
+cd ..
+make clean
+make all
 cd $script_dir
 
 sdns_lib_dir=$(realpath $script_dir/../bin)
@@ -26,7 +32,7 @@ test_files=$(ls -1 test*.c)
 for c_file in $test_files
 do
     echo -n "Compiling.....$c_file..."
-    gcc -g -o test $c_file -I../include  -L$sdns_lib_dir -lsdns -ljansson
+    gcc -g -o test $c_file -I../include  -L$sdns_lib_dir -ljansson -lsdns 
     if [ $? -ne 0 ]
     then
         echo ""

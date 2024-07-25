@@ -585,6 +585,9 @@ sdns_rr * sdns_get_authority(sdns_context * dns, int * err, uint16_t num);
 
 /**
  * @brief Returns the additional section of the DNS context
+ *  
+ * This function can not be used to get the OPT (EDNS0) records from the additional
+ * section. To get OPT records (e.g., cookies, NSID, etc), you can use the relevant functions.
  *
  * For the list of parameters, check sdns_get_answer() function
  */

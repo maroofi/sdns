@@ -1221,6 +1221,13 @@ sdns_rr * sdns_get_additional(sdns_context * dns, int * err, uint16_t num){
         return NULL;
     }
     // tmp points the the right additional
+    if (tmp->type == sdns_rr_type_OPT){
+        // the additional section is an opt which you can not get
+        // it using this function. You must use get_nsid(), get_cookie(), etc
+        // for this purpose
+        *err = SDNS_ERROR_ADDDITIONAL_RR_OPT;
+        return NULL;
+    }
     char * name = safe_strdup(tmp->name);
     sdns_rr * result = sdns_init_rr(name, tmp->type, tmp->class, tmp->ttl, tmp->rdlength, 1, NULL);
     void * rdata = NULL;

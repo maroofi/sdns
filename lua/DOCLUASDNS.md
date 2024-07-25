@@ -11,10 +11,12 @@ Here is the description of the provided functions in Lua:
 
 * List of functions
     * [create_query() - Creates a new DNS packet](#create_queryquery_name-query_type-query_class)
+    * [create_response_from_query() - Create a response DNS packet based on the given DNS packet](#create_response_from_querysdns_context)
     * [print_dns() - Print a DNS packet](#print_dnssdns_context)
     * [from_network() - Converts binary network data to a DNS packet](#from_networkdata)
     * [to_network() - Converts a DNS packet to network binary data](#to_networksdns_context)
     * [add_rr_A() - Adds A RR to a DNS packet](#add_rr_asdns_context-table-data)
+    * [add_rr_AAAA() - Adds AAAA RR to a DNS packet](#add_rr_aaaasdns_context-table-data)
     * [add_rr_NS() - Adds NS RR to a DNS packet](#add_rr_nssdns_context-table-data)
     * [add_rr_SOA() - Adds SOA RR to a DNS packet](#add_rr_soasdns_context-table-data)
     * [add_rr_MX() - Adds MX RR to a DNS packet](#add_rr_mxsdns_context-table-data)
@@ -25,6 +27,10 @@ Here is the description of the provided functions in Lua:
     * [add_nsid() - Adds NSID to EDNS0 section of the DNS packet](#add_nsidsdns_context-nsid)
     * [get_nsid() - Gets NSID value from a DNS packet](#get_nsidsdns_context)
     * [get_header() - Returns header of a DNS packet](#get_headersdns_context)
+    * [get_question() - Returns the question section of the DNS packet](#get_questionsdns_context)
+    * [get_answer() - Gets answer records of a DNS packet](#get_answersdns_context-num)
+    * [get_additional() - Gets additional records of a DNS packet](#get_additionalsdns_context-num)
+    * [get_authority() - Gets authority records of a DNS packet](#get_authoritysdns_context-num)
     * [set_do() - Sets or resets DO bit of a DNS packet](#set_dosdns_context-do_bit)
     * [set_tc() - Sets or resets TC bit of a DNS packet](#set_tcsdns_context-tc_bit)
     * [set_rd() - Sets or resets RD bit of a DNS packet](#set_rdsdns_context-rd_bit)
@@ -32,12 +38,8 @@ Here is the description of the provided functions in Lua:
     * [set_aa() - Sets or resets AA bit of a DNS packet](#set_aasdns_context-aa_bit)
     * [set_cd() - Sets or resets CD bit of the EDNS0 in a DNS packet](#set_cdsdns_context-cd_bit)
     * [set_id() - Sets the ID of a DNS packet](#set_idsdns_context-id_num)
-    * [remove_ends() - Removes EDNS0 from a DNS packet](#remove_endssdns_context)
-    * [get_answer() - Gets answer records of a DNS packet](#get_answersdns_context-num)
-    * [get_authority() - Gets authority records of a DNS packet](#get_authoritysdns_context-num)
     * [set_rcode() - Sets the rcode value of a DNS packet](#set_rcodesdns_context-rcode)
-    * [get_question() - Returns the question section of the DNS packet](#get_questionsdns_context)
-    * [create_response_from_query() - Create a response DNS packet based on the given DNS packet](#create_response_from_querysdns_context)
+    * [remove_ends() - Removes EDNS0 from a DNS packet](#remove_endssdns_context)
 
 
 -------------------------------------------------------------------
@@ -130,6 +132,23 @@ Here is an example of calling this function.
 
 ```
 ------------------------------------------------------------------
+
+#### __add_rr_AAAA__(sdns_context, table-data)
+    - returns:
+        - (0, nil) on success
+        - (non-zero, error-msg) on failure
+    - params:
+        - sdns_context: the DNS context created by __create_query()__ or __from_network()__ function.
+        - table-data (table - mandatory): This input table contains the information regarding the `AAAA` record you want to add to the DNS packet. It must contain all the following fields (all mandatory):
+            - *name* (string): the domain name for the AAAA record
+            - *ttl* (integer): the TTL value of the resource record
+            - *section* (string): the DNS section you want to add the AAAA record. It can be one of the: `answer`, `authority` and/or `additional` values.
+            - *rdata* (table): contains only 'ip' field which is the IP address you want to add.
+
+
+To see and example of using this function, check the documentation of __add_rr_A__() function.
+
+-------------------------------------------------------------------
 
 #### __add_rr_NS__(sdns_context, table-data)
     - returns:
@@ -559,6 +578,7 @@ don't want it (which is somehow weired!), you can use this function to safely re
 ```
 
 ------------------------------------------------------------------
+
 #### __get_answer__(sdns_context, num)
     - returns: 
         - (answer-table, nil) on success
@@ -672,6 +692,88 @@ end
     9. MS=E4A68B9AB2BB9670BCE15412F62916164C0B20BB
     10. facebook-domain-verification=22rm551cu4k0ab0bxsw536tlds4h95
     11. google-site-verification=TV9-DBe4R80X4v0M4U_bd_J9cpOJM0nikft0jAgjmsQ
+--]]
+```
+
+------------------------------------------------------------------
+#### __get_additional__(sdns_context, num)
+    - returns: 
+        - (additional-table, nil) on success
+        - (nil, err-msg-string) on failure
+    - params:
+        - sdns_context: the DNS context created by __create_query()__ or __from_network()__ function.
+        - num: The number of the additional to be retrieved from the additional section of the DNS context (starting from one).
+
+Assuming that you asked for the NS record of yahoo.com (from its authorative server) and the received packet has also 4 RRs in the additional section 
+(all A records of yahoo.com). You can call this function 4 times passing _num_ parameter from 1 to 4 to get all the answer RRs.
+If you ask for the fifth RR in the answer section, you will get the error message (answer not found).
+
+**NOTE**: This function can not get the OPT RR part of the additional section as OPT has a different structure compared to other RRs.
+To get the OPR RR information, you can use other functions like __get_nsid__() or __get_cookie__().
+
+The returned result is a table exactly with the same syntax of the tables you pass to add_rr_* functions. Here is an example of asking for ns of google.com from
+its authoritative name server.
+
+```lua
+-- loading the necessary libraries
+local netlib = require "sdnsnetlib"
+local sdns = require "sdnslib"
+local inspect = require "inspect"
+
+-- create a simple query packet asking for NS of Google
+local dns = sdns.create_query("google.com", "ns", "in");
+assert (dns ~= nil)
+
+local err, msg;
+
+-- creating byte-stream from the DNS context
+to_send, msg = sdns.to_network(dns)
+assert(msg == nil)
+assert(to_send ~= nil)
+
+-- this is the IP address of the ns1.google.com
+-- since the server is authoritative, it also gives us the IP addresses
+-- of google.com in the additional section
+local datatbl = {to_send=to_send, dstip="216.239.32.10",
+              dstport=53, timeout=3}
+
+-- sending the request
+data, msg = netlib.send_udp(datatbl)
+assert(msg == nil)
+assert (data ~= nil)
+
+-- convert the socket response to DNS context
+local response, msg = sdns.from_network(data)
+assert(response ~= nil)
+assert(msg == nil)
+
+-- get the header to see how many RR we have in the additional section
+header, msg = sdns.get_header(response);
+print(string.format("The packet has %d records in the additional section", header.arcount))
+
+-- iterate over the additional section to get the RRs
+-- the last one is EDNS0 and the function returns (nil, nil)
+-- and we don't print it.
+for i=1, header.arcount do
+    -- one of the additional records might be a OPT (e.g., cookie) which
+    -- this function can not fetch it and will return nil
+    ans, msg = sdns.get_additional(response, i)
+    if (ans) then
+        print(string.format("%d - %s", i, ans.rdata.ip))
+    end
+end
+
+-- here is the output of the script
+--[[
+    The packet has 9 records in the additional section
+    1 - 216.239.34.10
+    2 - 2001:4860:4802:0034:0000:0000:0000:000a
+    3 - 216.239.38.10
+    4 - 2001:4860:4802:0038:0000:0000:0000:000a
+    5 - 216.239.32.10
+    6 - 2001:4860:4802:0032:0000:0000:0000:000a
+    7 - 216.239.36.10
+    8 - 2001:4860:4802:0036:0000:0000:0000:000a
 --]]
 ```
 

@@ -39,6 +39,7 @@
 #define SDNS_ERROR_INVALID_IPv6_FOUND        -23       ///< The code only accepts IPv6 in a format of ":" separated hex values
 #define SDNS_ERROR_NO_AUTHORITY_FOUND        -24       ///< This error shows that the DNS context has no authority section
 #define SDNS_ERROR_NO_ADDITIONAL_FOUND       -25       ///< This error shows that the DNS context has no additional section
+#define SDNS_ERROR_ADDDITIONAL_RR_OPT        -26       ///< Additional section is of type OPT. Use the relevant function to fetch it.
 // define the section types
 #define DNS_SECTION_ANSWER 1                           ///< Macro defining the answer section
 #define DNS_SECTION_AUTHORITY 2                        ///< Macro defining the authority section
