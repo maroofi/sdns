@@ -17,7 +17,7 @@ echo "Current directory is: $script_dir"
 cd $script_dir
 cd ..
 make clean
-make all
+make with-json
 cd $script_dir
 
 sdns_lib_dir=$(realpath $script_dir/../bin)
