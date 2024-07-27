@@ -1919,6 +1919,17 @@ static int create_rdata_table(lua_State * L, sdns_rr * answer){
         lua_settable(L, -3);
         return 0;
     }
+    if (answer->type == sdns_rr_type_AAAA){
+        char * ip = ipv6_mem_to_str(((sdns_rr_AAAA*)answer->psdns_rr)->address);
+        if (ip != NULL){
+            lua_createtable(L, 0, 1);
+            lua_pushstring(L, "ip");
+            lua_pushstring(L, ip);
+            lua_settable(L, -3);
+            return 0;
+        }
+        return 1;
+    }
     if (answer->type == sdns_rr_type_NS){
         lua_createtable(L, 0, 1);       // we only have 'nsname' field
         lua_pushstring(L, "nsname");
@@ -2043,6 +2054,72 @@ static int create_rdata_table(lua_State * L, sdns_rr * answer){
     }
     //TODO: add more RR here
     return 1;
+}
+
+static int l_sdns_get_additional(lua_State * L){
+    // the Lua function receives 2 params:
+    // get_additional(DNS, ans-num)
+    // DNS: dns context and ans-num: starts from 1 is the nth additional RR in the packet
+    int num = luaL_checkinteger(L, -1);
+    if (num < 1){
+        lua_pushnil(L);
+        lua_pushstring(L, "The number starts from 1");
+        return 2;
+    }
+    num = num -1;   // in C, we start from zero
+    sdns_context ** dns = (sdns_context **)luaL_checkudata(L, -2, "metasdnslib");
+    if (*dns == NULL){
+        lua_pushnil(L);
+        lua_pushstring(L, "DNS context is NULL");
+        return 2;
+    }
+    // it to lua table, send it back to user
+    int err;
+    sdns_rr * additional = sdns_get_additional(*dns, &err, num);
+    if (err != sdns_rcode_NoError || additional == NULL){
+        char errbuff[255] = {0x00};
+        char * errpointer = errbuff;
+        sdns_error_string(err, &errpointer);
+        lua_pushnil(L);
+        lua_pushstring(L, errpointer);
+        return 2;
+    }
+
+    char type_rr_class[20] = {0x00};
+    lua_createtable(L, 1, 4);    // this is top to the stack
+    // name
+    lua_pushstring(L, "name");
+    lua_pushstring(L, additional->name);
+    lua_settable(L, -3);
+    // ttl
+    lua_pushstring(L, "ttl");
+    lua_pushinteger(L, additional->ttl);
+    lua_settable(L, -3);
+    // class
+    lua_pushstring(L, "class");
+    sdns_class_to_string(additional->class, type_rr_class);
+    lua_pushstring(L, type_rr_class);
+    lua_settable(L, -3);
+    // type
+    memset(type_rr_class, 0, 20);
+    lua_pushstring(L, "type");
+    sdns_rr_type_to_string(additional->type, type_rr_class);
+    lua_pushstring(L, type_rr_class);
+    lua_settable(L, -3);
+    // rdata
+    lua_pushstring(L, "rdata");
+    int res = create_rdata_table(L, additional);
+    if (res == 0){
+        lua_settable(L, -3);
+        sdns_free_section(additional);
+        return 1;
+    }
+    // we failed to create rdata table, we need to clean up the memory
+    lua_pop(L, 3);
+    lua_pushnil(L);
+    lua_pushstring(L, "The additional section RR not supported by the Lua wrapper yet!");
+    sdns_free_section(additional);
+    return 2;
 }
 
 
@@ -2267,6 +2344,7 @@ static const struct luaL_Reg sdns_lib_expose[] = {
     {"set_rcode", l_sdns_set_rcode},
     {"get_answer", l_sdns_get_answer},
     {"get_authority", l_sdns_get_authority},
+    {"get_additional", l_sdns_get_additional},
     {"get_question", l_sdns_get_question},
     {"send_udp", l_sdns_send_udp},
     {"send_tcp", l_sdns_send_tcp},

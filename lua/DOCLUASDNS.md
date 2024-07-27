@@ -145,34 +145,34 @@ Considering the scenario of __send_udp()__ function. After step 4, we can check 
 
 Here is an example of calling this function.
 ```lua
-    -- add the library
-    local sdns = require("sdnslib")
-    assert(sdns)
+-- load the library
+local sdns = require("libsdns")
+assert(sdns)
 
-    -- create a DNS packet with a question
-    dns, msg = sdns.create_query("google.com", "A", "IN")
-    assert (dns ~= nil)
-    assert (msg == nil)
+-- create a DNS packet with a question
+dns, msg = sdns.create_query("google.com", "A", "IN")
+assert (dns ~= nil)
+assert (msg == nil)
 
-    -- Adds an A record to the answer section of the packet
-    -- you can call add_rr_A() several times to add
-    -- several A record to different sections of the 
-    -- DNS packet
-    tbl_a = {
-        name="google.com", ttl=300,
-        section="answer",
-        rdata={ip="1.2.3.4"}
-    }
-    res, msg = sdns.add_rr_A(dns, tbl_a)
-    assert(res == 0)
-    assert(msg == nil)
+-- Adds an A record to the answer section of the packet
+-- you can call add_rr_A() several times to add
+-- several A record to different sections of the 
+-- DNS packet
+tbl_a = {
+    name="google.com", ttl=300,
+    section="answer",
+    rdata={ip="1.2.3.4"}
+}
+res, msg = sdns.add_rr_A(dns, tbl_a)
+assert(res == 0)
+assert(msg == nil)
 
-    -- create the binary data from DNS packet
-    bindata, msg = sdns.to_network(dns)
-    assert(bindata ~= nil)
-    assert (msg == nil)
+-- create the binary data from DNS packet
+bindata, msg = sdns.to_network(dns)
+assert(bindata ~= nil)
+assert (msg == nil)
 
-    -- now you can send 'bindata' over the socket
+-- now you can send 'bindata' over the socket
 
 ```
 ------------------------------------------------------------------
@@ -427,25 +427,25 @@ Here is an example of using this function:
 
 Here is the example of create a NSID-aware packet to send it to google 8.8.8.8
 ```lua
-    local sdns = require("sdnslib")
-    assert (sdns)
+local sdns = require("libsdns")
+assert (sdns)
 
-    -- create a query for asking A record of google.com
-    dns, msg = sdns.create_query("google.com", "A", "IN")
-    assert (dns ~= nil)
-    assert (msg == nil)
+-- create a query for asking A record of google.com
+dns, msg = sdns.create_query("google.com", "A", "IN")
+assert (dns ~= nil)
+assert (msg == nil)
 
-    -- make the packet NSID aware
-    -- we pass empty string
-    res, msg = sdns.add_nsid(dns, "")
-    assert(res == 0)
-    assert(msg == nil)
+-- make the packet NSID aware
+-- we pass empty string
+res, msg = sdns.add_nsid(dns, "")
+assert(res == 0)
+assert(msg == nil)
 
-    bin_data, msg = sdns.to_network(dns)
-    assert(bin ~= nil)
-    assert(msg == nil)
+bin_data, msg = sdns.to_network(dns)
+assert(bin_data ~= nil)
+assert(msg == nil)
 
-    -- now you can send the packet to 8.8.8.8
+-- now you can send the packet to 8.8.8.8
 ```
 ------------------------------------------------------------------
 
@@ -458,39 +458,46 @@ Here is the example of create a NSID-aware packet to send it to google 8.8.8.8
 
 This function returns the NSID string of the DNS packet if there exists any. If there is no NSID string in the DNS packet, it returns an error message. Usually, you need to first ask for an NSID from the server so that the server send it back. Here is an example of creating an NSID-aware DNS packet, send it to the server and print the response NSID of the server.
 ```lua
-    local sdns = require("sdnslib")
-    assert (sdns)
+local sdns = require("libsdns")
+assert (sdns)
 
-    -- create a query for asking A record of google.com
-    dns, msg = sdns.create_query("google.com", "A", "IN")
-    assert (dns ~= nil)
-    assert (msg == nil)
+-- create a query for asking A record of google.com
+dns, msg = sdns.create_query("google.com", "A", "IN")
+assert (dns ~= nil)
+assert (msg == nil)
 
-    -- make the packet NSID aware
-    -- we pass empty string
-    res, msg = sdns.add_nsid(dns, "")
-    assert(res == 0)
-    assert(msg == nil)
+-- make the packet NSID aware
+-- we pass empty string
+res, msg = sdns.add_nsid(dns, "")
+assert(res == 0)
+assert(msg == nil)
 
-    bin_data, msg = sdns.to_network(dns)
-    assert(bin ~= nil)
-    assert(msg == nil)
+bin_data, msg = sdns.to_network(dns)
+assert(bin_data ~= nil)
+assert(msg == nil)
 
-    -- now you can send the packet to 8.8.8.8
-    -- assuming that the binary result from 8.8.8.8
-    -- is stored in 'result_data'
+-- now you can send the packet to 8.8.8.8
+-- assuming that the binary result from 8.8.8.8
+-- is stored in 'result_data'
+local tbl_send = {
+    dstport=53, timeout=3,
+    dstip="1.1.1.1", to_send  = bin_data
+}
+result_data, msg = sdns.send_udp(tbl_send)
+assert(result_data)
 
-    response, msg = sdns.from_network(result_data)
-    assert(response ~= nil)
-    assert(msg == nil)
 
-    nsid, msg = sdns.add_nsid(response)
+response, msg = sdns.from_network(result_data)
+assert(response ~= nil)
+assert(msg == nil)
 
-    if (nsid != nil) then
-        print("NSID: ", nsid)
-    else
-        print("ERROR in NSID data: ", msg)
-    end
+nsid, msg = sdns.get_nsid(response)
+
+if (nsid ~= nil) then
+    print("NSID: ", nsid)
+else
+    print("ERROR in NSID data: ", msg)
+end
 ```
 ------------------------------------------------------------------
 #### __get_header__(sdns_context)
@@ -503,32 +510,32 @@ This function returns the NSID string of the DNS packet if there exists any. If 
 This function returns the header of the DNS packet as a Lua table. All the keys of the table are lowercase. Below, is an example of how to work with this API.
 
 ```lua
-    -- load sdns and inspect modules
-    local sdns = require "sdnslib"
-    local inspect = require "inspect"
+-- load sdns and inspect modules
+local sdns = require "libsdns"
+local inspect = require "inspect"
 
-    -- create a query packet
-    local dns = sdns.create_query("msn.com", "a", "in");
-    assert(dns ~= nil)
+-- create a query packet
+local dns = sdns.create_query("msn.com", "a", "in");
+assert(dns ~= nil)
 
-    header, msg = sdns.get_header(dns)
-    assert(msg == nil)
-    assert(header ~= nil)
+header, msg = sdns.get_header(dns)
+assert(msg == nil)
+assert(header ~= nil)
 
-    print(inspect(header))
-    -- here is the output
-    --[[
-    {
-        aa = 0, ad = 0,
-        ancount = 0, arcount = 1,
-        cd = 0, id = 62238,
-        nscount = 0, opcode = 0,
-        qdcount = 1, qr = 0,
-        ra = 0, rcode = 0,
-        rd = 1, tc = 0,
-        z = 0
-    }
-    --]]
+print(inspect(header))
+-- here is the output
+--[[
+{
+    aa = 0, ad = 0,
+    ancount = 0, arcount = 1,
+    cd = 0, id = 62238,
+    nscount = 0, opcode = 0,
+    qdcount = 1, qr = 0,
+    ra = 0, rcode = 0,
+    rd = 1, tc = 0,
+    z = 0
+}
+--]]
 ```
 
 ------------------------------------------------------------------
@@ -609,16 +616,42 @@ to create a DNS context, it creates an EDNS0-aware DNS packet by adding OPT RR t
 don't want it (which is somehow weired!), you can use this function to safely remove it.
 
 ```lua
-    local sdns = require "sdnslib"
+local sdns = require "libsdns"
 
-    -- the packet we create here has empty EDNS0 
-    -- in its additional section
-    local dns = sdns.create_query("msn.com", "a", "in");
-    assert (dns ~= nil)
+-- the packet we create here has empty EDNS0 
+-- in its additional section
+local dns = sdns.create_query("msn.com", "a", "in");
+assert (dns ~= nil)
 
-    -- now we don't need edns0 and we want to remove it!
-    assert(sdns.remove_edns(dns) == 0)
+-- now we don't need edns0 and we want to remove it!
+assert(sdns.remove_edns(dns) == 0)
 
+-- let's send it to 1.1.1.1 and see the result header
+-- we should have arcount=0 in the response
+
+-- convert it to network
+to_network, msg = sdns.to_network(dns)
+assert(to_network ~= nil)
+assert(msg == nil)
+
+
+local tbl_send = {
+    dstport=53, timeout=3,
+    dstip="1.1.1.1", to_send = to_network
+}
+response, msg = sdns.send_udp(tbl_send)
+assert(response)
+assert(msg == nil)
+
+-- convert to DNS packet and print header
+answer, msg = sdns.from_network(response)
+assert(answer)
+assert(msg == nil)
+
+header, msg = sdns.get_header(answer)
+assert(header)
+assert(msg == nil)
+print("Number of additional section in the response:", header.arcount)
 ```
 
 ------------------------------------------------------------------
@@ -636,59 +669,61 @@ Assuming that you asked for the A record of yahoo.com and the received packet ha
 The returned result is a table exactly with the same syntax of the tables you pass to add_rr_* functions. Here is an example of asking SOA of google:
 
 ```lua
-    local netlib = require "sdnsnetlib"
-    local sdns = require "sdnslib"
-    local inspect = require "inspect"
+local sdns = require "libsdns"
+local inspect = require "inspect"
 
-    -- create a query packet asking for SOA
-    -- of google.com domain name
-    dns = sdns.create_query("google.com", "soa", "in");
-    assert (dns ~= nil)
+-- create a query packet asking for SOA
+-- of google.com domain name
+dns = sdns.create_query("google.com", "soa", "in");
+assert (dns ~= nil)
 
-    -- params for the UDP request
-    local datatbl = {
-        to_send=to_send, 
-        dstip="1.1.1.1",
-        dstport=53, timeout=3
+-- convert it to network bytes
+local to_send = sdns.to_network(dns)
+assert(to_send)
+
+-- params for the UDP request
+local datatbl = {
+    to_send=to_send, 
+    dstip="1.1.1.1",
+    dstport=53, timeout=3
+}
+-- send a UDP request to cloudflare DNS
+data, msg = sdns.send_udp(datatbl)
+assert(msg == nil)
+assert (data ~= nil)
+
+-- convert network data to DNS packet
+local response, msg = sdns.from_network(data)
+assert(response ~= nil)
+assert(msg == nil)
+
+-- getting the first (and only answer)
+ans, msg = sdns.get_answer(response, 1)
+print(inspect(ans))
+
+-- this is what you get in the output
+--[[
+    {
+        class = "IN",
+        name = "google.com.",
+        rdata = {
+            expire = 1800,
+            minimum = 60,
+            mname = "ns1.google.com.",
+            refresh = 900,
+            retry = 900,
+            rname = "dns-admin.google.com.",
+            serial = 653161262
+        },
+        ttl = 32,
+        type = "SOA"
     }
-    -- send a UDP request to cloudflare DNS
-    data, msg = netlib.send_udp(datatbl)
-    assert(msg == nil)
-    assert (data ~= nil)
-
-    -- convert network data to DNS packet
-    local response, msg = sdns.from_network(data)
-    assert(response ~= nil)
-    assert(msg == nil)
-
-    -- getting the first (and only answer)
-    ans, msg = sdns.get_answer(response, 1)
-    print(inspect(ans))
-
-    -- this is what you get in the output
-    --[[
-        {
-            class = "IN",
-            name = "google.com.",
-            rdata = {
-                expire = 1800,
-                minimum = 60,
-                mname = "ns1.google.com.",
-                refresh = 900,
-                retry = 900,
-                rname = "dns-admin.google.com.",
-                serial = 653161262
-            },
-            ttl = 32,
-            type = "SOA"
-        }
-    --]]
+--]]
 ```
 
 Another example is printing all the TXT records of the google.com domain name:
 ```lua
-local netlib = require "sdnsnetlib"
-local sdns = require "sdnslib"
+local sdns = require "libsdns"
 local inspect = require "inspect"
 
 local dns = sdns.create_query("google.com", "txt", "in");
@@ -704,7 +739,7 @@ assert(to_send ~= nil)
 local datatbl = {to_send=to_send, dstip="1.1.1.1",
                  dstport=53, timeout=3}
 
-data, msg = netlib.send_udp(datatbl)
+data, msg = sdns.send_udp(datatbl)
 assert(msg == nil)
 assert (data ~= nil)
 
@@ -721,8 +756,9 @@ for i=1, header.ancount do
     ans, msg = sdns.get_answer(response, i)
     assert(ans ~= nil)
     assert(msg == nil)
-    print(i, ". ", ans.rdata.txtdata)
+    print(string.format("%d.%s", i, ans.rdata.txtdata))
 end
+
 --[[
     The output of the code is:
     1. cisco-ci-domain-verification=479146de172eb01ddee38b1a455ab9e8bb51542ddd7f1fa298557dfa7b22d963
@@ -760,8 +796,7 @@ its authoritative name server.
 
 ```lua
 -- loading the necessary libraries
-local netlib = require "sdnsnetlib"
-local sdns = require "sdnslib"
+local sdns = require "libsdns"
 local inspect = require "inspect"
 
 -- create a simple query packet asking for NS of Google
@@ -782,7 +817,7 @@ local datatbl = {to_send=to_send, dstip="216.239.32.10",
               dstport=53, timeout=3}
 
 -- sending the request
-data, msg = netlib.send_udp(datatbl)
+data, msg = sdns.send_udp(datatbl)
 assert(msg == nil)
 assert (data ~= nil)
 
@@ -798,6 +833,8 @@ print(string.format("The packet has %d records in the additional section", heade
 -- iterate over the additional section to get the RRs
 -- the last one is EDNS0 and the function returns (nil, nil)
 -- and we don't print it.
+assert(sdns.get_additional)
+local num = header.arcount or 0
 for i=1, header.arcount do
     -- one of the additional records might be a OPT (e.g., cookie) which
     -- this function can not fetch it and will return nil
@@ -838,8 +875,7 @@ In the following example, I print the authority section of the respose of the qu
 
 ```lua
 -- loads the necessary modules
-local netlib = require "sdnsnetlib"
-local sdns = require "sdnslib"
+local sdns = require "libsdns"
 local inspect = require "inspect"
 
 -- create a query DNS packet
@@ -859,7 +895,7 @@ local datatbl = {to_send=to_send, dstip="192.48.79.30",
               dstport=53, timeout=3}
 
 -- sending the query
-data, msg = netlib.send_udp(datatbl)
+data, msg = sdns.send_udp(datatbl)
 assert(msg == nil)
 assert (data ~= nil)
 
