@@ -5,6 +5,8 @@ This page gives you all the necessary information about the Lua exposed API of s
 I have tested the code with **Lua5.4**. It should work for
 Lua5.3 and maybe Lua5.2 but it definitely not work with Lua5.1.
 
+This documentation has a lot of working examples all tested with lua5.4 on a 64-bit Ubuntu 24.04 machine.
+
 To use the Lua binding, you can make the package using **luarocks** or compile the library manually.
 
 Here is the description of the provided functions in Lua:
