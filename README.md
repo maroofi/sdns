@@ -26,8 +26,20 @@ sudo apt-get install libjansson-dev
 make with-json
 ```
 
+3. If you want to build the library with lua binding, you must have lua installed. I only show the 5.4 version but you can build it
+for 5.3 and 5.2 as well:
+```
+# make sure you have lua dev installed
+sudo apt-get install liblua5.4-dv lua5.4
 
-Both will create a `bin` directory and inside you will have `libsdns.so` file.
+# now you can build the library
+make with-lua
+```
+
+The make file is quite easy and you can change it to whatever you want. You can also manually build the library as it has only 5 .C files.
+
+
+make commmand will create a  `bin` directory and inside you will have `libsdns.so` file.
 
 Now you can use it in your project by passing `-lsdns` switch. For example, here is the command to build the `test1.c` file in `test` directory:
 

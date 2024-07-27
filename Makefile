@@ -2,8 +2,8 @@ CC := gcc
 CFLAGS := -I./include -Wall -Werror
 CLIBS := -ljansson
 SHELL = /bin/bash
-LUALIB=lua
-LUAINCDIR=/usr/include
+LUALIB=lua5.4
+LUAINCDIR=/usr/include/lua5.4
 LUAMLIB=-lm
 LIBNAME = libsdns.so
 ONLY_SDNS_CFILE=sdns.c sdns_api.c sdns_dynamic_buffer.c sdns_utils.c sdns_print.c
@@ -33,7 +33,7 @@ with-lua: dummy
 
 all: dummy
 	$(CC) -c $(CFLAGS) -shared -fPIC -Wl,-E $(addprefix ./src/, $(ONLY_SDNS_CFILE)) $(addprefix ./src/, $(SDNS_JSON_CFILE)) $(addprefix ./src/, $(SDNS_LUA_CFILE)) -I$(LUAINCDIR)
-	$(CC) $(CFLAGS) -o $(LIBNAME) -fPIC -shared  *.o   $(CLIBS) 
+	$(CC) $(CFLAGS) -o $(LIBNAME) -fPIC -shared  *.o   $(CLIBS) -l$(LUALIB) $(LUAMLIB)
 	@rm -f *.o
 	@mv $(LIBNAME) bin/$(LIBNAME)
 

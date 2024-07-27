@@ -15,6 +15,8 @@ Here is the description of the provided functions in Lua:
     * [print_dns() - Print a DNS packet](#print_dnssdns_context)
     * [from_network() - Converts binary network data to a DNS packet](#from_networkdata)
     * [to_network() - Converts a DNS packet to network binary data](#to_networksdns_context)
+    * [send_udp() - Sends a DNS packet over UDP](#send_udptbl-to-send)
+    * [send_tcp() - Sends a DNS packet over TCP](#send_tcptbl-to-send)
     * [add_rr_A() - Adds A RR to a DNS packet](#add_rr_asdns_context-table-data)
     * [add_rr_AAAA() - Adds AAAA RR to a DNS packet](#add_rr_aaaasdns_context-table-data)
     * [add_rr_NS() - Adds NS RR to a DNS packet](#add_rr_nssdns_context-table-data)
@@ -87,6 +89,48 @@ This function receives the binary data and try to convert it to a DNS packet (if
 After creating our DNS packet, we need to convert it to binary data in order to send it over the network. This function converts DNS context to binary data ready to be sent.
 
 ------------------------------------------------------------------
+#### __send_udp__(tbl-to-send)
+    - returns:
+        - (result-string, nil) on success
+        - (nil, err-string) on failure
+    - param:
+        - tbl-to-send: This is the only input parameter and it's a table with 
+        the following keys:
+            - dstport: (integer): port number to send the data to
+            - dnsip: (string): IP address of receiver of the data
+            - timeout (integer): timeout to wait for socket operation
+            - to_send: (string): the data you want to send over the socket
+    
+A very typical example of using this function is a scenario like this:
+1. we create a DNS query packet using __create_query()__ function.
+2. Converting the DNS query packet (step 1) to network data using __to_network()__
+3. Using __send_udp()__, we send the data to cloudflare resolver
+4. Convert the result of step 3 to DNS packet using __from_network()__
+5. print out the DNS packet of step 4 by using __print_dns()__ function.
+
+-------------------------------------------------------------------
+#### __send_tcp__(tbl-to-send)
+    - returns:
+        - (result-string, nil) on success
+        - (nil, err-string) on failure
+    - param:
+        - tbl-to-send: This is the only input parameter and it's a table with 
+        the following keys:
+            - dstport: (integer): port number to send the data to
+            - dnsip: (string): IP address of receiver of the data
+            - timeout (integer): timeout to wait for socket operation
+            - to_send: (string): the data you want to send over the socket
+    
+This function works exactly like __send_udp()__ but uses TCP to send and receive
+data. Note that this function is only good for DNS data since it adds two extra
+bytes to the beginning of the DNS data to show the length of the data. Therefore,
+it's not suitable for other types of TCP transactions.
+
+Considering the scenario of __send_udp()__ function. After step 4, we can check the DNS header TC bit to see if we need to switch to TCP or not. if TC is equal to 1, it means that we need to use __send_tcp()__ to send the payload again.
+
+-----------------------------------------------------------------
+
+
 #### __add_rr_A__(sdns_context, table-data)
     - returns:
         - (0, nil) on success

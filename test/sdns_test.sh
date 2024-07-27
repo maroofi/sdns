@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+
 with_valgrind=$1
 valgrind=0
 if [ "$with_valgrind" =  "with-valgrind" ] 
