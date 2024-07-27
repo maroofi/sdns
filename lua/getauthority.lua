@@ -1,7 +1,14 @@
-#!/usr/bin/env lua
+--[[
+--  This code asks a gtld-server for the NS records of google.com
+--  gtld-servers returns the answer in the authority section.
+--
+--  We parse the DNS response and print the answer on the console.
+--
+--
+-- Compiled and tested successfully on a 64-bit Ubuntu 24.4 machine
+--]]
 
-local netlib = require "sdnsnetlib"
-local sdns = require "sdnslib"
+local sdns = require "libsdns"
 local inspect = require "inspect"
 
 local dns = sdns.create_query("google.com", "ns", "in");
@@ -17,7 +24,7 @@ assert(to_send ~= nil)
 local datatbl = {to_send=to_send, dstip="192.48.79.30",     -- asking j.gtld-servers.net
               dstport=53, timeout=3}
 
-data, msg = netlib.send_udp(datatbl)
+data, msg = sdns.send_udp(datatbl)
 assert(msg == nil)
 assert (data ~= nil)
 
@@ -31,4 +38,3 @@ for i=1, header.nscount do
     ans, msg = sdns.get_authority(response, i)
     print(string.format("%d - %s", i, ans.rdata.nsname))
 end
-
