@@ -26,15 +26,27 @@ sudo apt-get install libjansson-dev
 make with-json
 ```
 
-3. If you want to build the library with lua binding, you must have lua installed. I only show the 5.4 version but you can build it
+3. If you want to build the library with Lua binding, you must have Lua installed. I only show the 5.4 version but you can build it
 for 5.3 and 5.2 as well:
-```
-# make sure you have lua dev installed
-sudo apt-get install liblua5.4-dv lua5.4
+
+```bash
+# make sure you have Lua dev installed
+sudo apt-get install liblua5.4-dev lua5.4
 
 # now you can build the library
 make with-lua
 ```
+
+4. To have both lua binding and `sdns_json_*` functions:
+
+```bash
+# make sure you have lua and libjansson installed
+sudo apt-get install liblua5.4-dev lua5.4 libjansson-dev
+
+# and then
+make all
+```
+
 
 The make file is quite easy and you can change it to whatever you want. You can also manually build the library as it has only 5 .C files.
 
@@ -126,5 +138,5 @@ int main(){
 
 [The second tutorial](./Tutorials/tutorial_2.md): Creating a DNS packet sniffer (naive-wireshark for DNS)
 
-
+[here is the Lua tutorial](./lua/DOCLUASDNS.md)
 
