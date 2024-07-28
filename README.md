@@ -1,5 +1,6 @@
 [![C-build-and-test](https://github.com/maroofi/sdns/actions/workflows/c-cpp.yml/badge.svg)](https://github.com/maroofi/sdns/actions/workflows/c-cpp.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 ![Lua](https://img.shields.io/badge/lua-%232C2D72.svg?style=for-the-badge&logo=lua&logoColor=white)
 ![C](https://img.shields.io/badge/c-%2300599C.svg?style=for-the-badge&logo=c&logoColor=white)
 ### sdns - low-level DNS library in C
