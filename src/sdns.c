@@ -152,13 +152,17 @@ static int decode_name(sdns_context * ctx, char ** decoded_name){
             // what is offset > size of the packet?
             if (offset > ctx->raw_len)          // we don't jump somewhere that does not exist!
                 return SDNS_ERROR_BUFFER_TOO_SHORT;
-            // forward jump and same-place jump is not allowed!
+            // forward jump is not allowed!
             if (ctx->raw + offset >= ctx->raw + consumed){
                 return SDNS_ERROR_ILLEGAL_COMPRESSION;
             }
             // we are good to jump now
             DEBUG("We need to jump to %d\n", offset);
             if (tmp_buff >= sofar){
+                // same-place (loop) is not allowed
+                if (ctx->raw + offset + 1 == ctx->raw + consumed){
+                    return SDNS_ERROR_ILLEGAL_COMPRESSION;
+                }
                 consumed += 1;
                 sofar += 1;
             }
