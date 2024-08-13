@@ -509,6 +509,70 @@ int sdns_add_rr_additional_NID(sdns_context * dns, char * name, uint32_t ttl, ui
     return 0;   // success
 }
 
+int sdns_add_rr_answer_CAA(sdns_context * dns, char * name, uint32_t ttl, uint8_t flag, char * tag, char * value){
+    if (NULL == dns)
+        return SDNS_ERROR_BUFFER_IS_NULL;
+    if ( tag == NULL){
+        return SDNS_ERROR_BUFFER_IS_NULL;
+    }
+    char * new_tag = safe_strdup(tag);
+    char * new_value = value == NULL?NULL:safe_strdup(value);
+    sdns_rr_CAA * caa = sdns_init_rr_CAA(flag, new_tag, strlen(tag), new_value, new_value == NULL?0:strlen(new_value));
+    char * section_name = safe_strdup(name);
+    sdns_rr * rr = sdns_init_rr(section_name, sdns_rr_type_CAA, sdns_q_class_IN, ttl, 0, 1, (void*) caa);
+    int res = sdns_add_answer_section(dns, rr);
+    if (res != 0){
+        sdns_free_rr_CAA(caa);
+        free(rr->name);
+        free(rr);
+        return res;
+    }
+    return 0;   // success
+}
+
+int sdns_add_rr_authority_CAA(sdns_context * dns, char * name, uint32_t ttl, uint8_t flag, char * tag, char * value){
+    if (NULL == dns)
+        return SDNS_ERROR_BUFFER_IS_NULL;
+    if ( tag == NULL){
+        return SDNS_ERROR_BUFFER_IS_NULL;
+    }
+    char * new_tag = safe_strdup(tag);
+    char * new_value = value == NULL?NULL:safe_strdup(value);
+    sdns_rr_CAA * caa = sdns_init_rr_CAA(flag, new_tag, strlen(tag), new_value, new_value == NULL?0:strlen(new_value));
+    char * section_name = safe_strdup(name);
+    sdns_rr * rr = sdns_init_rr(section_name, sdns_rr_type_CAA, sdns_q_class_IN, ttl, 0, 1, (void*) caa);
+    int res = sdns_add_authority_section(dns, rr);
+    if (res != 0){
+        sdns_free_rr_CAA(caa);
+        free(rr->name);
+        free(rr);
+        return res;
+    }
+    return 0;   // success
+}
+
+int sdns_add_rr_additional_CAA(sdns_context * dns, char * name, uint32_t ttl, uint8_t flag, char * tag, char * value){
+    if (NULL == dns)
+        return SDNS_ERROR_BUFFER_IS_NULL;
+    if ( tag == NULL){
+        return SDNS_ERROR_BUFFER_IS_NULL;
+    }
+    char * new_tag = safe_strdup(tag);
+    char * new_value = value == NULL?NULL:safe_strdup(value);
+    sdns_rr_CAA * caa = sdns_init_rr_CAA(flag, new_tag, strlen(tag), new_value, new_value == NULL?0:strlen(new_value));
+    char * section_name = safe_strdup(name);
+    sdns_rr * rr = sdns_init_rr(section_name, sdns_rr_type_CAA, sdns_q_class_IN, ttl, 0, 1, (void*) caa);
+    int res = sdns_add_additional_section(dns, rr);
+    if (res != 0){
+        sdns_free_rr_CAA(caa);
+        free(rr->name);
+        free(rr);
+        return res;
+    }
+    return 0;   // success
+}
+
+
 int sdns_add_rr_answer_MX(sdns_context * dns, char * name, uint32_t ttl, uint16_t preference, char * exchange){
     if (NULL == dns)
         return SDNS_ERROR_BUFFER_IS_NULL;

@@ -237,5 +237,10 @@ def func_test_json_srv(data):
     return 0
 # end def
 
+def func_testapi_create_caa_answer(data):
+    assert(data.strip() == "success")
+    return 0
+# end def
+
 
 

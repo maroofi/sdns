@@ -663,6 +663,38 @@ int sdns_add_rr_authority_NID(sdns_context * dns, char * name, uint32_t ttl, uin
  */
 int sdns_add_rr_additional_NID(sdns_context * dns, char * name, uint32_t ttl, uint16_t preference, char * nodeid);
 
+
+/**
+ * @brief Adds CAA record to the asnwer section of the DNS context.
+ * @param dns a pointer to the DNS context
+ * @param name name of the section
+ * @param ttl TTL value of the seciton
+ * @param flag Flag value of the CAA record
+ * @param tag A pointer to a NULL-terminated string for tag field of CAA
+ * @param value A pointer to a null-terminated string for value filed of CAA
+ *
+ * The user can free the memory
+ * allocated for 'tag' and 'value' (if it's necessary) after calling this function. 
+ * This function copies the 'tag' and 'value' to its internal memory.
+ *
+ * @return 0 on success, other values on failure.
+ */
+int sdns_add_rr_answer_CAA(sdns_context * dns, char * name, uint32_t ttl, uint8_t flag, char * tag, char * value);
+
+/**
+ * @brief Adds CAA record to the asnwer section of the DNS context.
+ *
+ * Check the documentation of the sdns_add_rr_answer_CAA() for more info.
+ */
+int sdns_add_rr_authority_CAA(sdns_context * dns, char * name, uint32_t ttl, uint8_t flag, char * tag, char * value);
+
+/**
+ * @brief Adds CAA record to the asnwer section of the DNS context.
+ *
+ * Check the documentation of the sdns_add_rr_answer_CAA() for more info.
+ */
+int sdns_add_rr_additional_CAA(sdns_context * dns, char * name, uint32_t ttl, uint8_t flag, char * tag, char * value);
+
 /**
  * @brief Returns a copy of the question section of the DNS context
  * @param dns an instance of ::sdns_context

@@ -501,6 +501,29 @@ static int _encode_write_rr_PTR(sdns_context * ctx, dyn_buffer* db, sdns_rr* tmp
     return sdns_rcode_NoError;
 }
 
+static int _encode_write_rr_CAA(sdns_context * ctx, dyn_buffer * db, sdns_rr *tmprr){
+    sdns_rr_CAA * caa = (sdns_rr_CAA*) tmprr->psdns_rr;
+    if (caa->tag == NULL || caa->tag_len == 0){
+        return SDNS_ERROR_BUFFER_IS_NULL;
+    }
+    char tmp_bytes[10] = {0x00};
+    // calculates rdlength first.
+    // rdlength = flag (1 byte) + tag_len (1 byte) + len(tag) + len(value)
+    int rdlength = caa->tag_len + caa->value_len + 2;
+    tmp_bytes[0] = (uint8_t) (rdlength >> 8 & 0xFF);
+    tmp_bytes[1] = (uint8_t)(rdlength & 0xFF);
+    dyn_buffer_append(db, tmp_bytes, 2);    // rdlength
+    // flag
+    tmp_bytes[0] = caa->flag;
+    dyn_buffer_append(db, tmp_bytes, 1);
+    tmp_bytes[0] = caa->tag_len;
+    dyn_buffer_append(db, tmp_bytes, 1);
+    dyn_buffer_append(db, caa->tag, caa->tag_len);
+    if (caa->value_len > 0)
+        dyn_buffer_append(db, caa->value, caa->value_len);
+    return sdns_rcode_NoError;
+}
+
 static int _encode_write_rr_CNAME(sdns_context * ctx, dyn_buffer* db, sdns_rr* tmprr){
     char buffer[256] = {0x00};
     char tmp_bytes[10] = {0x00};
@@ -837,7 +860,7 @@ static int _encode_write_rr_L64(sdns_context * ctx, dyn_buffer * db, sdns_rr* tm
 }
 
 static int _encode_write_rr(sdns_context * ctx, dyn_buffer* db, sdns_rr* tmprr){
-    //TODO: implement URI, LP
+    //TODO: implement URI, LP, CAA
     // different strategies based on the typeof RR
     if (tmprr->type == sdns_rr_type_A)
         return _encode_write_rr_A(ctx, db, tmprr);
@@ -845,6 +868,8 @@ static int _encode_write_rr(sdns_context * ctx, dyn_buffer* db, sdns_rr* tmprr){
         return _encode_write_rr_NS(ctx, db, tmprr);
     if (tmprr->type == sdns_rr_type_PTR)
         return _encode_write_rr_PTR(ctx, db, tmprr);
+    if (tmprr->type == sdns_rr_type_CAA)
+        return _encode_write_rr_CAA(ctx, db, tmprr);
     if (tmprr->type == sdns_rr_type_CNAME)
         return _encode_write_rr_CNAME(ctx, db, tmprr);
     if (tmprr->type == sdns_rr_type_MX)
@@ -2495,6 +2520,8 @@ void * sdns_decode_rr_section(sdns_context* ctx, sdns_rr * rr_section){
             return (void*) sdns_decode_rr_HINFO(ctx, rr_section);
         case sdns_rr_type_URI:
             return (void*) sdns_decode_rr_URI(ctx, rr_section);
+        case sdns_rr_type_CAA:
+            return (void*) sdns_decode_rr_CAA(ctx, rr_section);
         default:
             // eventually replace this default by other RRs
             return NULL;
@@ -2645,6 +2672,8 @@ void * sdns_copy_rr_section(sdns_context * ctx, sdns_rr* rr_section){
 //            return (void*) sdns_copy_rr_LP(ctx, rr_section);
 //        case sdns_rr_type_L32:
 //            return (void*) sdns_copy_rr_L32(ctx, rr_section);
+//        case sdns_rr_type_CAA:
+//            return (void*) sdns_copy_rr_CAA(ctx, rr_section);
 //        case sdns_rr_type_L64:
 //            return (void*) sdns_copy_rr_L64(ctx, rr_section);
         case sdns_rr_type_NS:
@@ -2805,6 +2834,8 @@ void sdns_free_rr(sdns_rr * rr){
         return sdns_free_rr_NID((sdns_rr_NID*)tmp);
     else if (rr_type == sdns_rr_type_URI)
         return sdns_free_rr_URI((sdns_rr_URI*)tmp);
+    else if (rr_type == sdns_rr_type_CAA)
+        return sdns_free_rr_CAA((sdns_rr_CAA*)tmp);
     if (rr_type == sdns_rr_type_OPT){
         // we need to free the options of edns0
         sdns_opt_rdata * opt = rr->opt_rdata;
