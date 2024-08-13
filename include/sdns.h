@@ -653,6 +653,19 @@ typedef struct{
     char * FQDN;            ///< FQDN is a variable length field contains the DNS target name that is used to reference L32 and/or L64 records.
 }sdns_rr_LP;
 
+
+/**
+ * this is the structure of the CAA RR based on RFC 6844
+ */
+typedef struct{
+    uint8_t flag;           ///< 8 bit flag
+    char * tag;             ///< pointer to tag
+    uint8_t tag_len;        ///< length of the tag field (non-RFC field). tag is not null-terminated necessarily
+    uint16_t value_len;     ///< length of the value filed (non-RFC field). value is not null-terminated necessarily
+    char * value;           ///< pointer to value
+}sdns_rr_CAA;
+
+
 /**
  * The main structure of library.
  *
@@ -975,7 +988,10 @@ sdns_rr_NID * sdns_decode_rr_NID(sdns_context * ctx, sdns_rr* rr);
 sdns_rr_L32 * sdns_decode_rr_L32(sdns_context * ctx, sdns_rr* rr);
 sdns_rr_L64 * sdns_decode_rr_L64(sdns_context * ctx, sdns_rr* rr);
 sdns_rr_LP * sdns_decode_rr_LP(sdns_context * ctx, sdns_rr* rr);
+sdns_rr_CAA * sdns_decode_rr_CAA(sdns_context * ctx, sdns_rr * rr);
+
 sdns_opt_rdata * sdns_decode_rr_OPT(sdns_context * ctx, sdns_rr * rr);
+
 
 
 /**
@@ -1140,6 +1156,21 @@ sdns_rr_L64 * sdns_init_rr_L64(uint16_t preference, char * locator64);
  */
 sdns_rr_LP * sdns_init_rr_LP(uint16_t preference, char * fqdn);
 
+/**
+ * @brief Initialize a structure of ::sdns_rr_CAA
+ *
+ * @param flag one byte flag specified in Section 3 of RFC 6844
+ * @param tag a pointer to tag value specified in RFC 6844
+ * @param tag_len the length of the tag filed. max value can be 255.
+ * @param value a pointer to 'value' value specified in RFC 6844
+ * @pram
+ * NOTE: Do not free the 'tag' and 'value' after calling this mentod. This function does not
+ * copy the memory but use a pointer to the memory you allocated. Make sure it's a heap-allocatd memory to avoid
+ * memory leak.
+ *
+ * @return a pointer to ::sdns_rr_CAA structure on success and NULL on fail
+ */
+sdns_rr_CAA * sdns_init_rr_CAA(uint8_t flag, char * tag, uint8_t tag_len, char * value, uint16_t value_len);
 
 
 void sdns_free_opt_rdata(sdns_opt_rdata * opt);
@@ -1278,7 +1309,12 @@ void sdns_free_rr_L64(sdns_rr_L64 * l64);
  */
 void sdns_free_rr_LP(sdns_rr_LP * lp);
 
-
+/**
+ * @brief Free the memory of the structure of type ::sdns_rr_CAA
+ *
+ * @param caa A pointer to the structure
+ */
+void sdns_free_rr_CAA(sdns_rr_CAA * caa);
 
 
 int sdns_create_edns_option(uint16_t, uint16_t, char *, sdns_opt_rdata**);

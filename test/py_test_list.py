@@ -171,3 +171,71 @@ def func_test_create_response_from_query(data):
     assert(data.strip() == "success");
     return 0;
 # end def
+
+def func_test_caa(data):
+    assert(data.strip() == "success");
+    return 0;
+# end def
+
+
+def func_test_json_caa(data):
+    data = json.loads(data)
+    real_answer = json.loads(open("{}/json_real_for_test_json_caa.json".format(DATA_DIR)).read())
+    assert(Compare().check(data, real_answer) == NO_DIFF)
+    return 0
+# end def
+
+def func_test_json_lp(data):
+    data = json.loads(data)
+    real_answer = json.loads(open("{}/json_real_test_json_lp.json".format(DATA_DIR)).read())
+    assert(Compare().check(data, real_answer) == NO_DIFF)
+    return 0
+# end def
+
+def func_test_json_nid(data):
+    data = json.loads(data)
+    real_answer = json.loads(open("{}/json_real_test_json_nid.json".format(DATA_DIR)).read())
+    assert(Compare().check(data, real_answer) == NO_DIFF)
+    return 0
+# end def
+
+
+def func_test_json_a(data):
+    data = json.loads(data)
+    real_answer = json.loads(open("{}/json_real_test_json_a.json".format(DATA_DIR)).read())
+    assert(Compare().check(data, real_answer) == NO_DIFF)
+    return 0
+# end def
+
+def func_test_json_l32(data):
+    data = json.loads(data)
+    real_answer = json.loads(open("{}/json_real_test_json_l32.json".format(DATA_DIR)).read())
+    assert(Compare().check(data, real_answer) == NO_DIFF)
+    return 0
+# end def
+
+def func_test_json_l64(data):
+    data = json.loads(data)
+    real_answer = json.loads(open("{}/json_real_test_json_l64.json".format(DATA_DIR)).read())
+    assert(Compare().check(data, real_answer) == NO_DIFF)
+    return 0
+# end def
+
+
+def func_test_json_uri(data):
+    data = json.loads(data)
+    real_answer = json.loads(open("{}/json_real_test_json_uri.json".format(DATA_DIR)).read())
+    assert(Compare().check(data, real_answer) == NO_DIFF)
+    return 0
+# end def
+
+
+def func_test_json_srv(data):
+    data = json.loads(data)
+    real_answer = json.loads(open("{}/json_real_test_json_srv.json".format(DATA_DIR)).read())
+    assert(Compare().check(data, real_answer) == NO_DIFF)
+    return 0
+# end def
+
+
+

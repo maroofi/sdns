@@ -1,0 +1,60 @@
+{
+  "header": {
+    "ID": 39631,
+    "opcode": 0,
+    "rcode": "NoError",
+    "qdcount": 1,
+    "ancount": 1,
+    "arcount": 1,
+    "nscount": 0,
+    "flags": {
+      "qr": 1,
+      "aa": 1,
+      "tc": 0,
+      "rd": 1,
+      "ra": 0,
+      "z": 0,
+      "AD": 0,
+      "CD": 0
+    }
+  },
+  "question": {
+    "qname": "fakedomain.fake.",
+    "qclass": "IN",
+    "qtype": "LP"
+  },
+  "answer": [
+    {
+      "name": "fakedomain.fake.",
+      "class": "IN",
+      "type": "LP",
+      "ttl": 3600,
+      "rdlength": 27,
+      "rdata": {
+        "Preference": 10,
+        "fqdn": "l64-subnet1.example.com."
+      }
+    }
+  ],
+  "authority": [],
+  "additional": [
+    {
+      "name": "",
+      "ttl": {
+        "DO": 0,
+        "z": 0,
+        "extended_rcode": 0,
+        "version": 0
+      },
+      "udp_size": 1232,
+      "type": "OPT",
+      "rdata": [
+        {
+          "option_code": 10,
+          "option_length": 24,
+          "option_data": "126ea1322eab14ca0100000066bba94bb756fff45d431dbc"
+        }
+      ]
+    }
+  ]
+}

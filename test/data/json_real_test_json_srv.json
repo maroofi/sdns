@@ -1,0 +1,62 @@
+{
+  "header": {
+    "ID": 17791,
+    "opcode": 0,
+    "rcode": "NoError",
+    "qdcount": 1,
+    "ancount": 1,
+    "arcount": 1,
+    "nscount": 0,
+    "flags": {
+      "qr": 1,
+      "aa": 1,
+      "tc": 0,
+      "rd": 1,
+      "ra": 0,
+      "z": 0,
+      "AD": 0,
+      "CD": 0
+    }
+  },
+  "question": {
+    "qname": "fakedomain.fake.",
+    "qclass": "IN",
+    "qtype": "SRV"
+  },
+  "answer": [
+    {
+      "name": "fakedomain.fake.",
+      "class": "IN",
+      "type": "SRV",
+      "ttl": 3600,
+      "rdlength": 33,
+      "rdata": {
+        "port": 9,
+        "priority": 1,
+        "weight": 0,
+        "target": "sysadmins-box.example.com."
+      }
+    }
+  ],
+  "authority": [],
+  "additional": [
+    {
+      "name": "",
+      "ttl": {
+        "DO": 0,
+        "z": 0,
+        "extended_rcode": 0,
+        "version": 0
+      },
+      "udp_size": 1232,
+      "type": "OPT",
+      "rdata": [
+        {
+          "option_code": 10,
+          "option_length": 24,
+          "option_data": "de2c0a809f64484a0100000066bbb1d64219a7658e37a012"
+        }
+      ]
+    }
+  ]
+}

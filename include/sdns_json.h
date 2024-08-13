@@ -25,6 +25,7 @@ json_t * sdns_json_rr_NID(sdns_context * ctx, sdns_rr *rr);
 json_t * sdns_json_rr_L32(sdns_context * ctx, sdns_rr *rr);
 json_t * sdns_json_rr_L64(sdns_context * ctx, sdns_rr *rr);
 json_t * sdns_json_rr_LP(sdns_context * ctx, sdns_rr *rr);
+json_t * sdns_json_rr_CAA(sdns_context * ctx, sdns_rr *rr);
 json_t * sdns_json_rr_SOA(sdns_context * ctx, sdns_rr *rr);
 json_t * sdns_json_rr_NS(sdns_context * ctx, sdns_rr *rr);
 json_t * sdns_json_rr_TXT(sdns_context * ctx, sdns_rr *rr);

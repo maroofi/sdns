@@ -1,0 +1,60 @@
+{
+  "header": {
+    "ID": 57293,
+    "opcode": 0,
+    "rcode": "NoError",
+    "qdcount": 1,
+    "ancount": 1,
+    "arcount": 1,
+    "nscount": 0,
+    "flags": {
+      "qr": 1,
+      "aa": 1,
+      "tc": 0,
+      "rd": 1,
+      "ra": 0,
+      "z": 0,
+      "AD": 0,
+      "CD": 0
+    }
+  },
+  "question": {
+    "qname": "fakedomain.fake.",
+    "qclass": "IN",
+    "qtype": "NID"
+  },
+  "answer": [
+    {
+      "name": "fakedomain.fake.",
+      "class": "IN",
+      "type": "NID",
+      "ttl": 3600,
+      "rdlength": 10,
+      "rdata": {
+        "preference": 10,
+        "nodeid": "00144fffff20ee64"
+      }
+    }
+  ],
+  "authority": [],
+  "additional": [
+    {
+      "name": "",
+      "ttl": {
+        "DO": 0,
+        "z": 0,
+        "extended_rcode": 0,
+        "version": 0
+      },
+      "udp_size": 1232,
+      "type": "OPT",
+      "rdata": [
+        {
+          "option_code": 10,
+          "option_length": 24,
+          "option_data": "ec7ebbd1760eb7e80100000066bbad00c032b37f947f2791"
+        }
+      ]
+    }
+  ]
+}

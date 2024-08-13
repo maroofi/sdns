@@ -117,6 +117,8 @@ void sdns_neat_print_rr(sdns_context * ctx, sdns_rr * rr){
         return sdns_neat_print_rr_L64(ctx, rr);
     if (rr->type == sdns_rr_type_LP)
         return sdns_neat_print_rr_LP(ctx, rr);
+    if (rr->type == sdns_rr_type_CAA)
+        return sdns_neat_print_rr_CAA(ctx, rr);
     if (rr->type == sdns_rr_type_RRSIG)
         return sdns_neat_print_rr_RRSIG(ctx, rr);
     if (rr->type == sdns_rr_type_SRV)
@@ -505,6 +507,47 @@ void sdns_neat_print_rr_LP(sdns_context * ctx, sdns_rr * rr){
     if (rr->decoded == 0)
         sdns_free_rr_LP(lp);
 }
+
+void sdns_neat_print_rr_CAA(sdns_context * ctx, sdns_rr * rr){
+    char error_buffer[256] = {0x00};
+    char * err = error_buffer;
+    sdns_rr_CAA * caa = NULL;
+    if (rr->decoded)
+        caa = (sdns_rr_CAA*) rr->psdns_rr;
+    else
+        caa = sdns_decode_rr_CAA(ctx, rr);
+    if (NULL == caa){
+        if (ctx->err != 0){
+            sdns_error_string(ctx->err, &err);
+            fprintf(stdout, ";; ERROR: %s\n", err);
+        }
+        return;
+    }
+    char buff_type[20] = {0x00};
+    char buff_class[20] = {0x00};
+    sdns_rr_type_to_string(rr->type, buff_type);
+    sdns_class_to_string(rr->class, buff_class);
+    fprintf(stdout, "\t%s\t%u\t%s\t%s\t %d ",
+           rr->name, rr->ttl, buff_class, buff_type,
+           caa->flag);
+    if (caa->tag_len > 0){
+        for (int i=0; i< caa->tag_len; ++i){
+            fprintf(stdout, "%c", human_readible(caa->tag[i]));
+        }
+    }
+    if (caa->value != NULL){
+        fprintf(stdout, " ");
+        fprintf(stdout, "\"");
+        for (int i=0; i< caa->value_len; ++i){
+            fprintf(stdout, "%c", human_readible(caa->value[i]));
+        }
+        fprintf(stdout, "\"");
+    }
+    fprintf(stdout, "\n");
+    if (rr->decoded == 0)
+        sdns_free_rr_CAA(caa);
+}
+
 
 void sdns_neat_print_rr_L64(sdns_context * ctx, sdns_rr * rr){
     char error_buffer[256] = {0x00};

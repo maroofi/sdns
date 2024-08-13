@@ -77,6 +77,9 @@ void sdns_neat_print_rr_L64(sdns_context * ctx, sdns_rr * rr);
 /** Prints LP resource record */
 void sdns_neat_print_rr_LP(sdns_context * ctx, sdns_rr * rr);
 
+/** prints CAA resource record */
+void sdns_neat_print_rr_CAA(sdns_context * ctx, sdns_rr * rr);
+
 /** Prints HINFO resource record */
 void sdns_neat_print_rr_HINFO(sdns_context * ctx, sdns_rr * rr);
 

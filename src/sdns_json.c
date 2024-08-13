@@ -411,6 +411,8 @@ json_t * sdns_json_rr(sdns_context * ctx, sdns_rr * rr){
         return sdns_json_rr_L64(ctx, rr);
     if (rr->type == sdns_rr_type_LP)
         return sdns_json_rr_LP(ctx, rr);
+    if (rr->type == sdns_rr_type_CAA)
+        return sdns_json_rr_CAA(ctx, rr);
     if (rr->type == sdns_rr_type_OPT)
         return sdns_json_rr_OPT(ctx, rr);
     if (rr->type == sdns_rr_type_RRSIG)
@@ -889,6 +891,8 @@ json_t * sdns_json_rr_NID(sdns_context * ctx, sdns_rr * rr){
             sdns_free_rr_NID(nid);
         return NULL;
     }
+    if (rr->decoded == 00)
+        sdns_free_rr_NID(nid);
     return obj;
 }
 
@@ -920,6 +924,8 @@ json_t * sdns_json_rr_L32(sdns_context * ctx, sdns_rr * rr){
         json_decref(obj);
         return NULL;
     }
+    if (rr->decoded == 0)
+        sdns_free_rr_L32(l32);
     return obj;
 }
 
@@ -960,6 +966,8 @@ json_t * sdns_json_rr_L64(sdns_context * ctx, sdns_rr * rr){
         json_decref(obj);
         return NULL;
     }
+    if (rr->decoded == 0)
+        sdns_free_rr_L64(l64);
     return obj;
 }
 
@@ -991,13 +999,11 @@ json_t * sdns_json_rr_URI(sdns_context * ctx, sdns_rr *rr){
         json_decref(obj);
         return NULL;
     }
-    char * target = mem2hex(uri->Target, uri->target_len);
-    if (target != NULL){
-        if (json_object_set_new(obj, "target", json_stringn(target, uri->target_len * 2)) != 0){
+    if (uri->Target != NULL){
+        if (json_object_set_new(obj, "target", json_stringn(uri->Target, uri->target_len)) != 0){
             if (rr->decoded == 0)
                 sdns_free_rr_URI(uri);
             json_decref(obj);
-            free(target);
             return NULL;
         }
     }else{
@@ -1005,11 +1011,11 @@ json_t * sdns_json_rr_URI(sdns_context * ctx, sdns_rr *rr){
             if (rr->decoded == 0)
                 sdns_free_rr_URI(uri);
             json_decref(obj);
-            free(target);
             return NULL;
         }
     }
-    free(target);
+    if (rr->decoded == 0)
+        sdns_free_rr_URI(uri);
     return obj;
 }
 
@@ -1041,6 +1047,47 @@ json_t * sdns_json_rr_LP(sdns_context * ctx, sdns_rr *rr){
         json_decref(obj);
         return NULL;
     }
+    if (rr->decoded == 0)
+        sdns_free_rr_LP(lp);
+    return obj;
+}
+
+json_t * sdns_json_rr_CAA(sdns_context * ctx, sdns_rr *rr){
+    if (NULL == rr || NULL == ctx)
+        return NULL;
+    sdns_rr_CAA * caa = NULL;
+    if (rr->decoded)
+        caa = rr->psdns_rr;
+    else
+        caa = sdns_decode_rr_CAA(ctx, rr);
+    if (NULL == caa)
+        return NULL;
+    json_t * obj = json_object();
+    if (NULL == obj){
+        if (rr->decoded == 0)
+            sdns_free_rr_CAA(caa);
+        return NULL;
+    }
+    if (json_object_set_new(obj, "flag", json_integer(caa->flag)) != 0){
+        if (rr->decoded == 0)
+            sdns_free_rr_CAA(caa);
+        json_decref(obj);
+        return NULL;
+    }
+    if (json_object_set_new(obj, "tag", json_stringn(caa->tag, caa->tag_len)) != 0){
+        if (rr->decoded == 0)
+            sdns_free_rr_CAA(caa);
+        json_decref(obj);
+        return NULL;
+    }
+    if (json_object_set_new(obj, "value", json_stringn(caa->value, caa->value_len)) != 0){
+        if (rr->decoded == 0)
+            sdns_free_rr_CAA(caa);
+        json_decref(obj);
+        return NULL;
+    }
+    if (rr->decoded == 0)
+        sdns_free_rr_CAA(caa);
     return obj;
 }
 
@@ -1084,6 +1131,8 @@ json_t * sdns_json_rr_SRV(sdns_context * ctx, sdns_rr *rr){
         json_decref(obj);
         return NULL;
     }
+    if (rr->decoded == 0)
+        sdns_free_rr_SRV(srv);
     return obj;
 }
 

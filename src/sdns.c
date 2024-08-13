@@ -1075,6 +1075,14 @@ void sdns_free_rr_LP(sdns_rr_LP * lp){
     free(lp);
 }
 
+void sdns_free_rr_CAA(sdns_rr_CAA * caa){
+    if (NULL == caa)
+        return;
+    free(caa->tag);
+    free(caa->value);
+    free(caa);
+}
+
 sdns_rr_NID * sdns_init_rr_NID(uint16_t preference, char * nodeid){
     sdns_rr_NID * nid = (sdns_rr_NID *) malloc_or_abort(sizeof(sdns_rr_NID));
     nid->Preference = preference;
@@ -1102,6 +1110,16 @@ sdns_rr_LP * sdns_init_rr_LP(uint16_t preference, char* fqdn){
     lp->Preference = preference;
     lp->FQDN = fqdn;
     return lp;
+}
+
+sdns_rr_CAA * sdns_init_rr_CAA(uint8_t flag, char * tag, uint8_t tag_len, char * value, uint16_t value_len){
+   sdns_rr_CAA * caa = (sdns_rr_CAA*) malloc_or_abort(sizeof(sdns_rr_CAA));
+   caa->flag = flag;
+   caa->tag = tag;
+   caa->value = value;
+   caa->tag_len = tag_len;
+   caa->value_len = value_len;
+   return caa;
 }
 
 //initialize a TXT record structure
@@ -1394,6 +1412,62 @@ sdns_rr_LP * sdns_decode_rr_LP(sdns_context * ctx, sdns_rr * rr){
     ctx->err = 0;   // success
     return lp;
 }
+
+sdns_rr_CAA * sdns_decode_rr_CAA(sdns_context * ctx, sdns_rr * rr){
+    if (rr == NULL || ctx == NULL)
+        return NULL;        // impossible to hit
+    sdns_rr_CAA * caa = sdns_init_rr_CAA(0, NULL, 0, NULL, 0);
+    // don't need to check if caa is NULL or not. if it's null, the code breaks
+    ctx->cursor = rr->rdata;
+    if (ctx->raw_len - (ctx->cursor - ctx->raw) < rr->rdlength){
+        ERROR("packet is not long enough.....");
+        sdns_free_rr_CAA(caa);
+        ctx->err = SDNS_ERROR_RR_SECTION_MALFORMED;
+        return NULL;
+    }
+    uint16_t rdlength = rr->rdlength;
+    if (rdlength < 2){
+        ctx->err = SDNS_ERROR_RR_SECTION_MALFORMED;
+        sdns_free_rr_CAA(caa);
+        return NULL;
+    }
+    int cnt = 0;
+    char * rdata = rr->rdata;
+    char * upper_bound = ctx->raw + ctx->raw_len -1;
+    char read[1];
+    if (read_buffer(rdata, upper_bound, 1, read) != 0){
+        ctx->err = SDNS_ERROR_RR_SECTION_MALFORMED;
+        sdns_free_rr_CAA(caa);
+        return NULL;
+    }
+    cnt += 1;
+    caa->flag = (uint8_t)read[0];
+    // read tag size
+    if (read_buffer(rdata + cnt, upper_bound, 1, read) != 0){
+        ctx->err = SDNS_ERROR_RR_SECTION_MALFORMED;
+        sdns_free_rr_CAA(caa);
+        return NULL;
+    }
+    cnt += 1;
+    caa->tag_len = (uint8_t)read[0];
+    if (rdata + cnt + caa->tag_len > upper_bound){
+        ctx->err = SDNS_ERROR_RR_SECTION_MALFORMED;
+        sdns_free_rr_CAA(caa);
+        return NULL;
+    }
+    caa->tag = mem_copy(rdata + cnt, caa->tag_len);
+    int val_len = rdlength - 2 - caa->tag_len;
+    if (val_len < 0){
+        ctx->err = SDNS_ERROR_RR_SECTION_MALFORMED;
+        sdns_free_rr_CAA(caa);
+        return NULL;
+    }
+    if (val_len == 0)   // we are done
+        return caa;
+    caa->value = mem_copy(rdata + cnt + caa->tag_len, val_len);
+    caa->value_len = val_len;
+    return caa;
+}   
 
 sdns_rr_NID * sdns_decode_rr_NID(sdns_context * ctx, sdns_rr * rr){
     if (rr == NULL || ctx == NULL)
