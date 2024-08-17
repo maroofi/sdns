@@ -580,6 +580,128 @@ static int l_sdns_add_rr_A(lua_State * L){
     return 1;
 }
 
+static int l_sdns_add_rr_CAA(lua_State * L){
+    // returns 0 on success, (nil, msg) on fail
+    // section: string: possible values: 'answer', "additional', 'authority'
+    // input of the lua function: add_rr_CAA(dns, {name=, ttl=, section=, rdata={flag,  tag, value}})
+
+    luaL_checktype(L, -1, LUA_TTABLE);
+    if(lua_getfield(L, -1, "name") != LUA_TSTRING){
+        lua_pushnil(L);
+        lua_pushstring(L, "'name' key is missing or not a string");
+        return 2;
+    }
+    const char * name = luaL_checkstring(L, -1);
+    lua_pop(L, 1);
+
+    if (lua_getfield(L, -1, "section") != LUA_TSTRING){
+        lua_pushnil(L);
+        lua_pushstring(L, "'section' key is missing or not a string");
+        return 2;
+    }
+    const char * section = luaL_checkstring(L, -1);
+    lua_pop(L, 1);
+    if (lua_getfield(L, -1, "ttl") != LUA_TNUMBER){
+        lua_pushnil(L);
+        lua_pushstring(L, "'ttl' key is missing or not an integer");
+        return 2;
+    }
+    uint32_t ttl = luaL_checkinteger(L, -1);
+    lua_pop(L, 1);
+
+    if (lua_getfield(L, -1, "rdata") != LUA_TTABLE){
+        lua_pushnil(L);
+        lua_pushstring(L, "'rdata' field is missing or not a table type");
+        return 2;
+    }
+    if (lua_getfield(L, -1, "flag") != LUA_TNUMBER){
+        lua_pushnil(L);
+        lua_pushstring(L, "'flag' field of 'rdata' is missing or not a valid value");
+        return 2;
+    }
+    int flag = luaL_checkinteger(L, -1);
+    lua_pop(L, 1);
+    if (flag < 0 || flag > 255){
+        lua_pushnil(L);
+        lua_pushstring(L, "'flag' field of 'rdata' must be between 0 and 255");
+        return 2;
+    }
+    // tag
+    if (lua_getfield(L, -1, "tag") != LUA_TSTRING){
+        lua_pushnil(L);
+        lua_pushstring(L, "'tag' field of 'rdata' is missing or not a valid string");
+        return 2;
+    }
+    size_t tag_len = 0;
+    const char * tag = luaL_checklstring(L, -1, &tag_len);
+    if (tag == NULL || tag_len == 0){
+        lua_pushnil(L);
+        lua_pushstring(L, "'tag' field of 'rdata' can not be empty or NULL");
+        return 2;
+    }
+    lua_pop(L, 1);
+    // value
+    if (lua_getfield(L, -1, "value") != LUA_TSTRING){
+        lua_pushnil(L);
+        lua_pushstring(L, "'value' field of 'rdata' is missing or not a valid string");
+        return 2;
+    }
+    size_t value_len = 0;
+    const char * value = luaL_checklstring(L, -1, &value_len);
+    value_len = value == NULL?0:value_len;
+    lua_pop(L, 2);
+    
+    sdns_context ** dns = (sdns_context **)luaL_checkudata(L, -2, "metasdnslib");
+    if (*dns == NULL || tag == NULL || name == NULL || section == NULL){
+        lua_pushnil(L);
+        lua_pushstring(L, "Input string (tag, name, section) or DNS context is NULL");
+        return 2;
+    }
+    int check_section = 0;
+    check_section += safe_strcase_equal(section, "answer");
+    check_section += safe_strcase_equal(section, "authority");
+    check_section += safe_strcase_equal(section, "additional");
+    if (check_section > 2){
+        lua_pushnil(L);
+        lua_pushstring(L, "Section name must be one of 'answer', 'authority' or 'additional' values");
+        return 2;
+    }
+    char errbuffer[255] = {0x00};
+    char * errpointer = errbuffer;
+    if (safe_strcase_equal(section, "answer") == 0){
+        int res = sdns_add_rr_answer_CAA(*dns, (char*)name, (uint32_t)ttl, (uint8_t) flag, (char*) tag, (char*) value);
+        if (res == 0){
+            lua_pushinteger(L, 0);
+        }else{
+            lua_pushinteger(L, res);
+            sdns_error_string(res, &errpointer);
+            lua_pushstring(L, errpointer);
+            return 2;
+        }
+    }else if (safe_strcase_equal(section, "authority") == 0){
+        int res = sdns_add_rr_authority_CAA(*dns, (char*)name, (uint32_t)ttl, (uint8_t) flag, (char*) tag, (char*) value);
+        if (res == 0){
+            lua_pushinteger(L, 0);
+        }else{
+            lua_pushinteger(L, res);
+            sdns_error_string(res, &errpointer);
+            lua_pushstring(L, errpointer);
+            return 2;
+        }
+    }else{  // it's additional
+        int res = sdns_add_rr_additional_CAA(*dns, (char*)name, (uint32_t)ttl, (uint8_t) flag, (char*) tag, (char*) value);
+        if (res == 0){
+            lua_pushinteger(L, 0);
+        }else{
+            lua_pushinteger(L, res);
+            sdns_error_string(res, &errpointer);
+            lua_pushstring(L, errpointer);
+            return 2;
+        }
+    }
+    return 1;
+}
+
 static int l_sdns_add_rr_NS(lua_State * L){
     // returns 0 on success, (nil, msg) on fail
     // section: string: possible values: 'answer', 'additional', 'authority'
@@ -2052,6 +2174,23 @@ static int create_rdata_table(lua_State * L, sdns_rr * answer){
         lua_settable(L, -3);
         return 0;
     }
+    if (answer->type == sdns_rr_type_CAA){
+        lua_createtable(L, 0, 3);   // flag, tag, value
+        lua_pushstring(L, "flag");
+        lua_pushinteger(L, ((sdns_rr_CAA*)answer->psdns_rr)->flag);
+        lua_settable(L, -3);
+        lua_pushstring(L, "tag");
+        lua_pushlstring(L, ((sdns_rr_CAA*)answer->psdns_rr)->tag, ((sdns_rr_CAA*)answer->psdns_rr)->tag_len);
+        lua_settable(L, -3);
+        lua_pushstring(L, "value");
+        if (((sdns_rr_CAA*)answer->psdns_rr)->value == NULL){
+            lua_pushstring(L, "");
+        }else{
+            lua_pushlstring(L, ((sdns_rr_CAA*)answer->psdns_rr)->value, ((sdns_rr_CAA*)answer->psdns_rr)->value_len);
+        }
+        lua_settable(L, -3);
+        return 0;
+    }
     //TODO: add more RR here
     return 1;
 }
@@ -2329,6 +2468,7 @@ static const struct luaL_Reg sdns_lib_expose[] = {
     {"add_rr_TXT", l_sdns_add_rr_TXT},
     {"add_rr_CNAME", l_sdns_add_rr_CNAME},
     {"add_rr_NID", l_sdns_add_rr_NID},
+    {"add_rr_CAA", l_sdns_add_rr_CAA},
     {"add_nsid", l_sdns_add_nsid},
     {"get_nsid", l_sdns_get_value_nsid},
     {"get_header", l_sdns_get_header},

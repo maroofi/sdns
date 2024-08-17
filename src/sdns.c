@@ -2650,6 +2650,17 @@ sdns_rr_SRV * sdns_copy_rr_SRV(sdns_context * ctx, sdns_rr * rr){
     return copy;
 }
 
+sdns_rr_CAA * sdns_copy_rr_CAA(sdns_context * ctx, sdns_rr * rr){
+    sdns_rr_CAA * copy = sdns_init_rr_CAA(0, NULL, 0, NULL, 0);
+    sdns_rr_CAA * tmp = (sdns_rr_CAA*) rr->psdns_rr;
+    copy->flag = tmp->flag;
+    copy->tag_len = tmp->tag_len;
+    copy->value_len = tmp->value_len;
+    copy->tag = safe_strdup(tmp->tag);
+    copy->value = safe_strdup(tmp->value);
+    return copy;
+}
+
 void * sdns_copy_rr_section(sdns_context * ctx, sdns_rr* rr_section){
     //TODO: implement the code
     if (NULL == rr_section)
@@ -2672,8 +2683,8 @@ void * sdns_copy_rr_section(sdns_context * ctx, sdns_rr* rr_section){
 //            return (void*) sdns_copy_rr_LP(ctx, rr_section);
 //        case sdns_rr_type_L32:
 //            return (void*) sdns_copy_rr_L32(ctx, rr_section);
-//        case sdns_rr_type_CAA:
-//            return (void*) sdns_copy_rr_CAA(ctx, rr_section);
+        case sdns_rr_type_CAA:
+            return (void*) sdns_copy_rr_CAA(ctx, rr_section);
 //        case sdns_rr_type_L64:
 //            return (void*) sdns_copy_rr_L64(ctx, rr_section);
         case sdns_rr_type_NS:

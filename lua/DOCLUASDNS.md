@@ -22,6 +22,7 @@ Here is the description of the provided functions in Lua:
     * [add_rr_A() - Adds A RR to a DNS packet](#add_rr_asdns_context-table-data)
     * [add_rr_AAAA() - Adds AAAA RR to a DNS packet](#add_rr_aaaasdns_context-table-data)
     * [add_rr_NS() - Adds NS RR to a DNS packet](#add_rr_nssdns_context-table-data)
+    * [add_rr_CAA() - Adds CAA RR to a DNS packet](#add_rr_caasdns_context-table-data)
     * [add_rr_SOA() - Adds SOA RR to a DNS packet](#add_rr_soasdns_context-table-data)
     * [add_rr_MX() - Adds MX RR to a DNS packet](#add_rr_mxsdns_context-table-data)
     * [add_rr_PTR() - Adds PTR RR to a DNS packet](#add_rr_ptrsdns_context-table-data)
@@ -219,6 +220,80 @@ example of calling this method:
     assert(res == 0)
     assert (msg == nil)
 ```
+------------------------------------------------------------------
+
+#### __add_rr_CAA__(sdns_context, table-data)
+    - returns:
+        - (0, nil) on success
+        - (non-zero, err-msg-string) on failure
+    - params:
+        - sdns_context: the DNS context created by __create_query()__ or __from_network()__ function.
+        - table-data (table - mandatory): This input table contains the information regarding the `CAA` record you want to add to the DNS packet. It must contain all the following fields (all mandatory):
+            - *name* (string): the domain name for the NS record
+            - *ttl* (integer): the TTL value of the resource record
+            - *section* (string): the DNS section you want to add the NS record. It can be one of the: `answer`, `authority` and/or `additional` values.
+            - *rdata* (table): contains the following mandatory field:
+                - *flag* (integer): a value between 0 and 255
+                - *tag* (string): the tag name e.g., 'issue', 'issuewild', etc
+                - *value* (string): an optional value like 'entrust.net'
+
+example of calling this method:
+```lua
+    local tbl_caa = {
+        name="google.com", ttl=300,
+        section="additional",
+        rdata={flag=1, tag="issuewild", value="entrust.net"}
+    }
+    res, msg = sdns.add_rr_CAA(dns, tbl_caa)
+    assert(res == 0)
+    assert (msg == nil)
+```
+
+the following example lists the CAA records of the doamin `univ-grenoble-alpes.fr`:
+```lua
+local dns = sdns.create_query("univ-grenoble-alpes.fr", "CAA", "in");
+assert (dns ~= nil)
+
+local err, msg;
+
+
+to_send, msg = sdns.to_network(dns)
+assert(msg == nil)
+assert(to_send ~= nil)
+
+local datatbl = {to_send=to_send, dstip="1.1.1.1",
+                 dstport=53, timeout=3}
+
+data, msg = sdns.send_udp(datatbl)
+assert(msg == nil)
+assert (data ~= nil)
+
+local response, msg = sdns.from_network(data)
+assert(response ~= nil)
+assert(msg == nil)
+
+-- we will use the header to get the number
+-- of records in the answer section
+header, msg = sdns.get_header(response);
+
+-- enumerate the answer using ancount field of the header
+for i=1, header.ancount do
+    ans, msg = sdns.get_answer(response, i)
+    assert(ans ~= nil)
+    assert(msg == nil)
+    print(string.format("%d. %d %s %s", i, ans.rdata.flag, ans.rdata.tag, ans.rdata.value))
+end
+
+--[[
+the output is:
+    1. 0 issue sectigo.com
+    2. 0 issue digicert.com
+    3. 0 issuewild sectigo.com
+    4. 0 issuewild digicert.com
+
+--]]
+```
+
 ------------------------------------------------------------------
 
 #### __add_rr_SOA__(sdns_context, table-data)
