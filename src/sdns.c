@@ -421,7 +421,7 @@ static int _encode_label_compressed(char * label, dyn_buffer * db, char * buffer
     DEBUG("max len for search is %ld", db_max_len);
     DEBUG("tmp_len is: %ld", tmp_len);
     while (2){
-        match = (char *)memmem(db->buffer, db_max_len, tmp, tmp_len);
+        match = (char *)memmem(db->buffer, db_max_len, tmp, tmp_len+1);
         if (match != NULL){
             // we found a match, we can compress it from here
             DEBUG("We found a match in %ld", match - db->buffer);

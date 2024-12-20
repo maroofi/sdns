@@ -1,5 +1,17 @@
 #!/bin/bash
 
+if [[ "$1" = "-h" || "$1" = "--help" || "$1" = "-help" ]]
+then
+    echo ""
+    echo "Runing all the test w/o valgrind"
+    echo "Usage: ./sdns_test.sh"
+    echo "or"
+    echo "Usage: ./sdns_test.sh with-valgrind"
+    echo ""
+    exit 0
+fi
+
+
 with_valgrind=$1
 valgrind=0
 if [ "$with_valgrind" =  "with-valgrind" ] 
