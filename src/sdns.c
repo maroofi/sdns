@@ -105,23 +105,28 @@ static inline int read_buffer(char * buf, char * upper_bound, uint8_t num_bytes,
 static int decode_name(sdns_context * ctx, char ** decoded_name){
     DEBUG("Starting to decode the name part...");
     unsigned int consumed = ctx->cursor - ctx->raw;
+    DEBUG("'consumed' initial value: %d\n", consumed);
     if (consumed >= ctx->raw_len){  // make sure not consuming more than what exists!
         // there is nothing to decode
         return SDNS_ERROR_BUFFER_TOO_SHORT;
     }
     // max length of a label is 255 (is it?)
     char qname_result[256] = {0x00};
-    char * upper_bound = ctx->raw + ctx->raw_len -1;
+    char * upper_bound = ctx->raw + ctx->raw_len;
     uint32_t to_read = 0;
     char bytes[4] = {0x00};
     char * sofar = ctx->cursor;
     char * tmp_buff = ctx->cursor;
+    // I guess we can never have more than 255 jumps as this is the 
+    // maximum possible length of a name (one jump per character)
+    int num_of_jumps = 0;
+    char * start_from = ctx->cursor;
     int label_char_count = 0;
     int l = 0; // this tracks qname_result position to fill
     int success_read = 0;    // at the end of the code, after a successful reading this must be 1
     while (consumed <= ctx->raw_len){        // make sure it's not an infinite loop!
 
-        if (strlen(qname_result) > 255){    // name is too long
+        if (l > 255){    // name is too long
             ERROR("Qname length is more than 255 character");
             return SDNS_ERROR_HOSTNAME_TOO_LONG;
         }
@@ -131,49 +136,50 @@ static int decode_name(sdns_context * ctx, char ** decoded_name){
             return SDNS_ERROR_BUFFER_TOO_SHORT;
         }
         to_read = (uint8_t) bytes[0] & 0x000000FF;
-        if (tmp_buff >= sofar){      // only increase consume if we read forward in the packet raw data
+        if (tmp_buff > sofar){      // only increase consume if we read forward in the packet raw data
             consumed += 1;
             sofar += 1;
         }
         tmp_buff += 1;
         if (to_read == 0){        // if we reach NULL, we are done!
             //we are done
+            consumed += 1;
             success_read = 1;
             break;
         }
         if (to_read >= 192){       // the first 2bits are 11-> it is compressed
+            DEBUG("We entered the compressin algorithm section\n");
             // as it's compressed, we need to read another bytes for the offset
-            if (read_buffer(tmp_buff, upper_bound, 1, bytes) != 0){
+            if (tmp_buff + 1> upper_bound){
                 return SDNS_ERROR_BUFFER_TOO_SHORT;
             }
+            // read another byte from buffer
+            bytes[0] = *tmp_buff;
             tmp_buff += 1;
-            //to_read = (uint16_t)read_uint16_from_buffer(tmp_buff - 1) & 0x3FFF;
-            uint16_t offset = ((((uint8_t)to_read) & 0x3F) << 8) | (((uint8_t) bytes[0]) & 0xFF);
-            // what is offset > size of the packet?
-            if (offset > ctx->raw_len)          // we don't jump somewhere that does not exist!
-                return SDNS_ERROR_BUFFER_TOO_SHORT;
-            // forward jump is not allowed!
-            if (ctx->raw + offset >= ctx->raw + consumed){
-                return SDNS_ERROR_ILLEGAL_COMPRESSION;
-            }
-            // we are good to jump now
-            DEBUG("We need to jump to %d\n", offset);
             if (tmp_buff >= sofar){
-                // same-place (loop) is not allowed
-                if (ctx->raw + offset + 1 == ctx->raw + consumed){
-                    return SDNS_ERROR_ILLEGAL_COMPRESSION;
-                }
                 consumed += 1;
                 sofar += 1;
             }
+            uint16_t offset = ((((uint8_t)to_read) & 0x3F) << 8) | (((uint8_t) bytes[0]) & 0xFF);
+            if (ctx->raw + offset >= start_from){ // we can not jump forward or on the same place
+                return SDNS_ERROR_ILLEGAL_COMPRESSION;
+            }
+
             tmp_buff = ctx->raw + offset;
+
+            // check if we don't exceed the number of jumps
+            ++num_of_jumps;
+            if (num_of_jumps > 255){
+                return SDNS_ERROR_ILLEGAL_COMPRESSION;
+            }
             continue;
         }else if (to_read <= 63){  // no compression as the first 2 bits are 00
             //read one-character at a time and add it to qname buffer
-            if ((tmp_buff >= consumed + ctx->raw) && (consumed + to_read >= ctx->raw_len)){
+            if (tmp_buff + to_read >= ctx->raw + ctx->raw_len) {
                 ERROR("The length of the packet does not cover the name decoding...");
-                return sdns_rcode_FormErr;
+                return SDNS_ERROR_BUFFER_TOO_SHORT;
             }
+            DEBUG("We must read %d characters...\n", to_read);
             for (int i=0; i< to_read; ++i){
                 if (tmp_buff[i] == 0){
                     ERROR("NULL character found in the middle of qname");
@@ -192,6 +198,7 @@ static int decode_name(sdns_context * ctx, char ** decoded_name){
             l++;
             tmp_buff += to_read;
             if (tmp_buff >= sofar){
+                DEBUG("We add consumed += %d\n", to_read);
                 consumed += to_read;
                 sofar += to_read;
             }
@@ -206,7 +213,8 @@ static int decode_name(sdns_context * ctx, char ** decoded_name){
     }
     ctx->cursor = ctx->raw + consumed;
     *decoded_name = strdup(qname_result);
-    INFO("final qname is: %s\n", *decoded_name);
+    DEBUG("We have consumed %d bytes for reading qname\n", consumed);
+    DEBUG("final qname is: %s\n", *decoded_name);
     return sdns_rcode_NoError;
 }
 
@@ -215,37 +223,41 @@ static int decode_question_from_buffer(sdns_context * ctx){
     char * decoded_name = NULL;
     DEBUG("Starting to decode question name...");
     int res = decode_name(ctx, &decoded_name);
-    DEBUG("end decode question name...");
+    DEBUG("end decode question name...with result: %d", res);
     if (res != sdns_rcode_NoError){
         ERROR("We have and error code of %d from decode_name()\n", res);
         return res;
     }
     uint16_t to_read = 0;
-    //DEBUG("Qname read from wire: %s", qname);
     ctx->msg->question.qname = decoded_name;
+    DEBUG("Qname read from wire: %s", ctx->msg->question.qname);
     INFO("Qname read from wire: %s", ctx->msg->question.qname);
     // what about the qtype and qclass?
-    //DEBUG("Reading qtype and qclass.....");
-    if (ctx->raw_len - (ctx->cursor - ctx->raw) < 4)  // we need four bytes for class and type
+    DEBUG("Reading qtype and qclass.....");
+    DEBUG("ctx->raw_len - (ctx->cursor - ctx->raw) = %d - %ld\n", ctx->raw_len, ctx->cursor - ctx->raw);
+    if (ctx->raw_len - (ctx->cursor - ctx->raw) < 4){  // we need four bytes for class and type
+        DEBUG("CAN'T READ qtype and qclass.....");
         return sdns_rcode_FormErr;
+    }
     to_read = read_uint16_from_buffer(ctx->cursor);
     ctx->cursor += 2;
+    DEBUG("to_read for qtype is: %d\n", to_read);
     if (! check_if_qtype_is_valid(to_read)){
-        ERROR("The  Qtype is not recognised: %d\n", to_read);
+        DEBUG("The  Qtype is not recognised: %d\n", to_read);
         return sdns_rcode_FormErr;
     }else{
         ctx->msg->question.qtype = to_read;
     }
     to_read = read_uint16_from_buffer(ctx->cursor);
     if (! check_if_qclass_is_valid(to_read)){
-        ERROR("The  Qclass is not recognised: %d\n", to_read);
+        DEBUG("The  Qclass is not recognised: %d\n", to_read);
         return sdns_rcode_FormErr;
     }else{
         ctx->msg->question.qclass = to_read;
     }
     ctx->cursor += 2;
-    //DEBUG("Qtype is: %u", msg->question.qtype);
-    //DEBUG("Qclass is: %u", msg->question.qclass);
+    DEBUG("Qtype is: %u", ctx->msg->question.qtype);
+    DEBUG("Qclass is: %u", ctx->msg->question.qclass);
     return sdns_rcode_NoError; // success
 }
 
@@ -1414,7 +1426,7 @@ sdns_rr_LP * sdns_decode_rr_LP(sdns_context * ctx, sdns_rr * rr){
         return NULL;        // we should never hit this!
     sdns_rr_LP * lp = sdns_init_rr_LP(0, NULL);
     if (NULL == lp){
-        ctx->err = SDNS_ERROR_MEMORY_ALLOC_FAILD;
+        ctx->err = SDNS_ERROR_MEMORY_ALLOC_FAILED;
         return NULL;
     }
     if (rr->rdlength < 3){    // 2 for preference + 1 (atleast) for fqdn
@@ -1821,9 +1833,11 @@ sdns_rr_SOA * sdns_decode_rr_SOA(sdns_context * ctx, sdns_rr * rr){
 
 
 int sdns_from_wire(sdns_context * ctx){
-    if (ctx->raw_len == 0)
+    if (NULL == ctx)
         return SDNS_ERROR_BUFFER_IS_NULL;
-    if (ctx->raw == NULL)
+    if (0 == ctx->raw_len)
+        return SDNS_ERROR_BUFFER_IS_NULL;
+    if (NULL == ctx->raw)
         return SDNS_ERROR_BUFFER_IS_NULL;
     // first, fetch the header to see it's a valid DNS packet
     // the header is 12 bytes
@@ -1835,16 +1849,16 @@ int sdns_from_wire(sdns_context * ctx){
     tmp_buff += 2;
     uint16_t flags = read_uint16_from_buffer(tmp_buff);
     tmp_buff += 2;
-    ctx->msg->header.qr = (flags & 0x8000) >> 15;
-    ctx->msg->header.opcode = (flags & 0x7800) >> 11;
-    ctx->msg->header.aa = (flags & 0x0400) >> 10;
-    ctx->msg->header.tc = (flags & 0x0200) >> 9;
-    ctx->msg->header.rd = (flags & 0x0100) >> 8;
-    ctx->msg->header.ra = (flags & 0x0080) >> 7;
-    ctx->msg->header.z = (flags & 0x0040) >> 6;
-    ctx->msg->header.AD = (flags & 0x0020) >> 5;
-    ctx->msg->header.CD = (flags & 0x0010) >> 4;
-    ctx->msg->header.rcode = (flags & 0x000f); 
+    ctx->msg->header.qr = (flags & SDNS_QR_MASK) >> 15;
+    ctx->msg->header.opcode = (flags & SDNS_OPCODE_MASK) >> 11;
+    ctx->msg->header.aa = (flags & SDNS_AA_MASK) >> 10;
+    ctx->msg->header.tc = (flags & SDNS_TC_MASK) >> 9;
+    ctx->msg->header.rd = (flags & SDNS_RD_MASK) >> 8;
+    ctx->msg->header.ra = (flags & SDNS_RA_MASK) >> 7;
+    ctx->msg->header.z = (flags & SDNS_Z_MASK) >> 6;
+    ctx->msg->header.AD = (flags & SDNS_AD_MASK) >> 5;
+    ctx->msg->header.CD = (flags & SDNS_CD_MASK) >> 4;
+    ctx->msg->header.rcode = (flags & SDNS_RCODE_MASK);
     ctx->msg->header.qdcount = read_uint16_from_buffer(tmp_buff);
     tmp_buff += 2;
     ctx->msg->header.ancount = read_uint16_from_buffer(tmp_buff);
@@ -1853,8 +1867,8 @@ int sdns_from_wire(sdns_context * ctx){
     tmp_buff += 2;
     ctx->msg->header.arcount = read_uint16_from_buffer(tmp_buff);
     tmp_buff += 2;
-    consumed += DNS_HEADER_LENGTH;      // we have consumed DNS header
-    /******** done reading headers*/
+    consumed += DNS_HEADER_LENGTH;      // we have consumed DNS header (12 bytes)
+    
     // if we have a question, we need to set the question part
     if (ctx->msg->header.qdcount > 0){
         // we can not have more than one question section (which is against the RFC1035)
@@ -1992,7 +2006,7 @@ int sdns_to_wire(sdns_context * ctx){
         return SDNS_ERROR_BUFFER_TOO_SHORT;
     dyn_buffer * db = dyn_buffer_init(ctx->raw, ctx->raw_len, ctx->cursor - ctx->raw);
     if (NULL == db)
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
+        return SDNS_ERROR_MEMORY_ALLOC_FAILED;
     char tmp_byte[8] = {0x00};
     char tmpbuff[4] = {0};
 
@@ -2328,7 +2342,7 @@ void sdns_error_string(int err, char ** err_buffer){
         *err_buffer = (char*) malloc_or_abort(256);
         memset(*err_buffer, 0x00, 256);
     }
-    if (err == SDNS_ERROR_MEMORY_ALLOC_FAILD)
+    if (err == SDNS_ERROR_MEMORY_ALLOC_FAILED)
         strcpy(*err_buffer, "Failed to allocate memory using malloc()");
     else if (err == SDNS_ERROR_BUFFER_TOO_SHORT)
         strcpy(*err_buffer, "DNS packet is shorter than expected");
@@ -2366,7 +2380,7 @@ void sdns_error_string(int err, char ** err_buffer){
         strcpy(*err_buffer, "There is no authority section in the DNS context");
     else if (err == SDNS_ERROR_NO_ADDITIONAL_FOUND)
         strcpy(*err_buffer, "There is no additional section in the DNS context");
-    else if (err == SDNS_ERROR_ADDDITIONAL_RR_OPT)
+    else if (err == SDNS_ERROR_ADDITIONAL_RR_OPT)
         strcpy(*err_buffer, "Additional section is OPT RR. Use other functions to fetch it");
     else if (err == sdns_rcode_FormErr)
         strcpy(*err_buffer, "FormErr");
@@ -2802,9 +2816,12 @@ sdns_rr_HINFO * sdns_decode_rr_HINFO(sdns_context * ctx, sdns_rr * rr){
 sdns_message * sdns_init_message(void){
     sdns_message * msg = (sdns_message*) malloc_or_abort(sizeof(sdns_message));
     msg->question.qname = NULL;
+    msg->question.qclass = 0;
+    msg->question.qname = 0;
     msg->answer = NULL;
     msg->additional = NULL;
     msg->authority = NULL;
+    msg->header.id = 0;
     msg->header.ancount = 0;
     msg->header.arcount = 0;
     msg->header.qdcount = 0;
@@ -3173,7 +3190,7 @@ sdns_context * sdns_init_context(void){
 }
 
 void sdns_free_context(sdns_context * ctx){
-    if (ctx == NULL)
+    if (NULL == ctx)
         return;
     sdns_free_message(ctx->msg);
     free(ctx->raw);
@@ -3424,7 +3441,7 @@ sdns_opt_rdata * sdns_decode_rr_OPT(sdns_context * ctx, sdns_rr * rr){
     }
     sdns_opt_rdata * opt = sdns_init_opt_rdata();
     if (NULL == opt){
-        ctx->err = SDNS_ERROR_MEMORY_ALLOC_FAILD;
+        ctx->err = SDNS_ERROR_MEMORY_ALLOC_FAILED;
         return NULL;
     }
     if (rr->rdlength == 0){
@@ -3452,7 +3469,7 @@ sdns_opt_rdata * sdns_decode_rr_OPT(sdns_context * ctx, sdns_rr * rr){
             tmp = sdns_init_opt_rdata();
             if (tmp == NULL){
                 sdns_free_opt_rdata(opt);
-                ctx->err = SDNS_ERROR_MEMORY_ALLOC_FAILD;
+                ctx->err = SDNS_ERROR_MEMORY_ALLOC_FAILED;
                 return NULL;
             }
         }

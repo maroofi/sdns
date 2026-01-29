@@ -1,5 +1,5 @@
 CC := gcc
-CFLAGS := -I./include -Wall -Werror
+CFLAGS := -I./include -Wall -Werror #-DLOG_DEBUG
 CLIBS := -ljansson
 SHELL = /bin/bash
 LUALIB=lua5.4

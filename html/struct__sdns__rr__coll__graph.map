@@ -1,9 +1,0 @@
-<map id="_sdns_rr" name="_sdns_rr">
-<area shape="rect" id="Node000001" title=" " alt="" coords="71,93,147,119"/>
-<area shape="poly" id="edge4_Node000001_Node000001" title=" " alt="" coords="162,97,170,100,174,106,165,115,148,117,147,111,163,110,169,106,167,104,160,102"/>
-<area shape="rect" id="Node000002" href="$structsdns__opt__ttl.html" title=" " alt="" coords="5,5,107,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="73,41,104,91,100,94,68,44"/>
-<area shape="rect" id="Node000003" href="$struct__sdns__opt__rdata.html" title=" " alt="" coords="131,5,259,31"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="175,43,123,95,119,91,171,39"/>
-<area shape="poly" id="edge3_Node000003_Node000003" title=" " alt="" coords="274,10,285,18,277,26,259,28,258,23,275,21,280,18,271,14"/>
-</map>

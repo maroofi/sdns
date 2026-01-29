@@ -10,8 +10,8 @@
 #define DNS_HEADER_LENGTH 12    ///< Standard DNS Header length
 
 // define some error code constant
-#define SDNS_ERROR_MEMORY_ALLOC_FAILD -1                ///< memory allocation using malloc() failed
-#define SDNS_ERROR_BUFFER_TOO_SHORT -2                  ///< DNS packet length is shorter than expectedd
+#define SDNS_ERROR_MEMORY_ALLOC_FAILED -1                ///< memory allocation using malloc() failed
+#define SDNS_ERROR_BUFFER_TOO_SHORT -2                  ///< DNS packet length is shorter than expected
 #define SDNS_ERROR_QNAME_IS_NULL -3                     ///< Qname of the question section can not be null
 #define SDNS_ERROR_HOSTNAME_TOO_LONG -4                 ///< Hostname can not be more than 255 characters
 #define SDNS_ERROR_WRONG_LABEL_SPECIFIED -5             ///< Label name is too long or malformed
@@ -39,12 +39,25 @@
 #define SDNS_ERROR_INVALID_IPv6_FOUND        -23       ///< The code only accepts IPv6 in a format of ":" separated hex values
 #define SDNS_ERROR_NO_AUTHORITY_FOUND        -24       ///< This error shows that the DNS context has no authority section
 #define SDNS_ERROR_NO_ADDITIONAL_FOUND       -25       ///< This error shows that the DNS context has no additional section
-#define SDNS_ERROR_ADDDITIONAL_RR_OPT        -26       ///< Additional section is of type OPT. Use the relevant function to fetch it.
+#define SDNS_ERROR_ADDITIONAL_RR_OPT        -26       ///< Additional section is of type OPT. Use the relevant function to fetch it.
 // define the section types
 #define DNS_SECTION_ANSWER 1                           ///< Macro defining the answer section
 #define DNS_SECTION_AUTHORITY 2                        ///< Macro defining the authority section
 #define DNS_SECTION_ADDITIONAL 3                       ///< Macro defining the additional section
 #define DNS_SECTION_QUESTION 4                         ///< Macro defining the question section
+
+// define DNS masks
+#define SDNS_QR_MASK     0x8000
+#define SDNS_OPCODE_MASK 0x7800
+#define SDNS_AA_MASK     0x0400
+#define SDNS_TC_MASK     0x0200
+#define SDNS_RD_MASK     0x0100
+#define SDNS_RA_MASK     0x0080
+#define SDNS_Z_MASK      0x0040
+#define SDNS_AD_MASK     0x0020
+#define SDNS_CD_MASK     0x0010
+#define SDNS_RCODE_MASK  0x000F
+
 
 
 /** The list of opcodes can be found at:
@@ -417,7 +430,7 @@ typedef struct {
     uint16_t id;              ///< RFC1035: 16-bit identifier
     uint8_t qr        :1;     ///< RFC1035: one bit if the msg is query(0) or response(1)
     uint8_t opcode    :4;     ///< RFC1035: 4-bit specifies the kind of query in the message
-    uint8_t aa        :1;     ///< RFC1035: 1-bit if this is an authorative answer
+    uint8_t aa        :1;     ///< RFC1035: 1-bit if this is an authoritative answer
     uint8_t tc        :1;     ///< RFC1035: 1-bit TrunCation
     uint8_t rd        :1;     ///< RFC1035: Recursion Desired
     uint8_t ra        :1;     ///< RFC1035: Recursion Available
@@ -698,7 +711,7 @@ typedef struct {
  * In case the function returns a value other than 0, you can call sdns_error_string() to get 
  * the description of the error code.
  * 
- * @return A successfull call to this function will return 0 and other values indicate errors.
+ * @return A successful call to this function will return 0 and other values indicate errors.
  *
  * @code
  * char *error = NULL;
@@ -745,7 +758,7 @@ int sdns_make_query(sdns_context * ctx, sdns_rr_type qtype,
  * to send data to the socket, you must call this function first to create 
  * the binary data.
  *
- * Look at the privided example for sdns_make_query() for more info.
+ * Look at the provided example for sdns_make_query() for more info.
  */
 int sdns_to_wire(sdns_context * ctx);
 
@@ -800,7 +813,7 @@ void sdns_error_string(int err, char ** err_buff);
  *
  * This function is responsible for creating a new context for DNS.
  *
- * For each DNS packet, you must create a new context. This function does nothing
+ * For **each** DNS packet, you **must** create a new context. This function does nothing
  * more than creating a structure and allocating the necessary memories.
  */
 sdns_context * sdns_init_context(void);
@@ -819,7 +832,7 @@ void sdns_free_context(sdns_context* ctx);
 
 /**
  * @brief Creates an answer section for the DNS packet
- * @param ctx A pointer to the DNS context crteated by sdns_init_context().
+ * @param ctx A pointer to the DNS context created by sdns_init_context().
  * @param rr A pointer to the sdns_rr structure we want to add.
  *
  * @return 0 on success and other values on failure (call sdns_error_string() to get the error string)
@@ -831,14 +844,14 @@ void sdns_free_context(sdns_context* ctx);
  *     fprintf(stderr, "Can not initialize the DNS context...\n");
  *     return 1;
  * }
- * // let's make a query (gogole.com. IN TXT with EDNS0 enabled)
+ * // let's make a query (google.com. IN TXT with EDNS0 enabled)
  * int res = sdns_make_query(dns_ctx, sdns_rr_type_TXT, sdns_q_class_IN, strdup("google.com"), 1);
  * if (res != 0){
  *     // handle errors and return
  * } 
  * // let's add an answer section for TXT record
  * // first we have to create a TXT structure using sdns_init_rr_TXT() function.
- * sdns_rr_TXT * txt = sdns_init_rr_TXT(strdup("Thisisatxtrecord"), 16);
+ * sdns_rr_TXT * txt = sdns_init_rr_TXT(strdup("This_is_a_txt_record"), 16);
  * // then we create a new section by calling sdns_init_rr() function.
  * sdns_rr * rr = sdns_init_rr(strdup("google.com"), sdns_rr_type_TXT, sdns_rr_class_IN, 86400, 0, 1, (void*)txt);
  * if (rr == NULL){
@@ -997,7 +1010,7 @@ sdns_opt_rdata * sdns_decode_rr_OPT(sdns_context * ctx, sdns_rr * rr);
 /**
  * @brief Initialize a structure of ::sdns_rr_A
  *
- * @param ipaddress an unsigned 32bit integere representing the IPv4
+ * @param ipaddress an unsigned 32bit integer representing the IPv4
  *
  * The address is an unsigned integer value for example 2130706433 means 127.0.0.1
  *
@@ -1054,7 +1067,7 @@ sdns_rr_SRV * sdns_init_rr_SRV(uint16_t Priority, uint16_t Weight, uint16_t Port
  * @brief Initialize a structure of ::sdns_rr_MX
  *
  * @param preference a 16-bit integer for the prereference of the MX record
- * @param exchange pointer to the memory address that keeps the 'exchnage' data
+ * @param exchange pointer to the memory address that keeps the 'exchange' data
  *
  * NOTE: do not free the 'exchange' pointer after calling this method. This function does not copy 
  * the memory but use the pointer. Make sure it's a heap-allocated memory to avoid memory leak.
@@ -1164,8 +1177,8 @@ sdns_rr_LP * sdns_init_rr_LP(uint16_t preference, char * fqdn);
  * @param tag_len the length of the tag filed. max value can be 255.
  * @param value a pointer to 'value' value specified in RFC 6844
  * @pram
- * NOTE: Do not free the 'tag' and 'value' after calling this mentod. This function does not
- * copy the memory but use a pointer to the memory you allocated. Make sure it's a heap-allocatd memory to avoid
+ * NOTE: Do not free the 'tag' and 'value' after calling this method. This function does not
+ * copy the memory but use a pointer to the memory you allocated. Make sure it's a heap-allocated memory to avoid
  * memory leak.
  *
  * @return a pointer to ::sdns_rr_CAA structure on success and NULL on fail
@@ -1370,7 +1383,7 @@ int sdns_ends0_option_code_to_text(sdns_edns0_option_code oc, char * buffer);
 sdns_opt_rdata * sdns_create_edns0_cookie(char * client_cookie, char * server_cookie, uint8_t server_cookie_len);
 
 /** 
- * @brief Gets the string represantation of the **TYPE** tp in to _buffer_
+ * @brief Gets the string representation of the **TYPE** tp in to _buffer_
  * @param t A 16bit integer, one of the possible values of ::sdns_rr_type
  * @param buff A pointer to the user-provided buffer
  *
@@ -1382,7 +1395,7 @@ void sdns_rr_type_to_string(uint16_t t, char * buff);
 
 
 /** 
- * @brief Gets the string represantation of the **CLASS** cls in to _buffer_
+ * @brief Gets the string representation of the **CLASS** cls in to _buffer_
  * @param cls A 16bit integer, one of the possible values of ::sdns_rr_class or ::sdns_q_class
  * @param buff A pointer to the user-provided buffer
  *

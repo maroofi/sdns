@@ -1,0 +1,20 @@
+digraph "sdns_message"
+{
+ // LATEX_PDF_SIZE
+  bgcolor="transparent";
+  edge [fontname=Helvetica,fontsize=10,labelfontname=Helvetica,labelfontsize=10];
+  node [fontname=Helvetica,fontsize=10,shape=box,height=0.2,width=0.4];
+  Node1 [id="Node000001",label="sdns_message",height=0.2,width=0.4,color="gray40", fillcolor="grey60", style="filled", fontcolor="black",tooltip=" "];
+  Node2 -> Node1 [id="edge1_Node000001_Node000002",dir="back",color="darkorchid3",style="dashed",tooltip=" ",label=" header",fontcolor="grey" ];
+  Node2 [id="Node000002",label="sdns_header",height=0.2,width=0.4,color="gray40", fillcolor="white", style="filled",URL="$structsdns__header.html",tooltip=" "];
+  Node3 -> Node1 [id="edge2_Node000001_Node000003",dir="back",color="darkorchid3",style="dashed",tooltip=" ",label=" question",fontcolor="grey" ];
+  Node3 [id="Node000003",label="sdns_question",height=0.2,width=0.4,color="gray40", fillcolor="white", style="filled",URL="$structsdns__question.html",tooltip=" "];
+  Node4 -> Node1 [id="edge3_Node000001_Node000004",dir="back",color="darkorchid3",style="dashed",tooltip=" ",label=" additional\nanswer\nauthority",fontcolor="grey" ];
+  Node4 [id="Node000004",label="_sdns_rr",height=0.2,width=0.4,color="gray40", fillcolor="white", style="filled",URL="$struct__sdns__rr.html",tooltip=" "];
+  Node5 -> Node4 [id="edge4_Node000004_Node000005",dir="back",color="darkorchid3",style="dashed",tooltip=" ",label=" opt_ttl",fontcolor="grey" ];
+  Node5 [id="Node000005",label="sdns_opt_ttl",height=0.2,width=0.4,color="gray40", fillcolor="white", style="filled",URL="$structsdns__opt__ttl.html",tooltip=" "];
+  Node6 -> Node4 [id="edge5_Node000004_Node000006",dir="back",color="darkorchid3",style="dashed",tooltip=" ",label=" opt_rdata",fontcolor="grey" ];
+  Node6 [id="Node000006",label="_sdns_opt_rdata",height=0.2,width=0.4,color="gray40", fillcolor="white", style="filled",URL="$struct__sdns__opt__rdata.html",tooltip=" "];
+  Node6 -> Node6 [id="edge6_Node000006_Node000006",dir="back",color="darkorchid3",style="dashed",tooltip=" ",label=" next",fontcolor="grey" ];
+  Node4 -> Node4 [id="edge7_Node000004_Node000004",dir="back",color="darkorchid3",style="dashed",tooltip=" ",label=" next",fontcolor="grey" ];
+}

@@ -8,7 +8,7 @@ void * malloc_or_abort(size_t n){
     void * p = malloc(n);
     if (NULL == p){
         fprintf(stderr, "Can not allocate %ld bytes of memory...aborting...\n", n);
-        abort();
+        abort();    // Is it a good idea to call it in library?....I guess not!
     }
     return p;
 }

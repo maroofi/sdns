@@ -100,7 +100,7 @@ After creating our DNS packet, we need to convert it to binary data in order to 
         - tbl-to-send: This is the only input parameter and it's a table with 
         the following keys:
             - dstport: (integer): port number to send the data to
-            - dnsip: (string): IP address of receiver of the data
+            - dstip: (string): IP address of receiver of the data
             - timeout (integer): timeout to wait for socket operation
             - to_send: (string): the data you want to send over the socket
     
@@ -120,7 +120,7 @@ A very typical example of using this function is a scenario like this:
         - tbl-to-send: This is the only input parameter and it's a table with 
         the following keys:
             - dstport: (integer): port number to send the data to
-            - dnsip: (string): IP address of receiver of the data
+            - dstip: (string): IP address of receiver of the data
             - timeout (integer): timeout to wait for socket operation
             - to_send: (string): the data you want to send over the socket
     

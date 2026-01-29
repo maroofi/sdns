@@ -242,5 +242,87 @@ def func_testapi_create_caa_answer(data):
     return 0
 # end def
 
+def func_test_simple_query(data):
+    data = json.loads(data)
+    real_answer = json.loads(open("{}/json_real_for_test_simple_query.json".format(DATA_DIR)).read())
+    assert(Compare().check(data, real_answer) == NO_DIFF)
+    return 0
+# end def
 
+def func_test_simple_answer(data):
+    data = json.loads(data)
+    real_answer = json.loads(open("{}/json_real_for_test_simple_answer.json".format(DATA_DIR)).read())
+    assert(Compare().check(data, real_answer) == NO_DIFF)
+    return 0
+# end def
+
+def func_test_multi_answer(data):
+    data = json.loads(data)
+    real_answer = json.loads(open("{}/json_real_test_multi_answer.json".format(DATA_DIR)).read())
+    assert(Compare().check(data, real_answer) == NO_DIFF)
+    return 0
+# end def
+
+
+def func_test_mixed_compression(data):
+    data = json.loads(data)
+    real_answer = json.loads(open("{}/json_real_mixed_compression.json".format(DATA_DIR)).read())
+    assert(Compare().check(data, real_answer) == NO_DIFF)
+    return 0
+# end def
+
+def func_test_malformed_compression_loop(data):
+    err = "Compressed label detected while is not allowed"
+    assert(data.strip() == err)
+    return 0;
+# end def
+
+def func_test_malformed_truncated_question(data):
+    err = "FormErr"
+    assert(data.strip() == err)
+    return 0;
+# end def
+
+def func_test_border_label_success(data):
+    data = json.loads(data)
+    real_answer = json.loads(open("{}/json_real_test_border_label_success.json".format(DATA_DIR)).read())
+    assert(Compare().check(data, real_answer) == NO_DIFF)
+    return 0
+# end def
+
+def func_test_invalid_domain_name(data):
+    err = "FormErr"
+    assert(data.strip() == err)
+    return 0;
+# end def
+
+def func_test_invalid_domain_name(data):
+    err = "FormErr"
+    assert(data.strip() == err)
+    return 0;
+# end def
+
+def func_test_invalid_domain_length(data):
+    err = "Maximum length of a host name is 255 (RFC1034 section 3.1)"
+    assert(data.strip() == err)
+    return 0;
+# end def
+
+def func_test_compressed_invalid_length(data):
+    err = "Compressed label detected while is not allowed"
+    assert(data.strip() == err)
+    return 0;
+# end def
+
+def func_test_compression_invalid_pointer(data):
+    err = "Compressed label detected while is not allowed"
+    assert(data.strip() == err)
+    return 0;
+# end def
+
+def func_test_invalid_pointer_compression(data):
+    err = "Compressed label detected while is not allowed"
+    assert(data.strip() == err)
+    return 0;
+# end def
 

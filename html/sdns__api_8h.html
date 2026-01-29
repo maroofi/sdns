@@ -85,13 +85,6 @@ $(function() {
 Include dependency graph for sdns_api.h:</div>
 <div class="dyncontent">
 <div class="center"><img src="sdns__api_8h__incl.png" border="0" usemap="#ainclude_2sdns__api_8h" alt=""/></div>
-<map name="ainclude_2sdns__api_8h" id="ainclude_2sdns__api_8h">
-<area shape="rect" title=" " alt="" coords="5,5,148,31"/>
-<area shape="rect" href="sdns_8h.html" title=" " alt="" coords="45,79,109,104"/>
-<area shape="poly" title=" " alt="" coords="79,31,79,65,74,65,74,31"/>
-<area shape="rect" title=" " alt="" coords="41,152,112,177"/>
-<area shape="poly" title=" " alt="" coords="79,104,79,138,74,138,74,104"/>
-</map>
 </div>
 </div>
 <p><a href="sdns__api_8h_source.html">Go to the source code of this file.</a></p>
@@ -199,6 +192,12 @@ Functions</h2></td></tr>
 <tr class="memitem:ad43f33c225fb75a579b9778a0f32dce5" id="r_ad43f33c225fb75a579b9778a0f32dce5"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sdns__api_8h.html#ad43f33c225fb75a579b9778a0f32dce5">sdns_set_do</a> (<a class="el" href="structsdns__context.html">sdns_context</a> *dns, uint8_t do_bit)</td></tr>
 <tr class="memdesc:ad43f33c225fb75a579b9778a0f32dce5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets or resets DNSSEC OK bit in EDNS0 part of the DNS packet.  <br /></td></tr>
 <tr class="separator:ad43f33c225fb75a579b9778a0f32dce5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa747a221787a1f60243e68901467fc01" id="r_aa747a221787a1f60243e68901467fc01"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sdns__api_8h.html#aa747a221787a1f60243e68901467fc01">sdns_set_rcode</a> (<a class="el" href="structsdns__context.html">sdns_context</a> *dns, uint8_t rcode)</td></tr>
+<tr class="memdesc:aa747a221787a1f60243e68901467fc01"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the rcode of the DNS context.  <br /></td></tr>
+<tr class="separator:aa747a221787a1f60243e68901467fc01"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6304cb7f90f4ebf0d8e080aad0e0ecd9" id="r_a6304cb7f90f4ebf0d8e080aad0e0ecd9"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sdns__api_8h.html#a6304cb7f90f4ebf0d8e080aad0e0ecd9">sdns_set_qr</a> (<a class="el" href="structsdns__context.html">sdns_context</a> *dns, uint8_t qr_bit)</td></tr>
+<tr class="memdesc:a6304cb7f90f4ebf0d8e080aad0e0ecd9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets or resets the <em>query-response</em> bit of the DNS header.  <br /></td></tr>
+<tr class="separator:a6304cb7f90f4ebf0d8e080aad0e0ecd9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4a6f68e241556dde6021a32fd4cbc4bf" id="r_a4a6f68e241556dde6021a32fd4cbc4bf"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sdns__api_8h.html#a4a6f68e241556dde6021a32fd4cbc4bf">sdns_set_tc</a> (<a class="el" href="structsdns__context.html">sdns_context</a> *dns, uint8_t tc_bit)</td></tr>
 <tr class="memdesc:a4a6f68e241556dde6021a32fd4cbc4bf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets or resets the truncation bit of the DNS header.  <br /></td></tr>
 <tr class="separator:a4a6f68e241556dde6021a32fd4cbc4bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -253,6 +252,21 @@ Functions</h2></td></tr>
 <tr class="memitem:a9208b733dffbaca9898391b38ae3c05a" id="r_a9208b733dffbaca9898391b38ae3c05a"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sdns__api_8h.html#a9208b733dffbaca9898391b38ae3c05a">sdns_add_rr_additional_NID</a> (<a class="el" href="structsdns__context.html">sdns_context</a> *dns, char *name, uint32_t ttl, uint16_t preference, char *nodeid)</td></tr>
 <tr class="memdesc:a9208b733dffbaca9898391b38ae3c05a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds NID record to the asnwer section of the DNS context.  <br /></td></tr>
 <tr class="separator:a9208b733dffbaca9898391b38ae3c05a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abd4601278cccbd9f952b2cf5f1973db1" id="r_abd4601278cccbd9f952b2cf5f1973db1"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sdns__api_8h.html#abd4601278cccbd9f952b2cf5f1973db1">sdns_add_rr_answer_CAA</a> (<a class="el" href="structsdns__context.html">sdns_context</a> *dns, char *name, uint32_t ttl, uint8_t flag, char *tag, char *value)</td></tr>
+<tr class="memdesc:abd4601278cccbd9f952b2cf5f1973db1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds CAA record to the asnwer section of the DNS context.  <br /></td></tr>
+<tr class="separator:abd4601278cccbd9f952b2cf5f1973db1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9463fda1df8fc2b1630f567b34bb3aa5" id="r_a9463fda1df8fc2b1630f567b34bb3aa5"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sdns__api_8h.html#a9463fda1df8fc2b1630f567b34bb3aa5">sdns_add_rr_authority_CAA</a> (<a class="el" href="structsdns__context.html">sdns_context</a> *dns, char *name, uint32_t ttl, uint8_t flag, char *tag, char *value)</td></tr>
+<tr class="memdesc:a9463fda1df8fc2b1630f567b34bb3aa5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds CAA record to the asnwer section of the DNS context.  <br /></td></tr>
+<tr class="separator:a9463fda1df8fc2b1630f567b34bb3aa5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a19a0831761a689a6e7c9ed2bd0f2c910" id="r_a19a0831761a689a6e7c9ed2bd0f2c910"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sdns__api_8h.html#a19a0831761a689a6e7c9ed2bd0f2c910">sdns_add_rr_additional_CAA</a> (<a class="el" href="structsdns__context.html">sdns_context</a> *dns, char *name, uint32_t ttl, uint8_t flag, char *tag, char *value)</td></tr>
+<tr class="memdesc:a19a0831761a689a6e7c9ed2bd0f2c910"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds CAA record to the asnwer section of the DNS context.  <br /></td></tr>
+<tr class="separator:a19a0831761a689a6e7c9ed2bd0f2c910"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a72900491ef864cb49ef7ef59655485ef" id="r_a72900491ef864cb49ef7ef59655485ef"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structsdns__question.html">sdns_question</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sdns__api_8h.html#a72900491ef864cb49ef7ef59655485ef">sdns_get_question</a> (<a class="el" href="structsdns__context.html">sdns_context</a> *dns)</td></tr>
+<tr class="memdesc:a72900491ef864cb49ef7ef59655485ef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a copy of the question section of the DNS context.  <br /></td></tr>
+<tr class="separator:a72900491ef864cb49ef7ef59655485ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae2d7247f5b3c3b0ba735192f7868f4f6" id="r_ae2d7247f5b3c3b0ba735192f7868f4f6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structsdns__context.html">sdns_context</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sdns__api_8h.html#ae2d7247f5b3c3b0ba735192f7868f4f6">sdns_create_response_from_query</a> (<a class="el" href="structsdns__context.html">sdns_context</a> *query)</td></tr>
+<tr class="memdesc:ae2d7247f5b3c3b0ba735192f7868f4f6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a response DNS context from the query packet.  <br /></td></tr>
+<tr class="separator:ae2d7247f5b3c3b0ba735192f7868f4f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
 <a id="a0170f6d55d6f9e61c77c90256a9765ed" name="a0170f6d55d6f9e61c77c90256a9765ed"></a>
@@ -481,6 +495,61 @@ Functions</h2></td></tr>
 
 <p>Adds AAAA record to the additional section of the DNS. </p>
 <p>Check the documentation of <a class="el" href="sdns__api_8h.html#a77d68a270eaf323c68b53fda78cba319" title="Adds AAAA record to the asnwer section of the DNS context.">sdns_add_rr_answer_AAAA()</a> </p>
+
+</div>
+</div>
+<a id="a19a0831761a689a6e7c9ed2bd0f2c910" name="a19a0831761a689a6e7c9ed2bd0f2c910"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a19a0831761a689a6e7c9ed2bd0f2c910">&#9670;&#160;</a></span>sdns_add_rr_additional_CAA()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int sdns_add_rr_additional_CAA </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structsdns__context.html">sdns_context</a> *&#160;</td>
+          <td class="paramname"><em>dns</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>ttl</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint8_t&#160;</td>
+          <td class="paramname"><em>flag</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>tag</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>value</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Adds CAA record to the asnwer section of the DNS context. </p>
+<p>Check the documentation of the <a class="el" href="sdns__api_8h.html#abd4601278cccbd9f952b2cf5f1973db1" title="Adds CAA record to the asnwer section of the DNS context.">sdns_add_rr_answer_CAA()</a> for more info. </p>
 
 </div>
 </div>
@@ -1065,6 +1134,73 @@ Functions</h2></td></tr>
 <p>Caller is responsible to free 'ipv6' param if necessary as the library copies the value internally.</p>
 <p>It's not possible to pass the combination of IPv4 and IPv6 as the internal parser does not support it</p>
 <dl class="section return"><dt>Returns</dt><dd>0 on success, other values on failure </dd></dl>
+
+</div>
+</div>
+<a id="abd4601278cccbd9f952b2cf5f1973db1" name="abd4601278cccbd9f952b2cf5f1973db1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abd4601278cccbd9f952b2cf5f1973db1">&#9670;&#160;</a></span>sdns_add_rr_answer_CAA()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int sdns_add_rr_answer_CAA </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structsdns__context.html">sdns_context</a> *&#160;</td>
+          <td class="paramname"><em>dns</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>ttl</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint8_t&#160;</td>
+          <td class="paramname"><em>flag</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>tag</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>value</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Adds CAA record to the asnwer section of the DNS context. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">dns</td><td>a pointer to the DNS context </td></tr>
+    <tr><td class="paramname">name</td><td>name of the section </td></tr>
+    <tr><td class="paramname">ttl</td><td>TTL value of the seciton </td></tr>
+    <tr><td class="paramname">flag</td><td>Flag value of the CAA record </td></tr>
+    <tr><td class="paramname">tag</td><td>A pointer to a NULL-terminated string for tag field of CAA </td></tr>
+    <tr><td class="paramname">value</td><td>A pointer to a null-terminated string for value filed of CAA</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>The user can free the memory allocated for 'tag' and 'value' (if it's necessary) after calling this function. This function copies the 'tag' and 'value' to its internal memory.</p>
+<dl class="section return"><dt>Returns</dt><dd>0 on success, other values on failure. </dd></dl>
 
 </div>
 </div>
@@ -1736,6 +1872,61 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="a9463fda1df8fc2b1630f567b34bb3aa5" name="a9463fda1df8fc2b1630f567b34bb3aa5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9463fda1df8fc2b1630f567b34bb3aa5">&#9670;&#160;</a></span>sdns_add_rr_authority_CAA()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int sdns_add_rr_authority_CAA </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structsdns__context.html">sdns_context</a> *&#160;</td>
+          <td class="paramname"><em>dns</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>ttl</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint8_t&#160;</td>
+          <td class="paramname"><em>flag</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>tag</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>value</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Adds CAA record to the asnwer section of the DNS context. </p>
+<p>Check the documentation of the <a class="el" href="sdns__api_8h.html#abd4601278cccbd9f952b2cf5f1973db1" title="Adds CAA record to the asnwer section of the DNS context.">sdns_add_rr_answer_CAA()</a> for more info. </p>
+
+</div>
+</div>
 <a id="adc229200af89e3e79ba12e63cdb19462" name="adc229200af89e3e79ba12e63cdb19462"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#adc229200af89e3e79ba12e63cdb19462">&#9670;&#160;</a></span>sdns_add_rr_authority_CNAME()</h2>
 
@@ -2259,6 +2450,35 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="ae2d7247f5b3c3b0ba735192f7868f4f6" name="ae2d7247f5b3c3b0ba735192f7868f4f6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae2d7247f5b3c3b0ba735192f7868f4f6">&#9670;&#160;</a></span>sdns_create_response_from_query()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structsdns__context.html">sdns_context</a> * sdns_create_response_from_query </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structsdns__context.html">sdns_context</a> *&#160;</td>
+          <td class="paramname"><em>query</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Creates a response DNS context from the query packet. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">the</td><td>query packet which is an instance of <a class="el" href="structsdns__context.html">sdns_context</a></td></tr>
+  </table>
+  </dd>
+</dl>
+<p>This function is effectively a combination of other functions to create a new context to send as a response to the received query.</p>
+<p>It will create a new packet by calling <a class="el" href="sdns__api_8h.html#a375364bc17c6749e7e40a1261faf588c" title="Creates a dns context with the given query and ends0 enabled.">sdns_create_query()</a> and copy the question section of the 'query' context to the new packet. Then calls <a class="el" href="sdns__api_8h.html#a6304cb7f90f4ebf0d8e080aad0e0ecd9" title="Sets or resets the query-response bit of the DNS header.">sdns_set_qr()</a> and <a class="el" href="sdns__api_8h.html#af5cd9fdebbae3955144643f0fe65d890" title="Sets the ID of the DNS header.">sdns_set_id()</a> to make the packet of type response. if the 'query' context is edns0-aware, the response will be also edns0-aware. Other sections are all empty.</p>
+<dl class="section return"><dt>Returns</dt><dd>a new <a class="el" href="structsdns__context.html">sdns_context</a> on success or NULL on failure </dd></dl>
+
+</div>
+</div>
 <a id="ae438229a9f2ab0917ed11d44341b058f" name="ae438229a9f2ab0917ed11d44341b058f"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ae438229a9f2ab0917ed11d44341b058f">&#9670;&#160;</a></span>sdns_from_network()</h2>
 
@@ -2332,6 +2552,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Returns the additional section of the DNS context. </p>
+<p>This function can not be used to get the OPT (EDNS0) records from the additional section. To get OPT records (e.g., cookies, NSID, etc), you can use the relevant functions.</p>
 <p>For the list of parameters, check <a class="el" href="sdns__api_8h.html#afd418e252f3792331f9964ffdc1911d2" title="Returns the answer section of the dns context.">sdns_get_answer()</a> function </p>
 
 </div>
@@ -2417,6 +2638,34 @@ Functions</h2></td></tr>
 
 <p>Returns the authority section of the DNS context. </p>
 <p>For the list of parameters, check <a class="el" href="sdns__api_8h.html#afd418e252f3792331f9964ffdc1911d2" title="Returns the answer section of the dns context.">sdns_get_answer()</a> function </p>
+
+</div>
+</div>
+<a id="a72900491ef864cb49ef7ef59655485ef" name="a72900491ef864cb49ef7ef59655485ef"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a72900491ef864cb49ef7ef59655485ef">&#9670;&#160;</a></span>sdns_get_question()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structsdns__question.html">sdns_question</a> * sdns_get_question </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structsdns__context.html">sdns_context</a> *&#160;</td>
+          <td class="paramname"><em>dns</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Returns a copy of the question section of the DNS context. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">dns</td><td>an instance of <a class="el" href="structsdns__context.html">sdns_context</a></td></tr>
+  </table>
+  </dd>
+</dl>
+<p>Caller is responsible to free the returned memory address.</p>
+<dl class="section return"><dt>Returns</dt><dd>a pointer to a memory address which stores the structure of <a class="el" href="structsdns__question.html">sdns_question</a> or NULL on failure </dd></dl>
 
 </div>
 </div>
@@ -2689,6 +2938,44 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="a6304cb7f90f4ebf0d8e080aad0e0ecd9" name="a6304cb7f90f4ebf0d8e080aad0e0ecd9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6304cb7f90f4ebf0d8e080aad0e0ecd9">&#9670;&#160;</a></span>sdns_set_qr()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int sdns_set_qr </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structsdns__context.html">sdns_context</a> *&#160;</td>
+          <td class="paramname"><em>dns</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint8_t&#160;</td>
+          <td class="paramname"><em>qr_bit</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Sets or resets the <em>query-response</em> bit of the DNS header. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">dns</td><td>sdns context </td></tr>
+    <tr><td class="paramname">qr_bit</td><td>can be 0 or 1 to set or reset the QR bit.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>always returns 0 </dd></dl>
+
+</div>
+</div>
 <a id="ad489bfb517e660fb6559a17fafe6d8cc" name="ad489bfb517e660fb6559a17fafe6d8cc"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ad489bfb517e660fb6559a17fafe6d8cc">&#9670;&#160;</a></span>sdns_set_ra()</h2>
 
@@ -2724,6 +3011,45 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>always returns 0 </dd></dl>
+
+</div>
+</div>
+<a id="aa747a221787a1f60243e68901467fc01" name="aa747a221787a1f60243e68901467fc01"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa747a221787a1f60243e68901467fc01">&#9670;&#160;</a></span>sdns_set_rcode()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int sdns_set_rcode </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structsdns__context.html">sdns_context</a> *&#160;</td>
+          <td class="paramname"><em>dns</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint8_t&#160;</td>
+          <td class="paramname"><em>rcode</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Sets the rcode of the DNS context. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">dns</td><td>DNS context </td></tr>
+    <tr><td class="paramname">rcode</td><td>the value to set in the DNS context header as the 'rcode'</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>'rcode' can be between 0 (included) and 16 (excluded). Any value that is not in this range will result in returning <a class="el" href="sdns_8h.html#adef8ced1e446bc385d9e6a14a4248e63" title="The input parameter is not valid.">SDNS_ERROR_WRONG_INPUT_PARAMETER</a></p>
+<dl class="section return"><dt>Returns</dt><dd>0 on success, other values on fail </dd></dl>
 
 </div>
 </div>

@@ -1,9 +1,0 @@
-<map id="include/sdns.h" name="include/sdns.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="190,5,305,31"/>
-<area shape="rect" id="Node000002" href="$sdns__api_8h.html" title=" " alt="" coords="5,79,148,104"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="208,38,106,81,104,76,206,33"/>
-<area shape="rect" id="Node000003" href="$sdns__json_8h_source.html" title=" " alt="" coords="173,79,322,104"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="250,44,250,79,245,79,245,44"/>
-<area shape="rect" id="Node000004" href="$sdns__print_8h.html" title=" " alt="" coords="346,79,498,104"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="289,33,394,76,392,81,287,38"/>
-</map>

@@ -48,7 +48,7 @@ char * sdns_to_network(sdns_context * dns, int * err, uint16_t * buff_len){
     dns->raw = NULL;
 
     if (NULL == new_buffer){
-        *err = SDNS_ERROR_MEMORY_ALLOC_FAILD;
+        *err = SDNS_ERROR_MEMORY_ALLOC_FAILED;
         *buff_len = 0;
         return NULL;
     }
@@ -188,7 +188,7 @@ int sdns_add_rr_answer_TXT(sdns_context * dns, char * name, uint32_t ttl, char *
     if (text_len > 0 && text != NULL){
         new_txt = mem_copy(text, text_len);
         if (new_txt == NULL){
-            return SDNS_ERROR_MEMORY_ALLOC_FAILD;
+            return SDNS_ERROR_MEMORY_ALLOC_FAILED;
         }
     }
     sdns_rr_TXT * txt = sdns_init_rr_TXT(new_txt, text_len);
@@ -212,7 +212,7 @@ int sdns_add_rr_authority_TXT(sdns_context * dns, char * name, uint32_t ttl, cha
     if (text_len > 0 && text != NULL){
         new_txt = mem_copy(text, text_len);
         if (new_txt == NULL){
-            return SDNS_ERROR_MEMORY_ALLOC_FAILD;
+            return SDNS_ERROR_MEMORY_ALLOC_FAILED;
         }
     }
     sdns_rr_TXT * txt = sdns_init_rr_TXT(new_txt, text_len);
@@ -237,7 +237,7 @@ int sdns_add_rr_additional_TXT(sdns_context * dns, char * name, uint32_t ttl, ch
     if (text_len > 0 && text != NULL){
         new_txt = mem_copy(text, text_len);
         if (new_txt == NULL){
-            return SDNS_ERROR_MEMORY_ALLOC_FAILD;
+            return SDNS_ERROR_MEMORY_ALLOC_FAILED;
         }
     }
     sdns_rr_TXT * txt = sdns_init_rr_TXT(new_txt, text_len);
@@ -913,7 +913,7 @@ int sdns_add_cookie(sdns_context * dns, char * client_cookie, char * server_cook
     if (opt == NULL){
         free(server_mem);
         free(client_mem);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
+        return SDNS_ERROR_MEMORY_ALLOC_FAILED;
     }
     int res = sdns_add_edns(dns, opt);
     // free memory as the library copy them internally
@@ -933,7 +933,7 @@ int sdns_add_nsid(sdns_context * dns, char * nsid){
         // this is just an NSID-aware packet
         sdns_opt_rdata * nsid_opt = sdns_create_edns0_nsid(NULL, 0);
         if (NULL == nsid_opt)
-            return SDNS_ERROR_MEMORY_ALLOC_FAILD;
+            return SDNS_ERROR_MEMORY_ALLOC_FAILED;
         int res = sdns_add_edns(dns, nsid_opt);
         return res;
     }
@@ -951,7 +951,7 @@ int sdns_add_nsid(sdns_context * dns, char * nsid){
     sdns_opt_rdata * nsid_opt = sdns_create_edns0_nsid(nsid_data, (int)(nsid_len/2));
     if (NULL == nsid_opt){
         free(nsid_data);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
+        return SDNS_ERROR_MEMORY_ALLOC_FAILED;
     }
     int res = sdns_add_edns(dns, nsid_opt);
     if (res == 0)
@@ -1046,13 +1046,13 @@ int sdns_add_ede(sdns_context * dns, uint16_t ede_code, char * ede_text){
     if (ede_text != NULL){
         text_mem = mem_copy(ede_text, strlen(ede_text));
         if (NULL == text_mem){
-            return SDNS_ERROR_MEMORY_ALLOC_FAILD;
+            return SDNS_ERROR_MEMORY_ALLOC_FAILED;
         }
     }
     sdns_opt_rdata * opt = sdns_create_edns0_ede(ede_code, text_mem, ede_text == NULL?0:strlen(ede_text));
     if (NULL == opt){
         free(text_mem);
-        return SDNS_ERROR_MEMORY_ALLOC_FAILD;
+        return SDNS_ERROR_MEMORY_ALLOC_FAILED;
     }
     free(text_mem);
     int res = sdns_add_edns(dns, opt);
@@ -1289,7 +1289,7 @@ sdns_rr * sdns_get_additional(sdns_context * dns, int * err, uint16_t num){
         // the additional section is an opt which you can not get
         // it using this function. You must use get_nsid(), get_cookie(), etc
         // for this purpose
-        *err = SDNS_ERROR_ADDDITIONAL_RR_OPT;
+        *err = SDNS_ERROR_ADDITIONAL_RR_OPT;
         return NULL;
     }
     char * name = safe_strdup(tmp->name);
