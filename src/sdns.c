@@ -543,11 +543,11 @@ static int _encode_write_rr_CNAME(sdns_context * ctx, dyn_buffer* db, sdns_rr* t
     int res = _encode_label_compressed(cname->CNAME, db, buffer);
     if (res != SDNS_ERROR_ELSIMPLE && res != SDNS_ERROR_ELCOMPRESSED)
         return res;
-    uint16_t rdlength = strlen(buffer);
+    uint16_t rdlength = res == SDNS_ERROR_ELSIMPLE?strlen(buffer)+1:strlen(buffer);
     tmp_bytes[0] = (uint8_t) (rdlength >> 8 & 0xFF);
     tmp_bytes[1] = (uint8_t)(rdlength & 0xFF);
     dyn_buffer_append(db, tmp_bytes, 2);    // rdlength
-    int to_write = res == SDNS_ERROR_ELSIMPLE?strlen(buffer)+1:strlen(buffer);
+    int to_write = rdlength;
     dyn_buffer_append(db, buffer, to_write);
     return sdns_rcode_NoError;
 }

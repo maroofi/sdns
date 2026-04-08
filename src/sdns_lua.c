@@ -1945,7 +1945,7 @@ static int l_sdns_set_aa(lua_State * L){
     int aa_bit = luaL_checkinteger(L, -1);
     if (aa_bit != 0 && aa_bit != 1){
         lua_pushnil(L);
-        lua_pushstring(L, "AA bit must be eihter zero or one");
+        lua_pushstring(L, "AA bit must be either zero or one");
         return 2;
     }
     sdns_context ** dns = (sdns_context **)luaL_checkudata(L, -2, "metasdnslib");

@@ -25,6 +25,7 @@ Here is the description of the provided functions in Lua:
     * [add_rr_CAA() - Adds CAA RR to a DNS packet](#add_rr_caasdns_context-table-data)
     * [add_rr_SOA() - Adds SOA RR to a DNS packet](#add_rr_soasdns_context-table-data)
     * [add_rr_MX() - Adds MX RR to a DNS packet](#add_rr_mxsdns_context-table-data)
+    * [add_rr_CNAME() - Adds CNAME RR to a DNS packet](#add_rr_cnamesdns_context-table-data)
     * [add_rr_PTR() - Adds PTR RR to a DNS packet](#add_rr_ptrsdns_context-table-data)
     * [add_rr_SRV() - Adds SRV RR to a DNS packet](#add_rr_srvsdns_context-table-data)
     * [add_rr_HINFO() - Adds HINFO RR to a DNS packet](#add_rr_hinfosdns_context-table-data)
@@ -335,6 +336,23 @@ For the description of each field of the 'rdata', you can read RFC1035 (SOA data
     assert(res == 0)
     assert (msg == nil)
 ```
+------------------------------------------------------------------
+
+#### __add_rr_CNAME__(sdns_context, table-data)
+    - returns:
+        - (0, nil) on success
+        - (non-zero, err-msg-string) on failure
+    - params:
+        sdns_context: the DNS context created by __create_query()__ or __from_network()__ function.
+        - table-data (table - mandatory): This input table contains the information regarding the `CNAME` record you want to add to the DNS packet. It must contain all the following fields (all mandatory):
+            - *name* (string): the domain name for the CNAME record
+            - *ttl* (integer): the TTL value of the resource record
+            - *section* (string): the DNS section you want to add the CNAME record. It can be one of the: `answer`, `authority` and/or `additional` values.
+            - *rdata* (table): contains the following mandatory field:
+                - *cname*: string (doamin name) you want to put in the cname field.
+
+For the description of each field of the 'rdata', you can read RFC1035 (MX data format).
+
 ------------------------------------------------------------------
 
 #### __add_rr_MX__(sdns_context, table-data)
