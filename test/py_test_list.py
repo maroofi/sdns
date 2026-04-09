@@ -21,7 +21,15 @@ except:
 
 DATA_DIR = "{}/data".format(os.path.abspath(os.path.dirname(__file__)))
 
-
+def assert_or_print(condition, to_print):
+    if not condition:
+        print("")
+        print("************************")
+        print(to_print)
+        print("************************")
+        assert(1 == 0)
+    return 0
+# end def
 
 def func_test1(data):
     data = json.loads(data)
@@ -52,7 +60,7 @@ def func_test4(data):
 # end def
 
 def func_testapi1(data):
-    assert(data.strip() == "success")
+    assert_or_print(data.strip() == "success", data)
     return 0
 # end def
 

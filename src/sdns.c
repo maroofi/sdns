@@ -361,77 +361,95 @@ static int _encode_label_simple(char * label, char * buffer){
     // return sdns_error_elsimple on success and other values for failure
     DEBUG("encode simple label: %s\n", label);
     char * dotpos = NULL;
-    char * tmp = label;
+    
     int i = 0;
     int len = strlen(label);
-    DEBUG("length of the actual label is %d", len);
-    if (strlen(label) > 255){
+    if (len > 255){
         return SDNS_ERROR_HOSTNAME_TOO_LONG;
     }
-    while (3){
+    DEBUG("length of the actual label is %d", len);
+    // when input length < 255 then the worst possible output is 257
+    char tmp_buff[260] = {0x00};
+    strcpy(tmp_buff, label);
+    char * tmp = tmp_buff;
+    // handle the case where label is . or empty
+    if (len == 0 || (len == 1 && *tmp == '.')){
+        *buffer = '\0';
+        return SDNS_ERROR_ELSIMPLE;
+    }
+    
+    // strip the last . if there is any
+    int rev_i = len - 1;
+    while (rev_i > 0){
+        if (tmp[rev_i] == '.'){
+            tmp[rev_i] = '\0';
+            rev_i--;
+            continue;
+        }else{break;}
+    }
+    len = rev_i + 1;
+    if (len == 0){
+        *buffer = '\0';
+        return SDNS_ERROR_ELSIMPLE;
+    }
+
+    while (1){
         dotpos = strchr(tmp, '.');
         if (NULL == dotpos){
-            //copy the rest and break
-            DEBUG("dotpos is NULL\n")
-            buffer[i++] = len - (tmp - label);
-            while (*tmp){
+            // there is no more . in the label
+            // copy the rest and break
+            buffer[i++] = (uint8_t)(len - (tmp - tmp_buff));
+            
+            while(*tmp){
                 buffer[i++] = (uint8_t)*tmp;
                 tmp++;
             }
             buffer[i] = '\0';
-            break;
+            // we used 254 because we need to append an extra null at the end
+            if (strlen(buffer) > 254){
+                return SDNS_ERROR_HOSTNAME_TOO_LONG;
+            }
+            return SDNS_ERROR_ELSIMPLE;
         }
-        DEBUG("found a . in %ld\n", dotpos - label);
-        if (dotpos - tmp > 63)
+        // here we have found a dot
+        // the length of the label is dotpos - tmp
+
+        // the label must be < 63
+        if (dotpos - tmp > 63){
+            buffer[0] = '\0';
             return SDNS_ERROR_LABEL_MAX_63;
+        }
         buffer[i++] = (uint8_t)(dotpos - tmp);
-        DEBUG("The label length is: %ld", dotpos - tmp);
         while (tmp < dotpos){
-            buffer[i++] = (uint8_t)*tmp;
+            buffer[i++] = (uint8_t) *tmp;
             tmp++;
         }
-        if (dotpos - label == len -1){  // the '.' is exactly the last char of the string
-            DEBUG("We reached the end of the label");
-            buffer[i] = '\0';
-            break;
-        }
-        dotpos++;
+        // skip the found dot and continue searching
         tmp++;
         continue;
     }
-    DEBUG("The encoded domain name is: \t");
-    for (int x =0;x<i;++x){
-        DEBUG("%02x ", (uint8_t)buffer[x]);
-    }
-    DEBUG("\n");
-    DEBUG("end of encode_label_simple()");
-    return SDNS_ERROR_ELSIMPLE;
 }
 
 
-// returns 1 and 0 for success
 static int _encode_label_compressed(char * label, dyn_buffer * db, char * buffer){
     if (NULL == label){
         buffer[0] = '\0';
         return SDNS_ERROR_ELSIMPLE;
     }
-    int len = strlen(label);
-    if (len < 3){
-        // we don't need compression, just use simple encoding
-        return _encode_label_simple(label, buffer);
-    }
-    char simple[256] = {0x00};
+    
+    char simple[260] = {0x00};
     int res = _encode_label_simple(label, simple);
     if (res != SDNS_ERROR_ELSIMPLE){
         return res;
     }
+
     char * tmp = simple;
     char * match = NULL;
     int j=0;
     size_t tmp_len = strlen(simple);
+
+    // 2^14 -1 = 16383. this is the max value we can refer in 14 bits for compression
     size_t db_max_len = db->cursor < 16383?db->cursor:16383;
-    DEBUG("max len for search is %ld", db_max_len);
-    DEBUG("tmp_len is: %ld", tmp_len);
     while (2){
         match = (char *)memmem(db->buffer, db_max_len, tmp, tmp_len+1);
         if (match != NULL){
@@ -442,10 +460,8 @@ static int _encode_label_compressed(char * label, dyn_buffer * db, char * buffer
             buffer[j++] = (uint8_t)(offset & 0xFF);
             return SDNS_ERROR_ELCOMPRESSED;
         }else{
-            DEBUG("NO match found");
-            // go one label further and start again if the remainig part is > 3
+            // go one label further and start again if the remaining part is > 3
             uint8_t to_read = *tmp;
-            DEBUG("let's write %d bytes to the buffer", to_read);
             buffer[j++] = *tmp;
             tmp++;
             for (int i=0;i<to_read; ++i){
@@ -453,17 +469,7 @@ static int _encode_label_compressed(char * label, dyn_buffer * db, char * buffer
                 tmp++;
             }
             tmp_len = tmp_len - 1 - to_read;
-            DEBUG("tmp_len is: %ld", tmp_len);
-
-            if (tmp_len < 3){  // no need to compress more
-                for (int i=0;i< tmp_len;++i){
-                    buffer[j++] = *tmp;
-                    tmp++;
-                }
-                return SDNS_ERROR_ELSIMPLE;
-            }else{
-                continue;
-            }
+            continue;
         }
     }
 }
@@ -482,7 +488,7 @@ static int _encode_write_rr_A(sdns_context * ctx, dyn_buffer* db, sdns_rr* tmprr
 }
 
 static int _encode_write_rr_NS(sdns_context * ctx, dyn_buffer* db, sdns_rr* tmprr){
-    char buffer[256] = {0x00};
+    char buffer[260] = {0x00};
     char tmp_bytes[10] = {0x00};
     sdns_rr_NS * ns = (sdns_rr_NS*) tmprr->psdns_rr;
     int res = _encode_label_compressed(ns->NSDNAME, db, buffer);
@@ -498,7 +504,7 @@ static int _encode_write_rr_NS(sdns_context * ctx, dyn_buffer* db, sdns_rr* tmpr
 }
 
 static int _encode_write_rr_PTR(sdns_context * ctx, dyn_buffer* db, sdns_rr* tmprr){
-    char buffer[256] = {0x00};
+    char buffer[260] = {0x00};
     char tmp_bytes[10] = {0x00};
     sdns_rr_PTR * ptr = (sdns_rr_PTR*) tmprr->psdns_rr;
     int res = _encode_label_compressed(ptr->PTRDNAME, db, buffer);
@@ -537,7 +543,7 @@ static int _encode_write_rr_CAA(sdns_context * ctx, dyn_buffer * db, sdns_rr *tm
 }
 
 static int _encode_write_rr_CNAME(sdns_context * ctx, dyn_buffer* db, sdns_rr* tmprr){
-    char buffer[256] = {0x00};
+    char buffer[260] = {0x00};
     char tmp_bytes[10] = {0x00};
     sdns_rr_CNAME * cname = (sdns_rr_CNAME*) tmprr->psdns_rr;
     int res = _encode_label_compressed(cname->CNAME, db, buffer);
@@ -602,7 +608,7 @@ static int _encode_write_rr_OPT(sdns_context * ctx, dyn_buffer* db, sdns_rr* tmp
 }
 
 static int _encode_write_rr_MX(sdns_context * ctx, dyn_buffer* db, sdns_rr* tmprr){
-    char buffer[256] = {0x00};
+    char buffer[260] = {0x00};
     char tmp_bytes[10] = {0x00};
     sdns_rr_MX * mx = (sdns_rr_MX*) tmprr->psdns_rr;
     int res = _encode_label_compressed(mx->exchange, db, buffer);
@@ -626,7 +632,7 @@ static int _encode_write_rr_RRSIG(sdns_context * ctx, dyn_buffer * db, sdns_rr *
     uint16_t rdlength = 0;
     char tmp_bytes[10] = {0x00};
     // first we go for the name part since this is the only error-prone part
-    char sn_buffer[256] = {0x00};
+    char sn_buffer[260] = {0x00};
     int sn_result = _encode_label_simple(rrsig->signers_name, sn_buffer);
     if (sn_result != SDNS_ERROR_ELSIMPLE){
         // there is an error in encoding label
@@ -680,7 +686,7 @@ static int _encode_write_rr_RRSIG(sdns_context * ctx, dyn_buffer * db, sdns_rr *
 static int _encode_write_rr_SRV(sdns_context * ctx, dyn_buffer* db, sdns_rr * tmprr){
     // the 'target' field of SRV can not use compression based on RFC 2782
     int res_target = -1;
-    char target[256] = {0x00};
+    char target[260] = {0x00};
     char tmp_bytes[10] = {0x00};
     uint16_t rdlength = 0;
     sdns_rr_SRV * srv = (sdns_rr_SRV*) tmprr->psdns_rr;
@@ -756,8 +762,8 @@ static int _encode_write_rr_AAAA(sdns_context * ctx, dyn_buffer * db, sdns_rr* t
 static int _encode_write_rr_SOA(sdns_context * ctx, dyn_buffer* db, sdns_rr* tmprr){
     int res_mname = -1;
     int res_rname = -1;
-    char mname[256] = {0x00};
-    char rname[256] = {0x00};
+    char mname[260] = {0x00};
+    char rname[260] = {0x00};
     char tmp_bytes[10] = {0x00};
     uint16_t rdlength = 0;
     sdns_rr_SOA * soa = (sdns_rr_SOA*) tmprr->psdns_rr;
@@ -1933,11 +1939,11 @@ int sdns_from_wire(sdns_context * ctx){
 
 static int _encode_write_section(sdns_context * ctx, dyn_buffer * db, sdns_rr * section){
     sdns_rr * tmprr = section;
-    char buffer[256];
+    char buffer[260];
     char tmp_byte[10];
     int res;
     while (tmprr){
-        memset(buffer, 0x00, 256);
+        memset(buffer, 0x00, 260);
         DEBUG("encode label compressed name: %s", tmprr->name);
         res = _encode_label_compressed(tmprr->name, db, buffer);
         DEBUG("DONE encode label compressed name: %s", tmprr->name);
@@ -2053,7 +2059,7 @@ int sdns_to_wire(sdns_context * ctx){
     tmp_byte[1] = (ctx->msg->header.arcount) & 0xFF;
     dyn_buffer_append(db, tmp_byte, 2);
 
-    char buffer[256] = {0x00};
+    char buffer[260] = {0x00};
     int res;
     // end of writing header part
     DEBUG("let's to wire the question section....");
@@ -2068,7 +2074,7 @@ int sdns_to_wire(sdns_context * ctx){
             return SDNS_ERROR_HOSTNAME_TOO_LONG;
         }
         // encode the label and store it
-        memset(buffer, 0x00, 256);
+        memset(buffer, 0x00, 260);
         res = _encode_label_simple(ctx->msg->question.qname, buffer);
         if (res != SDNS_ERROR_ELSIMPLE){
             dyn_buffer_free(db);
